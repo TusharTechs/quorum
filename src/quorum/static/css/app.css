@@ -524,3 +524,16 @@ details.card > summary::-webkit-details-marker { display: none; }
 }
 @container (max-width: 560px) { .decision { grid-template-columns: auto 1fr; } .decision > :last-child { grid-column: 1 / -1; justify-self: start; } }
 .decision h3 { font-weight: 560; }
+
+/* certainty chart */
+.certainty { width: 100%; height: auto; display: block; }
+.certainty .band { fill: var(--tie-soft); }
+.certainty .cut { stroke: var(--signal); stroke-dasharray: 4 4; stroke-width: 1.5; }
+.certainty .cutlbl { font: 600 11px var(--sans); fill: var(--signal); }
+.certainty .lbl { font: 520 12px var(--sans); fill: var(--ink-2); }
+.certainty .track { stroke: var(--line); stroke-width: 7; stroke-linecap: round; }
+.certainty .range { stroke: var(--line-strong); stroke-width: 7; stroke-linecap: round; }
+.certainty .range.paid { stroke: var(--accent-line); }
+.certainty .pt { fill: var(--muted); }
+.certainty .pt.paid { fill: var(--accent); }
+.certainty .tick { font: 500 11px var(--sans); fill: var(--muted); }

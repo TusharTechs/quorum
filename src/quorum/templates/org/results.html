@@ -13,10 +13,14 @@
   </div>
 </div>
 {% endwith %}
+{% if entries %}<div class="card" style="margin-bottom:16px">
+  <div class="row between"><h2 style="margin:0">How certain is the podium? {% gl "rank_interval" %}</h2><span class="small muted">top 12 of {{ n }} · shaded rows are statistically tied {% gl "tie" %}</span></div>
+  <div style="margin-top:10px">{% certainty_chart entries titles ev.prize_positions 12 %}</div>
+</div>{% endif %}
 <div class="grid cols-4" style="margin-bottom:16px">
-  <div class="stat"><div class="k">Calibration</div><div class="v" style="font-size:18px">{{ out.method.calibration }}</div><div class="s">shrinkage k = {{ out.k|f2 }} ({{ out.k_source }})</div></div>
-  <div class="stat"><div class="k">Flat judges (weight 0)</div><div class="v">{{ out.flat_judges|length }}</div><div class="s">{% for j in out.flat_judges %}{{ j }} {% endfor %}</div></div>
-  <div class="stat"><div class="k">Raw vs calibrated</div><div class="v">τ {{ out.agreement.raw_vs_calibrated|f2 }}</div><div class="s">z-score vs calibrated τ {{ out.agreement.zscore_vs_calibrated|f2 }}</div></div>
+  <div class="stat"><div class="k">Calibration {% gl "calibrated" %}</div><div class="v" style="font-size:18px">{{ out.method.calibration }}</div><div class="s">shrinkage k = {{ out.k|f2 }} ({{ out.k_source }})</div></div>
+  <div class="stat"><div class="k">Flat judges (weight 0) {% gl "flat" %}</div><div class="v">{{ out.flat_judges|length }}</div><div class="s">{% for j in out.flat_judges %}{{ j }} {% endfor %}</div></div>
+  <div class="stat"><div class="k">Raw vs calibrated {% gl "tau" %}</div><div class="v">τ {{ out.agreement.raw_vs_calibrated|f2 }}</div><div class="s">z-score vs calibrated τ {{ out.agreement.zscore_vs_calibrated|f2 }}</div></div>
   <div class="stat"><div class="k">Run</div><div class="v" style="font-size:14px"><span class="hash">{{ run.output_hash|short:16 }}</span></div><div class="s">{{ run.get_kind_display }} · {{ run.created_at|timesince }} ago</div></div>
 </div>
 <div class="split">

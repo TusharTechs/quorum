@@ -184,3 +184,56 @@ def gl(key):
         return ""
     return mark_safe(f'<button type="button" class="gl" data-gl="{escape(text)}" data-src="{escape(src)}" '
                      f'aria-label="What does this mean?" aria-expanded="false">?</button>')
+
+
+@register.simple_tag
+def certainty_chart(entries, titles, prize_n=3, top=12):
+    """Where each leading project could plausibly finish (90% rank interval), the prize line,
+    and shaded tie groups: the ranking as the data supports it. Server-rendered SVG with a
+    <title>/<desc>; the table below carries the same numbers for screen readers."""
+    rows = [e for e in (entries or []) if e.get("rank_lo") is not None][:top]
+    if not rows:
+        return ""
+    n = max(len(entries), 2)
+    left, right, top_pad, rh = 168, 16, 26, 22
+    w = 680
+    h = top_pad + rh * len(rows) + 30
+    span = w - left - right
+
+    def x(r):
+        return left + span * (r - 1) / (n - 1)
+
+    parts = [f'<svg class="certainty" viewBox="0 0 {w} {h}" role="img" aria-labelledby="cc-t cc-d">'
+             f'<title id="cc-t">Plausible finishing places of the top {len(rows)} projects</title>'
+             f'<desc id="cc-d">Each bar spans the places a project could plausibly finish (90%). Projects in one '
+             f'shaded band are statistically tied. The dashed line is the last paid place ({prize_n}).</desc>']
+    # tie bands: consecutive rows sharing a tie group
+    i = 0
+    while i < len(rows):
+        g = rows[i].get("tie_group")
+        j = i
+        while j + 1 < len(rows) and rows[j + 1].get("tie_group") == g:
+            j += 1
+        if j > i:
+            y0 = top_pad + rh * i - 4
+            parts.append(f'<rect class="band" x="4" y="{y0}" width="{w - 8}" height="{rh * (j - i + 1) + 2}" rx="8"/>')
+        i = j + 1
+    px = x(prize_n + 0.5)
+    parts.append(f'<line class="cut" x1="{px:.1f}" x2="{px:.1f}" y1="{top_pad - 14}" y2="{h - 24}"/>'
+                 f'<text class="cutlbl" x="{px + 5:.1f}" y="{top_pad - 8}">prize line</text>')
+    for k, e in enumerate(rows):
+        y = top_pad + rh * k + rh / 2 - 4
+        name = escape(str((titles.get(e["project"]).title if hasattr(titles.get(e["project"]), "title")
+                           else titles.get(e["project"], e["project"])) or e["project"]))
+        name = name if len(name) <= 22 else name[:21] + "…"
+        paid = e["rank"] <= prize_n
+        parts.append(f'<text class="lbl" x="{left - 10}" y="{y + 4}" text-anchor="end">#{e["rank"]} {name}</text>'
+                     f'<line class="track" x1="{left}" x2="{w - right}" y1="{y}" y2="{y}"/>'
+                     f'<line class="range{" paid" if paid else ""}" x1="{x(e["rank_lo"]):.1f}" x2="{x(e["rank_hi"]):.1f}" y1="{y}" y2="{y}">'
+                     f'<title>{name}: places {e["rank_lo"]}–{e["rank_hi"]}, P(prize) {round(100 * (e.get("p_prize") or 0))}%</title></line>'
+                     f'<circle class="pt{" paid" if paid else ""}" cx="{x(e["rank"]):.1f}" cy="{y}" r="4.5"/>')
+    ticks = sorted({1, prize_n, max(1, n // 4), max(1, n // 2), n})
+    for t in ticks:
+        parts.append(f'<text class="tick" x="{x(t):.1f}" y="{h - 8}" text-anchor="middle">{t}</text>')
+    parts.append("</svg>")
+    return mark_safe("".join(parts))
