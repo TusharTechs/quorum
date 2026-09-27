@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · judges{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <div class="split">
 <div class="card flush"><div class="card-head"><h2>Judges ({{ progress|length }})</h2><a class="btn sm" href="/o/{{ ev.slug }}/judges/stats">Calibration cards →</a></div>
 <div class="table-wrap"><table><thead><tr><th>Judge</th><th>Tracks</th><th class="num">Done</th><th>Status</th><th class="num">Leniency</th><th>Signals</th><th>Available</th></tr></thead><tbody>

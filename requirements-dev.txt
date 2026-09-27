@@ -3,3 +3,5 @@ pytest==9.1.1
 pytest-django==4.14.0
 hypothesis==6.168.2
 ruff==0.16.9
+fonttools==4.66.0   # tools/brand.py only (brand asset generation)
+brotli==1.2.0

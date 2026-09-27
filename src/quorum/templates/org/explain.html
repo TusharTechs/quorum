@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}Why #{{ e.rank }} · {{ p.title }}{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <p class="small"><a href="/o/{{ ev.slug }}/results">← Ranking</a></p>
 <div class="row between"><div><p class="eyebrow muted small" style="margin:0">Why is this project #{{ e.rank }}?</p><h2 class="title" style="margin:4px 0">{{ p.title }}</h2><p class="muted">{{ p.team.name }} · {{ p.track.name }}</p></div>
 <div class="grid cols-3" style="min-width:420px"><div class="stat"><div class="k">Calibrated</div><div class="v">{{ e.calibrated|f3 }}</div><div class="s">± {{ e.se|f3 }}</div></div><div class="stat"><div class="k">Plausible rank</div><div class="v">{{ e.rank_lo }}–{{ e.rank_hi }}</div><div class="s">90% of simulations</div></div><div class="stat"><div class="k">P(prize)</div><div class="v">{{ e.p_prize|pct }}</div><div class="s">P(#1) {{ e.p_first|pct }}</div></div></div></div>

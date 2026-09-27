@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "quorum.voting",
     "quorum.audit",
     "quorum.integrations",
+    "quorum.intelligence",
     "quorum.web",
 ]
 

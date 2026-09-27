@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · data{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <div class="grid cols-2">
   <div class="card"><h2>Export</h2><p class="small muted">Everything you put in, you can take out. CSV at every stage (safe to open in a spreadsheet), or the whole event as one JSON bundle anyone can recompute.</p>
     <div class="row">{% for k in exports %}<a class="btn sm" href="/api/v1/events/{{ ev.ref }}/exports/{{ k }}.csv">{{ k }}.csv</a>{% endfor %}</div>

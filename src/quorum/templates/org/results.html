@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · results{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 {% if method.override_reason %}<div class="callout bad" style="margin-bottom:14px"><strong>The judging method was changed after it was locked.</strong> Reason: “{{ method.override_reason }}”. This notice appears on the published results.</div>{% endif %}
 {% with s=out.signal %}
 <div class="callout {% if s.verdict == 'no_signal' %}bad{% elif s.verdict == 'weak' %}warn{% else %}good{% endif %}" style="margin-bottom:16px">

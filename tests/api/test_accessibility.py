@@ -100,3 +100,41 @@ def test_pages_meet_accessibility_basics(client_as):
         if s.report():
             problems[path] = s.report()
     assert not problems, problems
+
+
+def _tokens(css: str, selector: str) -> dict:
+    import re
+
+    block = css.split(selector, 1)[1].split("}", 1)[0]
+    return {k: v.strip() for k, v in re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6})", block)}
+
+
+def _contrast(a: str, b: str) -> float:
+    def lum(h):
+        c = [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+        c = [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+# (foreground, background, minimum): body text 4.5:1 (WCAG 1.4.3 AA); icons and UI edges 3:1 (1.4.11)
+PAIRS = [("ink", "paper", 4.5), ("ink", "panel", 4.5), ("ink-2", "paper", 4.5), ("ink-2", "sunk", 4.5),
+         ("muted", "paper", 4.5), ("muted", "panel", 4.5), ("muted", "sunk", 4.5), ("accent", "panel", 4.5),
+         ("accent", "paper", 4.5), ("accent-ink", "accent", 4.5), ("accent-strong", "accent-soft", 4.5),
+         ("good", "good-soft", 4.5), ("warn", "warn-soft", 4.5), ("bad", "bad-soft", 4.5), ("tie", "tie-soft", 4.5),
+         ("signal", "panel", 3.0), ("field", "panel", 3.0), ("field", "paper", 3.0)]
+
+
+def test_palette_meets_wcag_contrast_in_both_themes():
+    from pathlib import Path
+
+    css = (Path(__file__).resolve().parents[2] / "src/quorum/static/css/app.css").read_text()
+    light, dark = _tokens(css, ":root {"), _tokens(css, ':root[data-theme="dark"] {')
+    failures = []
+    for name, t in (("light", light), ("dark", dark)):
+        for fg, bg, need in PAIRS:
+            ratio = _contrast(t[fg], t[bg])
+            if ratio < need:
+                failures.append(f"{name}: --{fg} on --{bg} = {ratio:.2f} (< {need})")
+    assert not failures, failures

@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · calibration{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <div class="callout small" style="margin-bottom:16px">These cards describe <em>patterns</em>, not verdicts. A strong offset usually means a strict or generous marker; the model corrects for it. <strong>Leniency</strong> is estimated only from projects this judge shares with others, and shrunk toward zero in proportion to how little evidence there is (k = {{ out.k|f2 }}). <strong>Evidence</strong> is how many effective comparisons support that estimate.</div>
 <div class="gallery">
 {% for j in judges %}{% with r=names|get:j.judge %}

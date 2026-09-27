@@ -62,9 +62,10 @@ def policy_error(request: HttpRequest, exc: PolicyError):
 
 
 def _register():
-    from . import audit, data, events, exports, feedback, judges, judging, ops, pairwise, projects, results, teams, voting
+    from . import audit, data, events, exports, feedback, intelligence, judges, judging, ops, pairwise, projects, results, teams, voting
 
-    for mod in (events, teams, projects, judging, judges, pairwise, ops, results, feedback, voting, audit, exports, data):
+    for mod in (events, teams, projects, judging, judges, pairwise, ops, results, feedback, voting, audit, exports, data,
+                intelligence):
         api.add_router("", mod.router)
     # derive ninja-level auth from the @policy marker (single source of truth)
     for _prefix, router in api._routers:

@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · overview{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <ol class="steps" aria-label="Lifecycle" style="margin-bottom:18px">{% for s in steps %}<li class="{{ s.state }}">{{ s.label }}</li>{% endfor %}</ol>
 <div class="grid cols-4">
   <div class="stat"><div class="k">Projects</div><div class="v">{{ n_projects }}</div><div class="s">{{ n_teams }} teams{% if dup %} · {{ dup }} eligibility item{{ dup|pluralize }}{% endif %}</div></div>

@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · audit{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <div class="split">
 <div class="card flush">
   <div class="card-head"><h2>Audit trail <span class="muted small">({{ total }} entries, append-only)</span></h2><a class="btn sm" href="/api/v1/events/{{ ev.ref }}/exports/audit.csv">CSV</a></div>

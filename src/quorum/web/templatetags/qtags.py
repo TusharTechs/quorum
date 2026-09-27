@@ -4,10 +4,19 @@ library, works offline, prints, and stays accessible with <title>/<desc>)."""
 from __future__ import annotations
 
 from django import template
+from django.templatetags.static import static
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 register = template.Library()
+
+
+@register.simple_tag
+def icon(name, size=16, cls="", label=""):
+    """A Lucide icon from the vendored sprite. Decorative unless `label` is given."""
+    a11y = f'role="img" aria-label="{escape(label)}"' if label else 'aria-hidden="true"'
+    return mark_safe(f'<svg class="icon {escape(cls)}" width="{int(size)}" height="{int(size)}" {a11y} focusable="false">'
+                     f'<use href="{static("icons/sprite.svg")}#i-{escape(name)}"></use></svg>')
 
 
 @register.filter

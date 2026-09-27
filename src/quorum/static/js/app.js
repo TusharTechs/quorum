@@ -167,3 +167,51 @@
 
   document.addEventListener("DOMContentLoaded", function () { initConsole(); initPairwise(); initProjectAutosave(); });
 })();
+
+/* toasts and plain-language glossary popovers */
+(function () {
+  "use strict";
+  function dismiss(t) { if (!t || t.classList.contains("out")) return; t.classList.add("out"); setTimeout(function () { t.remove(); }, 220); }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-toast-close]"); if (b) dismiss(b.closest(".toast"));
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    // successes and info fade after a while; errors stay until dismissed (WCAG 2.2.1: no surprise timeouts for problems)
+    Array.prototype.forEach.call(document.querySelectorAll(".toast:not(.error)"), function (t, i) {
+      var h = setTimeout(function () { dismiss(t); }, 6500 + i * 600);
+      t.addEventListener("mouseenter", function () { clearTimeout(h); });
+      t.addEventListener("focusin", function () { clearTimeout(h); });
+    });
+  });
+  window.quorumToast = function (text, kind) {
+    var box = document.getElementById("toasts"); if (!box) return;
+    var t = document.createElement("div"); t.className = "toast " + (kind || "success");
+    var s = document.createElement("span"); s.textContent = text; t.appendChild(s);
+    var c = document.createElement("button"); c.type = "button"; c.setAttribute("data-toast-close", ""); c.setAttribute("aria-label", "Dismiss"); c.textContent = "×";
+    t.appendChild(c); box.appendChild(t);
+    if (kind !== "error") setTimeout(function () { dismiss(t); }, 6500);
+  };
+
+  // glossary: <button class="gl" data-gl="...plain words..." data-src="...">?</button>
+  var pop = null, owner = null;
+  function close() { if (pop) { pop.remove(); pop = null; } if (owner) { owner.setAttribute("aria-expanded", "false"); owner = null; } }
+  function show(b) {
+    close();
+    pop = document.createElement("div"); pop.className = "pop"; pop.id = "gl-pop"; pop.setAttribute("role", "tooltip");
+    var t = document.createElement("div"); t.textContent = b.getAttribute("data-gl"); pop.appendChild(t);
+    if (b.getAttribute("data-src")) { var s = document.createElement("span"); s.className = "src"; s.textContent = b.getAttribute("data-src"); pop.appendChild(s); }
+    document.body.appendChild(pop);
+    var r = b.getBoundingClientRect(), w = pop.offsetWidth, x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), document.documentElement.clientWidth - w - 8);
+    var y = r.bottom + 8 + window.scrollY;
+    if (r.bottom + pop.offsetHeight + 16 > window.innerHeight) y = r.top + window.scrollY - pop.offsetHeight - 8;
+    pop.style.left = (x + window.scrollX) + "px"; pop.style.top = y + "px";
+    b.setAttribute("aria-expanded", "true"); b.setAttribute("aria-describedby", "gl-pop"); owner = b;
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest(".gl");
+    if (b) { e.preventDefault(); if (owner === b) close(); else show(b); return; }
+    if (pop && !e.target.closest(".pop")) close();
+  });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+  window.addEventListener("resize", close);
+})();

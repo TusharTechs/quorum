@@ -182,6 +182,14 @@ def revocations(request):
 
 
 @policy("public")
+def favicon(request):
+    from django.shortcuts import redirect
+    from django.templatetags.static import static
+
+    return redirect(static("brand/favicon.ico"), permanent=True)
+
+
+@policy("public")
 def healthz(request):
     return HttpResponse("ok", content_type="text/plain")
 

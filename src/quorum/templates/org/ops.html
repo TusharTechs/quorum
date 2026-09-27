@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · judging ops{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <div class="grid cols-4">
   <div class="stat"><div class="k">Reviews remaining</div><div class="v">{{ bd.remaining }}</div><div class="s">of {{ bd.total }} assigned</div></div>
   <div class="stat {% if cov.below %}warn{% else %}good{% endif %}"><div class="k">Projects at target</div><div class="v">{{ cov.ok }}/{{ cov.total }}</div><div class="s">{{ cov.below }} short, nothing pending</div></div>

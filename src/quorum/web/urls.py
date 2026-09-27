@@ -27,6 +27,7 @@ urlpatterns = [
     re_path(r"^media/(?P<path>.+)$", pub.media),
     path(".well-known/quorum-keys.json", pub.keys),
     path(".well-known/quorum-revocations.json", pub.revocations),
+    path("favicon.ico", pub.favicon),
     path("healthz", pub.healthz),
     path("readyz", pub.readyz),
     # auth

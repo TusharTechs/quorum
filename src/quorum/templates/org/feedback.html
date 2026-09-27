@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · feedback{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <div class="grid cols-4" style="margin-bottom:16px">
   <div class="stat {% if fcov.none %}warn{% else %}good{% endif %}"><div class="k">Teams with feedback</div><div class="v">{{ fcov.with_feedback }}/{{ fcov.total }}</div><div class="s">{{ fcov.none|length }} would receive none</div></div>
   <div class="stat"><div class="k">Awaiting moderation</div><div class="v">{{ counts.pending }}</div></div>

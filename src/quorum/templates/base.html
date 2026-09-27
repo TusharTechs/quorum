@@ -5,34 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Quorum{% endblock %} · Quorum</title>
   <meta name="description" content="Quorum: a self-hosted hackathon platform. Every project judged. Every tie decided. Every team answered.">
-  <link rel="icon" href="{% static 'img/mark.svg' %}" type="image/svg+xml">
+  <meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d0f14" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="{% static 'brand/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{% static 'brand/favicon-32.png' %}" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="{% static 'brand/apple-touch-icon.png' %}">
+  <link rel="manifest" href="{% static 'brand/site.webmanifest' %}">
+  <link rel="preload" href="{% static 'fonts/inter-var.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/fraunces-var.woff2' %}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/theme.js' %}"></script>
   <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/palette.js' %}" defer></script>
   {% block head %}{% endblock %}
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' data-event="{{ ev.slug|default:'' }}" data-sprite="{% static 'icons/sprite.svg' %}">
 <a class="skip" href="#main">Skip to content</a>
 {% if QUORUM_DEMO %}<div class="demo-bar">Demo mode · seeded logins use password <code>quorum-demo</code> · mail is caught offline at <a href="http://localhost:8025">localhost:8025</a></div>{% endif %}
 <header class="top">
   <div class="wrap-wide">
-    <a class="brand" href="/">{% include "partials/mark.svg" %}<span>Quorum</span></a>
+    <a class="brand" href="/" aria-label="Quorum home">{% include "partials/mark.svg" %}<span>Quorum</span></a>
     <nav class="nav" aria-label="Main">
-      <a href="/events" {% if nav == "events" %}aria-current="page"{% endif %}>Events</a>
-      <a href="/projects" {% if nav == "gallery" %}aria-current="page"{% endif %}>Gallery</a>
+      <a href="/events" {% if nav == "events" %}aria-current="page"{% endif %}>{% icon "calendar" %}<span class="t">Events</span></a>
+      <a href="/projects" {% if nav == "gallery" %}aria-current="page"{% endif %}>{% icon "layout-grid" %}<span class="t">Gallery</span></a>
       {% if user.is_authenticated %}
-        {% if my.organizer %}<a href="/o" {% if nav == "organize" %}aria-current="page"{% endif %}>Organize</a>{% endif %}
-        {% if my.judge %}<a href="/j" {% if nav == "judge" %}aria-current="page"{% endif %}>Judge</a>{% endif %}
-        <a href="/me" {% if nav == "me" %}aria-current="page"{% endif %}>My hackathons</a>
+        {% if my.organizer %}<a href="/o" {% if nav == "organize" %}aria-current="page"{% endif %}>{% icon "layout-dashboard" %}<span class="t">Organize</span></a>{% endif %}
+        {% if my.judge %}<a href="/j" {% if nav == "judge" %}aria-current="page"{% endif %}>{% icon "gavel" %}<span class="t">Judge</span></a>{% endif %}
+        <a href="/me" {% if nav == "me" %}aria-current="page"{% endif %}>{% icon "user" %}<span class="t">My hackathons</span></a>
       {% endif %}
-      <a href="/api/v1/docs" {% if nav == "api" %}aria-current="page"{% endif %}>API</a>
-      <a href="/verify" {% if nav == "verify" %}aria-current="page"{% endif %}>Verify</a>
+      <a href="/api/v1/docs" {% if nav == "api" %}aria-current="page"{% endif %}>{% icon "code" %}<span class="t">API</span></a>
+      <a href="/verify" {% if nav == "verify" %}aria-current="page"{% endif %}>{% icon "badge-check" %}<span class="t">Verify</span></a>
     </nav>
+    <button class="kbar" type="button" data-palette-open aria-haspopup="dialog" aria-controls="palette" aria-label="Search or ask (Ctrl+K)">{% icon "search" 15 %}<span class="lbl">Search or ask…</span><span class="k"><kbd>⌘</kbd><kbd>K</kbd></span></button>
     <div class="who">
-      <button class="btn ghost sm" type="button" data-theme-toggle aria-label="Toggle dark mode">◐</button>
+      <button class="btn ghost sm" type="button" data-theme-toggle aria-label="Toggle dark mode">{% icon "moon" 16 %}</button>
       {% if user.is_authenticated %}
-        <span class="nowrap">{{ user.display }}{% if user.is_superuser %} <span class="badge">admin</span>{% endif %}</span>
+        <span class="nowrap name">{{ user.display }}{% if user.is_superuser %} <span class="badge">admin</span>{% endif %}</span>
         <form method="post" action="/logout">{% csrf_token %}<button class="btn sm nowrap" type="submit">Sign out</button></form>
       {% else %}
         <a class="btn sm primary" href="/login">Sign in</a>
@@ -41,12 +50,18 @@
   </div>
 </header>
 <main id="main"><div class="{% block wrapclass %}wrap{% endblock %}">
-{% if messages %}<ul class="messages">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
 {% block content %}{% endblock %}
 </div></main>
 <footer class="site"><div class="wrap row between">
   <span>Quorum · open source (Apache-2.0) · self-hosted · <a href="/methodology">how judging works</a></span>
   <span class="mono tiny">{{ build_info }}</span>
 </div></footer>
+<div class="toasts" id="toasts" role="status" aria-live="polite">{% for m in messages %}<div class="toast {{ m.tags|default:'info' }}">{% if m.tags == "error" %}{% icon "triangle-alert" 18 %}{% elif m.tags == "warning" %}{% icon "info" 18 %}{% else %}{% icon "circle-check" 18 %}{% endif %}<span>{{ m }}</span><button type="button" data-toast-close aria-label="Dismiss">×</button></div>{% endfor %}</div>
+<dialog class="palette" id="palette" aria-label="Search and ask">
+  <div class="q">{% icon "search" 18 %}<input id="palette-q" type="search" autocomplete="off" spellcheck="false" aria-label="Search or ask a question"
+    placeholder="Search projects, people and pages, or ask “who hasn't started?”" aria-controls="palette-res"></div>
+  <div class="res" id="palette-res" role="listbox" aria-label="Results"></div>
+  <div class="foot"><span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span><kbd>esc</kbd> close</span><span style="margin-left:auto">{% icon "sparkles" 13 %} answers come only from your event's data</span></div>
+</dialog>
 </body>
 </html>

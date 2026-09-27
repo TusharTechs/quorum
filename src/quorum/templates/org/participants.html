@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · participants{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 {% if items %}<div class="card" style="margin-bottom:18px"><h2>Eligibility queue</h2><p class="small muted">Problems found automatically: duplicates, missing fields, late attempts. Nothing is deleted; every decision is recorded.</p>
 <table><thead><tr><th>Project</th><th>Issue</th><th>Details</th><th>Status</th><th></th></tr></thead><tbody>
 {% for i in items %}<tr><td><a href="/p/{{ i.project.pk }}">{{ i.project.title }}</a> <span class="mono tiny">{{ i.project.ref }}</span></td><td><span class="badge warn">{{ i.kind }}</span></td><td class="small">{% if i.kind == "duplicate" %}Duplicate of {{ i.details.canonical }} ({{ i.details.reason }}). {{ i.details.policy }}{% else %}{{ i.details }}{% endif %}</td><td><span class="badge {% if i.status == 'open' %}warn{% else %}good{% endif %}">{{ i.status }}</span>{% if i.resolution_note %}<div class="tiny muted">{{ i.resolution_note }}</div>{% endif %}</td>

@@ -43,8 +43,16 @@ def _err(request, e: PolicyError):
     messages.error(request, e.detail)
 
 
+TAB_TITLES = {"overview": "Overview", "setup": "Setup", "participants": "Participants", "judges": "Judges",
+              "ops": "Judging ops", "results": "Results", "feedback": "Feedback", "voting": "Voting",
+              "audit": "Audit and signed records", "data": "Data in and out"}
+
+
 def _ctx(ev, tab, **kw):
-    return {"ev": ev, "tab": tab, "nav": "organize", **kw}
+    rail = {"voting": IntegrityFlag.objects.filter(event=ev, status="open").count(),
+            "feedback": Review.objects.filter(event=ev, status="submitted", moderation="pending").count()}
+    return {"ev": ev, "tab": tab, "tab_title": kw.pop("tab_title", TAB_TITLES.get(tab, "")), "nav": "organize",
+            "rail": rail, **kw}
 
 
 # --------------------------------------------------------------------------- home / create

@@ -75,6 +75,7 @@ MATRIX = {
     ("GET", "/api/v1/me/events/{e}/pairwise"): J,
     ("POST", "/api/v1/me/events/{e}/pairwise"): "assignee",  # only projects the caller reviewed
     ("GET", "/api/v1/events/{e}/certificates"): O, ("POST", "/api/v1/certificates/{cid}/revoke"): O,
+    ("GET", "/api/v1/search"): P,  # results are filtered by role; see test_search.py
 }
 
 DENY = {  # role -> refused? per category (True = must be 401/403)

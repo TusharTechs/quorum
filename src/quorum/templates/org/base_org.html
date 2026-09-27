@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+<div class="console-shell">
+  <nav class="rail" aria-label="Organizer sections">
+    <div class="ev"><div class="eyebrow">Organizer console</div><div class="name">{{ ev.name }}</div>
+      <div class="row" style="margin-top:8px"><span class="badge accent">{{ ev.get_phase_display }}</span>{% if ev.is_demo %}<span class="badge">demo</span>{% endif %}</div></div>
+    <a class="sect" href="/o/{{ ev.slug }}" {% if tab == "overview" %}aria-current="page"{% endif %}>{% icon "layout-dashboard" %}Overview</a>
+    <a class="sect" href="/o/{{ ev.slug }}/setup" {% if tab == "setup" %}aria-current="page"{% endif %}>{% icon "settings" %}Setup</a>
+    <a class="sect" href="/o/{{ ev.slug }}/participants" {% if tab == "participants" %}aria-current="page"{% endif %}>{% icon "users" %}Participants</a>
+    <a class="sect" href="/o/{{ ev.slug }}/judges" {% if tab == "judges" %}aria-current="page"{% endif %}>{% icon "gavel" %}Judges</a>
+    <a class="sect" href="/o/{{ ev.slug }}/ops" {% if tab == "ops" %}aria-current="page"{% endif %}>{% icon "activity" %}Judging ops</a>
+    <a class="sect" href="/o/{{ ev.slug }}/results" {% if tab == "results" %}aria-current="page"{% endif %}>{% icon "trophy" %}Results</a>
+    <a class="sect" href="/o/{{ ev.slug }}/feedback" {% if tab == "feedback" %}aria-current="page"{% endif %}>{% icon "message-square-text" %}Feedback{% if rail.feedback %}<span class="count" title="{{ rail.feedback }} awaiting moderation">{{ rail.feedback }}</span>{% endif %}</a>
+    <a class="sect" href="/o/{{ ev.slug }}/voting" {% if tab == "voting" %}aria-current="page"{% endif %}>{% icon "vote" %}Voting{% if rail.voting %}<span class="count" title="{{ rail.voting }} integrity flags to review">{{ rail.voting }}</span>{% endif %}</a>
+    <a class="sect" href="/o/{{ ev.slug }}/audit" {% if tab == "audit" %}aria-current="page"{% endif %}>{% icon "shield-check" %}Audit</a>
+    <a class="sect" href="/o/{{ ev.slug }}/data" {% if tab == "data" %}aria-current="page"{% endif %}>{% icon "database" %}Data</a>
+    <div class="foot">
+      <a class="sect" href="/e/{{ ev.slug }}">{% icon "external-link" %}Public page</a>
+      <a class="sect" href="/e/{{ ev.slug }}/methodology">{% icon "book-open" %}Published method</a>
+    </div>
+  </nav>
+  <div class="console-main">
+    <header class="console-head"><p class="eyebrow" style="margin:0">{{ ev.name }}</p><h1>{{ tab_title }}</h1></header>
+    {% block console %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

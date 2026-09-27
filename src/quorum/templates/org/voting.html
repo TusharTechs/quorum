@@ -1,8 +1,6 @@
-{% extends "base.html" %}
+{% extends "org/base_org.html" %}
 {% block title %}{{ ev.name }} · voting{% endblock %}
-{% block wrapclass %}wrap-wide{% endblock %}
-{% block content %}
-{% include "org/_tabs.html" %}
+{% block console %}
 <div class="grid cols-4" style="margin-bottom:16px">
   <div class="stat"><div class="k">Votes</div><div class="v">{{ n_votes }}</div><div class="s">{{ n_void }} voided (kept, with reasons)</div></div>
   <div class="stat"><div class="k">Voters</div><div class="v">{{ n_voters }}</div><div class="s">mode: {{ ev.get_voting_mode_display }}</div></div>
