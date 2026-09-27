@@ -10,3 +10,4 @@ docs/planning/
 *.sqlite3
 node_modules/
 .DS_Store
+vendor/wheels/*.whl
