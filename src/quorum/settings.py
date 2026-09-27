@@ -129,10 +129,12 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = Path(env("QUORUM_STATIC_ROOT", str(REPO_DIR / "var" / "static")))
+# Hashed, compressed static files when `collectstatic` has produced a manifest (the Docker
+# image does this at build time); plain storage in development and tests.
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
-                    if not DEBUG and QUORUM_ENV != "test" else
+                    if (STATIC_ROOT / "staticfiles.json").exists() and QUORUM_ENV != "test" else
                     "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 DATA_DIR = Path(env("QUORUM_DATA_DIR", str(REPO_DIR / "var")))

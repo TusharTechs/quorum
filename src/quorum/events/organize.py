@@ -179,6 +179,14 @@ def update_event(actor, ev: Event, data: dict) -> Event:
     return ev
 
 
+def _unique_ref(model, ev, base: str) -> str:
+    base = (slugify(base)[:36] or "x").replace("-", "_")
+    ref, n = base, 2
+    while model.objects.filter(event=ev, ref=ref).exists():
+        ref, n = f"{base}_{n}", n + 1
+    return ref
+
+
 def _guard_rubric_editable(ev):
     if methods.is_locked(ev):
         raise Conflict("The judging method is locked (published to participants). Changing the rubric now "
@@ -236,8 +244,7 @@ def add_track(actor, ev, name):
     if not name:
         raise Invalid("Track name required.")
     n = ev.tracks.count() + 1
-    t = Track.objects.create(event=ev, ref=f"trk_{n:02d}" if not ev.tracks.filter(ref=f"trk_{n:02d}").exists()
-                             else slugify(name)[:40], name=name, position=n)
+    t = Track.objects.create(event=ev, ref=_unique_ref(Track, ev, f"trk_{n:02d}"), name=name, position=n)
     audit.record("TRACK_ADDED", f"Track {name} added", event=ev, actor=actor, actor_role="organizer", target=t)
     return t
 
@@ -259,7 +266,7 @@ def add_question(actor, ev, label, kind="text", required=False, options=""):
     if not label:
         raise Invalid("Question label required.")
     opts = [o.strip() for o in (options or "").split(",") if o.strip()] if kind == "choice" else []
-    q = CustomQuestion.objects.create(event=ev, ref=slugify(label)[:40] or f"q{ev.questions.count() + 1}", label=label,
+    q = CustomQuestion.objects.create(event=ev, ref=_unique_ref(CustomQuestion, ev, label), label=label,
                                       kind=kind, required=bool(required), options=opts, position=ev.questions.count())
     audit.record("QUESTION_ADDED", f"Custom question added: {label}", event=ev, actor=actor, actor_role="organizer")
     return q

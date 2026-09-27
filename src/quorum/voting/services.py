@@ -101,6 +101,8 @@ def ensure_open_voter(request, event: Event) -> Voter:
 def start_email_verification(request, event: Event, email: str):
     from quorum.accounts.services import issue_magic_link
 
+    if event.voting_mode != "email":
+        raise Invalid("This event does not use e-mail verified voting.", code="wrong_voting_mode")
     email = normalize_email(email)
     if "@" not in email:
         raise Invalid("Enter a valid e-mail address.")
