@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from engine.calibrate import design, explain_project, fit_additive, fit_judge_effects, gls_pieces
+from engine.calibrate import explain_project, fit_additive, fit_judge_effects, gls_pieces
 from engine.fixtures import from_dogfood_fixture
 from engine.linalg import chol_solve, cholesky
 from engine.pipeline import compute

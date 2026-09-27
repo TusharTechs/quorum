@@ -1,4 +1,3 @@
-from typing import Any, Optional
 
 from ninja import Router, Schema
 
@@ -13,28 +12,28 @@ router = Router(tags=["events"])
 
 
 class EventIn(Schema):
-    name: Optional[str] = None
-    tagline: Optional[str] = None
-    description_md: Optional[str] = None
-    rules_md: Optional[str] = None
-    submissions_open_at: Optional[str] = None
-    submissions_close_at: Optional[str] = None
-    judging_opens_at: Optional[str] = None
-    judging_closes_at: Optional[str] = None
-    voting_opens_at: Optional[str] = None
-    voting_closes_at: Optional[str] = None
-    grace_seconds: Optional[int] = None
-    team_size_max: Optional[int] = None
-    reviews_per_project: Optional[int] = None
-    batch_size: Optional[int] = None
-    min_feedback_chars: Optional[int] = None
-    focus_budget_pct: Optional[int] = None
-    prize_positions: Optional[int] = None
-    voting_mode: Optional[str] = None
-    votes_per_voter: Optional[int] = None
-    quadratic_voting: Optional[bool] = None
-    rank_display: Optional[str] = None
-    template: Optional[str] = "raptors"
+    name: str | None = None
+    tagline: str | None = None
+    description_md: str | None = None
+    rules_md: str | None = None
+    submissions_open_at: str | None = None
+    submissions_close_at: str | None = None
+    judging_opens_at: str | None = None
+    judging_closes_at: str | None = None
+    voting_opens_at: str | None = None
+    voting_closes_at: str | None = None
+    grace_seconds: int | None = None
+    team_size_max: int | None = None
+    reviews_per_project: int | None = None
+    batch_size: int | None = None
+    min_feedback_chars: int | None = None
+    focus_budget_pct: int | None = None
+    prize_positions: int | None = None
+    voting_mode: str | None = None
+    votes_per_voter: int | None = None
+    quadratic_voting: bool | None = None
+    rank_display: str | None = None
+    template: str | None = "raptors"
 
 
 class CloneIn(Schema):
@@ -43,7 +42,7 @@ class CloneIn(Schema):
 
 
 class CriterionIn(Schema):
-    key: Optional[str] = None
+    key: str | None = None
     name: str
     description: str = ""
     weight_pct: float
@@ -52,7 +51,7 @@ class CriterionIn(Schema):
 
 class RubricIn(Schema):
     criteria: list[CriterionIn]
-    override_reason: Optional[str] = None
+    override_reason: str | None = None
 
 
 class NamedIn(Schema):

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 380" font-family="system-ui,sans-serif" font-size="12">
+<text x="10" y="20" font-weight="700">Kendall tau gain vs raw mean (fixture design)</text>
+<line x1="320" y1="30" x2="320" y2="375" stroke="#999"/>
+<rect x="320.0" y="40" width="7.9" height="18" fill="#1f7a4d"/>
+<line x1="321.7" y1="49" x2="334.1" y2="49" stroke="#333"/>
+<text x="10" y="53">leniency sd 0.0: calibrated</text>
+<text x="335.9" y="53">+0.003</text>
+<rect x="77.0" y="74" width="243.0" height="18" fill="#b3261e"/>
+<line x1="60.0" y1="83" x2="94.1" y2="83" stroke="#333"/>
+<text x="10" y="87">leniency sd 0.0: z-score</text>
+<text x="328.0" y="87">-0.092</text>
+<rect x="320.0" y="108" width="13.7" height="18" fill="#1f7a4d"/>
+<line x1="326.5" y1="117" x2="340.8" y2="117" stroke="#333"/>
+<text x="10" y="121">leniency sd 0.2: calibrated</text>
+<text x="341.7" y="121">+0.005</text>
+<rect x="126.9" y="142" width="193.1" height="18" fill="#b3261e"/>
+<line x1="108.6" y1="151" x2="145.2" y2="151" stroke="#333"/>
+<text x="10" y="155">leniency sd 0.2: z-score</text>
+<text x="328.0" y="155">-0.073</text>
+<rect x="320.0" y="176" width="47.5" height="18" fill="#1f7a4d"/>
+<line x1="356.7" y1="185" x2="378.3" y2="185" stroke="#333"/>
+<text x="10" y="189">leniency sd 0.4: calibrated</text>
+<text x="375.5" y="189">+0.018</text>
+<rect x="225.5" y="210" width="94.5" height="18" fill="#b3261e"/>
+<line x1="203.9" y1="219" x2="247.2" y2="219" stroke="#333"/>
+<text x="10" y="223">leniency sd 0.4: z-score</text>
+<text x="328.0" y="223">-0.036</text>
+<rect x="320.0" y="244" width="107.7" height="18" fill="#1f7a4d"/>
+<line x1="412.7" y1="253" x2="442.7" y2="253" stroke="#333"/>
+<text x="10" y="257">leniency sd 0.6: calibrated</text>
+<text x="435.7" y="257">+0.041</text>
+<rect x="320.0" y="278" width="39.3" height="18" fill="#1f7a4d"/>
+<line x1="333.8" y1="287" x2="384.7" y2="287" stroke="#333"/>
+<text x="10" y="291">leniency sd 0.6: z-score</text>
+<text x="367.3" y="291">+0.015</text>
+<rect x="320.0" y="312" width="182.6" height="18" fill="#1f7a4d"/>
+<line x1="484.2" y1="321" x2="521.1" y2="321" stroke="#333"/>
+<text x="10" y="325">leniency sd 0.8: calibrated</text>
+<text x="510.6" y="325">+0.070</text>
+<rect x="320.0" y="346" width="173.1" height="18" fill="#1f7a4d"/>
+<line x1="465.9" y1="355" x2="520.3" y2="355" stroke="#333"/>
+<text x="10" y="359">leniency sd 0.8: z-score</text>
+<text x="501.1" y="359">+0.066</text>
+</svg>

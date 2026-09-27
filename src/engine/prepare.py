@@ -38,7 +38,7 @@ def find_duplicates(projects: list[dict], submissions_close: str | None = None) 
             continue
         parent = {p["id"]: p["id"] for p in plist}
 
-        def find(x):
+        def find(x, parent=parent):
             while parent[x] != x:
                 parent[x] = parent[parent[x]]
                 x = parent[x]

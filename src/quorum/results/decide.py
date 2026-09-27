@@ -22,11 +22,11 @@ from quorum.core.clock import now
 from quorum.core.mail import queue_email
 from quorum.events.models import EventRole, Project
 from quorum.judging import ops
-from quorum.judging.models import Assignment, PairwiseComparison
+from quorum.judging.models import Assignment
 from quorum.policy.errors import Conflict, Invalid
 
 from .models import FocusRound, RankingRun, ResultPublication, TiebreakRound
-from .service import compute_run, latest_run
+from .service import compute_run
 
 RESOLVE_AT = 0.80
 MAX_TIE = 6

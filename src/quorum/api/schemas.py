@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from ninja import Schema
 
@@ -11,17 +11,17 @@ class Error(Schema):
 
 
 class ProjectIn(Schema):
-    title: Optional[str] = None
-    tagline: Optional[str] = None
-    summary: Optional[str] = None
-    description_md: Optional[str] = None
-    demo_video_url: Optional[str] = None
-    repo_url: Optional[str] = None
-    live_url: Optional[str] = None
-    declared_commit_sha: Optional[str] = None
-    tech_tags: Optional[list[str]] = None
-    track: Optional[str] = None
-    answers: Optional[dict[str, Any]] = None
+    title: str | None = None
+    tagline: str | None = None
+    summary: str | None = None
+    description_md: str | None = None
+    demo_video_url: str | None = None
+    repo_url: str | None = None
+    live_url: str | None = None
+    declared_commit_sha: str | None = None
+    tech_tags: list[str] | None = None
+    track: str | None = None
+    answers: dict[str, Any] | None = None
     submit: bool = False
 
 
@@ -31,15 +31,15 @@ class ProjectPublic(Schema):
     event: str
     title: str
     tagline: str
-    track: Optional[str]
+    track: str | None
     team: str
     description_html: str
     repo_url: str
     demo_video_url: str
     live_url: str
     tech_tags: list[str]
-    thumbnail_url: Optional[str]
-    submitted_at: Optional[datetime]
+    thumbnail_url: str | None
+    submitted_at: datetime | None
 
 
 class ProjectTeamView(ProjectPublic):
@@ -59,6 +59,6 @@ class ScoreOut(Schema):
     judge: str
     status: str
     criteria: dict[str, float]
-    weighted_total: Optional[float]
+    weighted_total: float | None
     feedback_to_team: str
-    submitted_at: Optional[datetime]
+    submitted_at: datetime | None

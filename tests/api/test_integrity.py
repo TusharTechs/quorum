@@ -1,7 +1,6 @@
 """Audit chain, exports, uploads, voting integrity."""
 
 import io
-import json
 from datetime import timedelta
 
 import pytest
@@ -44,7 +43,7 @@ def test_signed_checkpoint_verifies_and_detects_tampering(db, event):
 
 
 def test_csv_exports_neutralise_formulas(db, client_as):
-    from quorum.core.csvsafe import safe_cell, to_csv
+    from quorum.core.csvsafe import safe_cell
     from quorum.events.models import Project
 
     assert safe_cell("=HYPERLINK(\"http://evil\")") == "'=HYPERLINK(\"http://evil\")"

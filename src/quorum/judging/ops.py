@@ -21,7 +21,7 @@ from engine.assign import assign, design_diagnostics
 from quorum.audit import service as audit
 from quorum.core.clock import now
 from quorum.core.mail import queue_email
-from quorum.events.models import Event, EventRole, JudgeTrack, Project
+from quorum.events.models import Event, EventRole, Project
 from quorum.policy.errors import Conflict as ConflictError
 
 from .models import Assignment, Conflict, JudgeBatch, Reminder, ReminderDelivery, Review

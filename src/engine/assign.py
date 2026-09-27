@@ -82,7 +82,7 @@ def assign(projects, judges, k=3, capacity=None, conflicts=(), seed=0, existing=
                 unfilled.append({"project": pid, "slot": rnd + 1})
                 continue
 
-            def score(j):
+            def score(j, pid=pid):
                 new_edges = sum(1 for o in out[pid] if (min(j, o), max(j, o)) not in edges)
                 joins = sum(1 for o in out[pid] if find(o) != find(j))
                 return 3 * new_edges + 2 * joins - 2 * load[j] / max(cap.get(j, 1), 1) + 1e-6 * rng.random()
@@ -158,7 +158,7 @@ def design_diagnostics(pairs, project_track=None):
             sub = [(j, p) for j, p in pairs if project_track.get(p) == t]
             par = {}
 
-            def f2(x):
+            def f2(x, par=par):
                 par.setdefault(x, x)
                 while par[x] != x:
                     par[x] = par[par[x]]

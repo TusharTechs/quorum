@@ -17,7 +17,7 @@ class Actor:
     _roles: dict = field(default_factory=dict)
 
     @classmethod
-    def of(cls, request) -> "Actor":
+    def of(cls, request) -> Actor:
         cached = getattr(request, "_quorum_actor", None)
         if cached is not None:
             return cached

@@ -34,7 +34,9 @@ def test_full_lifecycle(event, actor, client_as):
     # a judge works through one new assignment
     a = Assignment.objects.filter(event=event, status="pending").select_related("judge_role__user").first()
     j = actor(a.judge_role.user.email)
-    with pytest.raises(Exception):
+    from quorum.policy.errors import Invalid
+
+    with pytest.raises(Invalid):
         judging.save_review(j, a, scores={"functionality": 4, "quality": 4, "innovation": 4}, feedback="too short", submit=True)
     judging.save_review(j, a, scores={"functionality": 4, "quality": 3, "innovation": 5}, submit=True,
                         feedback="Clear scope and a working demo. The README needs setup steps; tests are missing.")

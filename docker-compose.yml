@@ -12,6 +12,8 @@ x-app: &app
     QUORUM_DEMO: ${QUORUM_DEMO:-1}
     QUORUM_PUBLIC_ORIGIN: ${QUORUM_PUBLIC_ORIGIN:-http://localhost:8080}
     DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-quorum-demo-secret-key-change-me-in-production-0000000000}
+    DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+    TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-}
     POSTGRES_HOST: db
     POSTGRES_DB: quorum
     POSTGRES_USER: quorum

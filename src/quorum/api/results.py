@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from ninja import Router, Schema
 
@@ -19,7 +19,7 @@ class ComputeIn(Schema):
 
 
 class FocusIn(Schema):
-    budget: Optional[int] = None
+    budget: int | None = None
     seed: int = 0
 
 
@@ -33,7 +33,7 @@ class TiebreakIn(Schema):
 
 
 class ResolveIn(Schema):
-    order: Optional[list[str]] = None
+    order: list[str] | None = None
     note: str = ""
 
 

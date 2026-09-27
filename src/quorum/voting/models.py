@@ -4,7 +4,6 @@ and never delete a vote (voided votes keep their reason)."""
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
 
 from quorum.core.ids import uuid7
 from quorum.events.models import Event, Project

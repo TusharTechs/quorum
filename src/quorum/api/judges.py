@@ -1,11 +1,10 @@
 """Organizer-side judge management and judge-side reviewing."""
 
-from typing import Optional
 
 from ninja import Router, Schema
 
 from quorum.events import organize
-from quorum.events.models import EventRole, Project
+from quorum.events.models import EventRole
 from quorum.judging import ops
 from quorum.judging import services as judging
 from quorum.judging.models import Conflict, Review
@@ -22,12 +21,12 @@ class InviteIn(Schema):
     email: str
     name: str = ""
     tracks: list[str] = []
-    capacity: Optional[int] = None
+    capacity: int | None = None
 
 
 class JudgePatch(Schema):
-    available: Optional[bool] = None
-    capacity: Optional[int] = None
+    available: bool | None = None
+    capacity: int | None = None
 
 
 class ConflictIn(Schema):
@@ -38,9 +37,9 @@ class ConflictIn(Schema):
 
 class ReviewIn(Schema):
     scores: dict[str, float] = {}
-    feedback_to_team: Optional[str] = None
-    note_to_organizers: Optional[str] = None
-    quotable: Optional[str] = None
+    feedback_to_team: str | None = None
+    note_to_organizers: str | None = None
+    quotable: str | None = None
     active_seconds: int = 0
     submit: bool = False
 

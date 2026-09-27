@@ -13,7 +13,6 @@ cleans up what it can. Re-running is safe: every check accepts the idempotent ou
 
 import http.cookiejar
 import json
-import os
 import random
 import re
 import sys
@@ -210,8 +209,7 @@ def run(cfg):
     check("T2+", "rankings are hidden from judges, participants and visitors before publication", aggregates_hidden)
 
     def judge_only_own_queue(c):
-        s, t, _ = req(base, f"/api/v1/me/assignments?event={EVENT}", ja)
-        mine = js(t) or []
+        s, _, _ = req(base, f"/api/v1/me/assignments?event={EVENT}", ja)
         s2, t2, _ = req(base, f"/api/v1/me/assignments?event={EVENT}", jb)
         other = js(t2) or []
         if not other:
@@ -296,7 +294,7 @@ def run(cfg):
     check("T4", "CSV export at every stage (10 kinds), organizer-only", csv_exports)
 
     def embed(c):
-        s, t, h = req(base, f"/embed/events/sample-hack-2026/gallery")
+        s, t, h = req(base, "/embed/events/sample-hack-2026/gallery")
         csp = h.get("Content-Security-Policy", "")
         c.ok = s == 200 and "frame-ancestors *" in csp and h.get("X-Frame-Options") is None
         s2, _, h2 = req(base, "/projects")

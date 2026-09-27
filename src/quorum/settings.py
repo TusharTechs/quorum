@@ -26,6 +26,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY", "quorum-demo-secret-key-change-me-in-produ
 DEFAULT_SECRET = SECRET_KEY.startswith("quorum-demo-secret-key")
 PUBLIC_ORIGIN = env("QUORUM_PUBLIC_ORIGIN", "http://localhost:8080").rstrip("/")
 ALLOWED_HOSTS = [h.strip() for h in env("DJANGO_ALLOWED_HOSTS", "*").split(",") if h.strip()]
+TRUSTED_PROXIES = [ip.strip() for ip in env("TRUSTED_PROXY_IPS", "").split(",") if ip.strip()]
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in env("DJANGO_CSRF_TRUSTED_ORIGINS", PUBLIC_ORIGIN).split(",") if o.strip()]
 
 INSTALLED_APPS = [

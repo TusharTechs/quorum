@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from ninja import Router, Schema
 
@@ -12,7 +12,7 @@ router = Router(tags=["judging ops"])
 
 class PlanIn(Schema):
     kind: str = "baseline"
-    k: Optional[int] = None
+    k: int | None = None
     seed: int = 0
 
 

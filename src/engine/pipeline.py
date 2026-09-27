@@ -16,7 +16,7 @@ from .bundle import canonical_json, sha256_hex
 from .calibrate import explain_project, fit_judge_effects, rank_order
 from .compare import rank_agreement, raptors_classic, raw_scores, spearman, zscore_scores
 from .pairwise import bt_fit, induced_comparisons
-from .prepare import detect_flat_judges, weighted_total
+from .prepare import weighted_total
 from .uncertainty import (leave_one_judge_out, project_uncertainty, signal_check,
                           simulate_rankings, tie_groups, weight_sensitivity)
 

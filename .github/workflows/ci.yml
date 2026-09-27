@@ -1,0 +1,42 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: {POSTGRES_DB: quorum, POSTGRES_USER: quorum, POSTGRES_PASSWORD: quorum}
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U quorum" --health-interval 2s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -r requirements-dev.txt
+      - name: lint
+        run: ruff check src tests tools scripts
+      - name: tests (real Postgres, triggers included)
+        run: cd src && QUORUM_ENV=test DJANGO_DEBUG=1 python -m pytest ../tests -q
+      - name: normalization proof (quick)
+        run: python tools/generate_proof.py --sims 60
+
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose up
+        run: docker compose up -d --build --wait --wait-timeout 180
+      - name: official DOGFOOD checker
+        run: python3 run.py .dogfood.toml | tee acceptance-report.txt && grep -q "verified T1 T2" acceptance-report.txt
+      - name: extended T3/T4 checker
+        run: python3 tools/acceptance_ext.py .dogfood.toml | tee acceptance-report-extended.txt
+      - name: live isolation probe
+        run: python3 scripts/isolation_probe.py .dogfood.toml
+      - name: no external URLs in templates or static files (offline)
+        run: |
+          ! grep -rEn "https?://" src/quorum/templates src/quorum/static --include=*.html --include=*.css --include=*.js \
+            | grep -vE "localhost|example\.org|w3\.org/2000/svg|PUBLIC_ORIGIN|paulmillr\.com"
+      - if: always()
+        run: docker compose logs web worker | tail -200

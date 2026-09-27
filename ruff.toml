@@ -1,0 +1,8 @@
+line-length = 120
+target-version = "py312"
+[lint]
+select = ["E", "F", "W", "B", "UP"]
+ignore = ["E501", "E731", "E741", "B007", "B008", "B904", "B905", "UP031", "UP035"]
+[lint.per-file-ignores]
+"src/quorum/*/migrations/*" = ["E", "F", "W", "UP"]
+"scripts/*" = ["E402"]

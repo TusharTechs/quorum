@@ -7,7 +7,7 @@ import json
 
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from quorum.api.common import get_event
