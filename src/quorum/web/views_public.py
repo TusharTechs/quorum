@@ -41,11 +41,31 @@ def effective_phase(ev: Event) -> str:
     return "closed"
 
 
+HERO_ROWS = [  # an illustration, not data: real unpublished rankings never appear publicly
+    ("Lighthouse", 1, 3, 1.3, True), ("Tidepool", 1, 3, 1.9, True), ("Relay", 1, 4, 2.6, True),
+    ("Cobalt", 3, 6, 4.4, False), ("Quarry", 4, 8, 5.8, False), ("Juniper", 6, 10, 8.1, False),
+]
+DEMO_ROLE_CARDS = [
+    {"key": "organizer", "icon": "layout-dashboard", "title": "Organizer",
+     "what": "Run Sample Hack 2026: stalled judges, a statistical tie, feedback coverage, results."},
+    {"key": "judge", "icon": "gavel", "title": "Judge",
+     "what": "Work through a batch in the keyboard-first console; compare pairs; get a signed protocol."},
+    {"key": "participant", "icon": "user", "title": "Participant",
+     "what": "See your team, your submission and, once results are out, your scorecard."},
+]
+
+
 @policy("public")
 def home(request):
     events = Event.objects.filter(is_listed=True).annotate(
         n_projects=Count("projects", filter=Q(projects__status="submitted", projects__duplicate_of__isnull=True)))
-    return render(request, "public/home.html", {"events": events, "nav": "home"})
+
+    def x(rank):
+        return round(108 + (rank - 1) * 32.4, 1)
+    rows = [{"name": n, "lo": x(lo), "hi": x(hi), "at": x(at), "tie": tie, "y": 50 + i * 32}
+            for i, (n, lo, hi, at, tie) in enumerate(HERO_ROWS)]
+    return render(request, "public/home.html", {"events": events, "nav": "home", "hero_rows": rows,
+                                                "demo_roles": DEMO_ROLE_CARDS})
 
 
 @policy("public")
@@ -83,8 +103,11 @@ def _gallery(request, ev=None):
     qs = search_projects(public_projects(ev), q, track, tag, sort)
     projects = list(qs[:200])
     tracks = Track.objects.filter(event=ev) if ev else Track.objects.filter(event__is_listed=True).select_related("event")
+    counts = dict(public_projects(ev).values_list("track__ref").annotate(n=Count("id")).values_list("track__ref", "n"))
+    chips = [{"t": t, "n": counts.get(t.ref, 0)} for t in tracks if counts.get(t.ref)] if ev else []
     return render(request, "public/gallery.html", {
         "projects": projects, "ev": ev, "q": q, "track": track, "tag": tag, "sort": sort, "tracks": tracks,
+        "chips": chips, "total": sum(counts.values()),
         "events": Event.objects.filter(is_listed=True) if not ev else None, "nav": "gallery",
     })
 

@@ -1,0 +1,8 @@
+<div class="coach-card" role="status" aria-live="polite">
+  <div class="row between"><span class="assist">{% icon "sparkles" 12 %} Feedback coach</span><span class="tiny muted">advice only · runs on this server</span></div>
+  {% if advice.empty %}<p class="tiny muted" style="margin:8px 0 0">Tips appear here as you write: whether you touch every criterion, suggest a next step, and point at specifics.</p>
+  {% else %}
+  <ul class="coach-list">{% for c in advice.checks %}<li class="{% if c.ok %}ok{% endif %}">{% if c.ok %}{% icon "circle-check" 15 %}{% else %}{% icon "circle-dot" 15 %}{% endif %}<span>{{ c.label }}{% if not c.ok and c.tip %}<span class="tip">{{ c.tip }}</span>{% endif %}</span></li>{% endfor %}</ul>
+  {% if advice.coverage %}<div class="cov"><span class="tiny muted">Touches</span> {% for c in advice.coverage %}<span class="chip{% if c.covered %} on{% endif %}" title="{% if c.covered %}covered ({{ c.how }}){% else %}not mentioned yet{% endif %}">{% if c.covered %}{% icon "check" 11 %}{% endif %}{{ c.name }}</span> {% endfor %}</div>{% endif %}
+  {% endif %}
+</div>

@@ -106,7 +106,7 @@
       status && (status.textContent = "Saving…");
       fetch(form.getAttribute("data-autosave"), { method: "POST", body: data, headers: { "X-CSRFToken": data.get("csrfmiddlewaretoken") } })
         .then(function (r) { return r.json(); })
-        .then(function (j) { status && (status.textContent = j.ok ? "Draft saved " + new Date().toLocaleTimeString() : (j.detail || "Not saved")); })
+        .then(function (j) { if (status) { status.textContent = j.ok ? "✓ Draft saved " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : (j.detail || "Not saved"); status.className = "save-chip " + (j.ok ? "ok" : "err"); } })
         .catch(function () { status && (status.textContent = "Offline, will retry"); dirty = true; });
     }
     form.addEventListener("submit", function () {
@@ -214,4 +214,20 @@
   });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
   window.addEventListener("resize", close);
+})();
+
+/* judge console: live weighted total (the judge's own view of the rubric they are filling in) */
+(function () {
+  "use strict";
+  function update(form) {
+    var out = form.querySelector("#weighted"); if (!out) return;
+    var sw = 0, sv = 0, n = 0, total = 0;
+    Array.prototype.forEach.call(form.querySelectorAll("fieldset.crit"), function (fs) {
+      var w = parseFloat(fs.getAttribute("data-weight")) || 0, c = fs.querySelector("input:checked");
+      total++; if (c) { sw += w; sv += w * parseFloat(c.value); n++; }
+    });
+    out.textContent = n ? "Weighted " + (sv / sw).toFixed(2) + (n < total ? " · " + n + "/" + total : "") : "";
+  }
+  document.addEventListener("change", function (e) { var f = e.target.closest("#review-form"); if (f) update(f); });
+  document.addEventListener("DOMContentLoaded", function () { var f = document.getElementById("review-form"); if (f) update(f); });
 })();

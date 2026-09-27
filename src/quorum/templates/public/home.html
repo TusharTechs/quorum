@@ -1,18 +1,80 @@
 {% extends "base.html" %}
 {% block title %}Hackathon judging that finishes the job{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
 {% block content %}
-<section class="hero">
-  <p class="eyebrow">Self-hosted · offline · open source</p>
-  <h1 style="font-size:40px;max-width:900px">Every project judged. Every tie decided. Every team answered.</h1>
-  <p class="lead">Quorum runs a hackathon from registration to published results. It keeps every project at quorum across an asynchronous judging window. It spends spare judge time only where a prize is still in doubt, and settles statistical ties with a pre-registered pairwise round. Then it sends every team its scorecard, and shows its maths on every result.</p>
-  <div class="row"><a class="btn primary" href="/projects">Browse the gallery</a><a class="btn" href="/e/sample-hack-2026">Open the fixture event</a><a class="btn" href="/methodology">How judging works</a></div>
+<section class="landing-hero">
+  <div class="copy">
+    <p class="eyebrow">Self-hosted · runs offline · open source</p>
+    <h1>Every project judged. Every tie decided. <span class="accent-word">Every team answered.</span></h1>
+    <p class="lede">Quorum runs a hackathon from the first registration to published results. It keeps every project reviewed while judges work asynchronously, and it spends spare judge time only where a prize is still in doubt. It says so when a podium is really a tie. It sends every team its scorecard, and shows its working on every number.</p>
+    <div class="row" style="margin-top:18px">
+      <a class="btn primary lg" href="/e/sample-hack-2026">{% icon "rocket" 17 %} Explore the sample event</a>
+      <a class="btn lg" href="/projects">{% icon "layout-grid" 17 %} Browse projects</a>
+      <a class="btn ghost lg" href="/methodology">{% icon "book-open" 17 %} How judging works</a>
+    </div>
+  </div>
+  <figure class="certainty-art card" aria-labelledby="art-cap">
+    <svg viewBox="0 0 420 250" role="img" aria-labelledby="art-t art-d">
+      <title id="art-t">How Quorum shows a ranking</title>
+      <desc id="art-d">Six projects, each with the range of places it could plausibly finish. The top three ranges overlap, so first to third is a statistical tie that a pre-registered head-to-head round decides.</desc>
+      <rect class="tieband" x="96" y="34" width="90" height="96" rx="10"/>
+      <text class="tielbl" x="96" y="22">statistical tie for 1st–3rd</text>
+      {% for row in hero_rows %}
+      <g transform="translate(0 {{ row.y }})">
+        <text class="lbl" x="4" y="5">{{ row.name }}</text>
+        <line class="track" x1="96" x2="408" y1="0" y2="0"/>
+        <line class="range{% if row.tie %} tie{% endif %}" x1="{{ row.lo }}" x2="{{ row.hi }}" y1="0" y2="0"/>
+        <circle class="pt{% if row.tie %} tie{% endif %}" cx="{{ row.at }}" cy="0" r="5.5"/>
+      </g>
+      {% endfor %}
+      <g class="axis"><text x="108" y="240" text-anchor="middle">1st</text><text x="172.8" y="240" text-anchor="middle">3rd</text><text x="270" y="240" text-anchor="middle">6th</text><text x="399.6" y="240" text-anchor="middle">10th</text></g>
+    </svg>
+    <figcaption id="art-cap" class="small muted">Illustration. Every project gets a range, not just a rank. Where ranges overlap at a prize, Quorum says it is a tie and settles it on the record.</figcaption>
+  </figure>
 </section>
-<div class="grid cols-4" style="margin:26px 0">
-  <div class="card"><h3>Quorum</h3><p class="small muted">Assignment designed so judge harshness is measurable. Reminders, a completion forecast, and one-click reassignment when a batch stalls.</p></div>
-  <div class="card"><h3>Focus</h3><p class="small muted">After the baseline, extra reviews go only to projects whose prize is still uncertain. The same judge hours make better decisions.</p></div>
-  <div class="card"><h3>Verdict</h3><p class="small muted">Calibrated scores with an exact per-judge explanation, uncertainty, and a pre-registered tie-break. The method is hashed before registration opens.</p></div>
-  <div class="card"><h3>Answer</h3><p class="small muted">A feedback guarantee, then a scorecard for every team, placed or not. Judges get signed, numbered evaluation protocols.</p></div>
-</div>
-<h2>Events</h2>
-<div class="gallery">{% for e in events %}{% include "partials/event_card.html" %}{% empty %}<div class="empty">No events yet.</div>{% endfor %}</div>
+
+{% if QUORUM_DEMO %}
+<section class="card demo-roles" aria-labelledby="try-h">
+  <div class="row between"><div><h2 id="try-h" style="margin:0">Try it as…</h2><p class="small muted" style="margin:2px 0 0">Demo mode: one click signs you in as a seeded account. Production mode refuses to start while these exist.</p></div></div>
+  <div class="grid cols-3" style="margin-top:14px">
+    {% for r in demo_roles %}
+    <form method="post" action="/demo/as/{{ r.key }}" class="role">{% csrf_token %}
+      <div class="ic">{% icon r.icon 20 %}</div>
+      <div><h3>{{ r.title }}</h3><p class="small muted">{{ r.what }}</p></div>
+      <button class="btn primary sm">Continue as {{ r.key }} {% icon "arrow-right" 14 %}</button>
+    </form>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section aria-labelledby="life-h" style="margin-top:36px">
+  <h2 id="life-h">One event, start to finish</h2>
+  <ol class="lifecycle">
+    <li>{% icon "calendar" 18 %}<strong>Create</strong><span>Dates, tracks, prizes and a weighted rubric, locked and hashed before anyone registers.</span></li>
+    <li>{% icon "upload" 18 %}<strong>Submit</strong><span>Teams join by invite link and draft with autosave. The deadline holds, down to the database.</span></li>
+    <li>{% icon "gavel" 18 %}<strong>Judge</strong><span>Batches of 10–12, a keyboard-first console, and reminders. Work is reassigned when a judge stalls.</span></li>
+    <li>{% icon "scale" 18 %}<strong>Decide</strong><span>Calibrated scores with their uncertainty. Focus rounds, and head-to-head tie-breaks.</span></li>
+    <li>{% icon "award" 18 %}<strong>Publish</strong><span>Scorecards and feedback for every team, plus signed protocols and certificates.</span></li>
+  </ol>
+</section>
+
+<section class="grid cols-4" style="margin:34px 0" aria-label="What makes Quorum different">
+  <div class="card feature">{% icon "users" 20 %}<h3>Judging that finishes</h3><p class="small muted">Every project reaches its review target. Stalled batches are spotted and reassigned in one click, and judges are reminded before they fall behind.</p></div>
+  <div class="card feature">{% icon "target" 20 %}<h3>Time spent where it matters</h3><p class="small muted">After the first round, extra reviews go only to projects whose prize is still uncertain. The same judge hours buy better decisions.</p></div>
+  <div class="card feature">{% icon "scale" 20 %}<h3>Fair, and it shows its working</h3><p class="small muted">Harsh and generous judges are evened out, and the per-judge adjustments are shown. Ties are named, not hidden.</p></div>
+  <div class="card feature">{% icon "message-square-text" 20 %}<h3>Every team answered</h3><p class="small muted">A feedback guarantee, then a scorecard for every team, placed or not. Judges get signed, numbered protocols.</p></div>
+</section>
+
+<section aria-labelledby="ev-h">
+  <div class="row between"><h2 id="ev-h" style="margin:0">Events</h2><a href="/events">All events {% icon "arrow-right" 14 %}</a></div>
+  <div class="gallery" style="margin-top:12px">{% for e in events %}{% include "partials/event_card.html" %}{% empty %}<div class="empty">{% icon "calendar" 28 %}<h3>No events yet</h3><p>Organizers create one from the Organize page.</p></div>{% endfor %}</div>
+</section>
+
+<section class="trust" aria-label="Why you can trust it">
+  <a href="/methodology">{% icon "book-open" 18 %}<span><strong>Published method</strong><br><span class="small muted">every formula, and why</span></span></a>
+  <a href="/verify">{% icon "badge-check" 18 %}<span><strong>Verify any record</strong><br><span class="small muted">Ed25519, in your browser</span></span></a>
+  <a href="/api/v1/docs">{% icon "code" 18 %}<span><strong>Everything has an API</strong><br><span class="small muted">OpenAPI 3, served offline</span></span></a>
+  <a href="/.well-known/quorum-keys.json">{% icon "key-round" 18 %}<span><strong>Public signing keys</strong><br><span class="small muted">retired keys stay listed</span></span></a>
+</section>
 {% endblock %}

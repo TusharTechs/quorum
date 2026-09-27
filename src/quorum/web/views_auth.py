@@ -44,6 +44,31 @@ def login_view(request):
     return render(request, "auth/login.html", ctx)
 
 
+DEMO_ROLES = {"organizer": ("organizer@demo.local", "/o/sample-hack-2026"),
+              "judge": ("diego.herrera@example.org", "/j/sample-hack-2026"),
+              "participant": ("priya1@example.org", "/me")}
+
+
+@policy("public")
+def demo_as(request, role):
+    """Demo mode only: one click to experience a role. The seeded demo accounts and their password
+    are public by design; production mode refuses to start while they exist."""
+    from django.conf import settings
+    from django.http import Http404
+
+    from quorum.accounts.models import User
+
+    if not settings.QUORUM_DEMO or role not in DEMO_ROLES or request.method != "POST":
+        raise Http404
+    email, start = DEMO_ROLES[role]
+    user = User.objects.filter(email=email, is_active=True).first()
+    if user is None:
+        raise Http404
+    login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    messages.success(request, f"You are signed in as {user.display}, the demo {role}. Sign out any time.")
+    return redirect(start)
+
+
 @policy("public")
 def signup_view(request):
     ctx = {"next": _safe_next(request, "/me"), "nav": ""}

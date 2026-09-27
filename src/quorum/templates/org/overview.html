@@ -5,21 +5,32 @@
 <div class="grid cols-4">
   <div class="stat"><div class="k">Projects</div><div class="v">{{ n_projects }}</div><div class="s">{{ n_teams }} teams{% if dup %} · {{ dup }} eligibility item{{ dup|pluralize }}{% endif %}</div></div>
   <div class="stat"><div class="k">Reviews</div><div class="v">{{ n_reviews }}</div><div class="s">{{ n_judges }} judges</div></div>
-  <div class="stat {% if cov.below %}warn{% else %}good{% endif %}"><div class="k">At review target ({{ cov.target }})</div><div class="v">{{ cov.ok }} / {{ cov.total }}</div><div class="s">{{ cov.pending }} with work pending · {{ cov.below }} short</div></div>
-  <div class="stat {% if out.signal.verdict == 'no_signal' %}bad{% elif out.signal.verdict == 'weak' %}warn{% else %}good{% endif %}"><div class="k">Panel agreement</div><div class="v">{% if out.signal %}ICC {{ out.signal.icc1|f2 }}{% else %}–{% endif %}</div><div class="s">{% if out.signal.verdict == "no_signal" %}indistinguishable from chance (p={{ out.signal.p_value|f2 }}){% else %}{{ out.signal.verdict|default:"not computed" }}{% endif %}</div></div>
+  <div class="stat {% if cov.below %}warn{% else %}good{% endif %}"><div class="k">At review target ({{ cov.target }}) {% gl "coverage" %}</div><div class="v">{{ cov.ok }} / {{ cov.total }}</div><div class="s">{{ cov.pending }} with work pending · {{ cov.below }} short</div></div>
+  <div class="stat {% if out.signal.verdict == 'no_signal' %}bad{% elif out.signal.verdict == 'weak' %}warn{% else %}good{% endif %}"><div class="k">Panel agreement {% gl "icc" %}</div><div class="v">{% if out.signal %}ICC {{ out.signal.icc1|f2 }}{% else %}–{% endif %}</div><div class="s">{% if out.signal.verdict == "no_signal" %}indistinguishable from chance (p={{ out.signal.p_value|f2 }}){% else %}{{ out.signal.verdict|default:"not computed" }}{% endif %}</div></div>
 </div>
 <div class="split" style="margin-top:20px">
-  <div class="card">
-    <div class="row between"><h2 style="margin:0">Decisions that need you</h2><span class="badge">{{ decisions|length }}</span></div>
-    <p class="small muted">Everything else is running. These are the only places the process needs a human.</p>
+  <section aria-labelledby="dec-h">
+    <div class="row between" style="margin-bottom:10px"><div><h2 id="dec-h" style="margin:0">Decisions that need you</h2><p class="small muted" style="margin:2px 0 0">Everything else is running. These are the only places the process needs a human.</p></div><span class="badge{% if decisions %} bad{% else %} good{% endif %}">{{ decisions|length }}</span></div>
+    <div class="stack">
     {% for kind, text, url, cta in decisions %}
-      <div class="callout {{ kind }}" style="margin-top:10px"><div class="row between"><span>{{ text }}</span><a class="btn sm" href="{{ url }}">{{ cta }} →</a></div></div>
-    {% empty %}<div class="callout good">Nothing needs a decision right now.</div>{% endfor %}
-  </div>
+      <div class="decision {% if kind == 'bad' %}urgent{% elif kind == 'warn' %}warn{% elif kind == 'tie' %}tie{% endif %}">
+        <div class="ic">{% if kind == "tie" %}{% icon "scale" 19 %}{% elif kind == "bad" %}{% icon "activity" 19 %}{% elif kind == "warn" %}{% icon "triangle-alert" 19 %}{% else %}{% icon "message-square-text" 19 %}{% endif %}</div>
+        <div><h3>{{ text }}</h3></div>
+        <a class="btn sm {% if forloop.first %}primary{% endif %}" href="{{ url }}">{{ cta }} {% icon "arrow-right" 14 %}</a>
+      </div>
+    {% empty %}<div class="decision ok"><div class="ic">{% icon "circle-check" 19 %}</div><div><h3>Nothing needs a decision right now.</h3><p>Quorum will list it here the moment something does.</p></div><span></span></div>{% endfor %}
+    </div>
+  </section>
   <aside class="stack">
+    <div class="card">
+      <div class="row between"><h3 style="margin:0">Run this event</h3><div class="ring{% if checklist_done == checklist|length %} good{% endif %}" style="--p:{% widthratio checklist_done checklist|length 100 %};--size:40px" data-label="{{ checklist_done }}/{{ checklist|length }}" role="img" aria-label="{{ checklist_done }} of {{ checklist|length }} steps done"></div></div>
+      <ul class="checklist" style="margin-top:6px">{% for c in checklist %}
+        <li class="{% if c.done %}done{% elif c.next %}next{% endif %}"><span class="tick">{% if c.done %}{% icon "check" 13 %}{% endif %}</span>
+          <div><a class="what" href="{{ c.url }}">{{ c.what }}</a><div class="why">{{ c.why }}</div></div></li>{% endfor %}</ul>
+    </div>
     <div class="card small"><h3>Integrity</h3><dl class="kv">
-      <dt>Method</dt><dd>{% if method and method.locked_at %}v{{ method.version }} locked <span class="hash">{{ method.spec_hash|short:12 }}</span>{% else %}<span class="badge warn">not locked</span>{% endif %}</dd>
-      <dt>Audit head</dt><dd><span class="hash">#{{ audit_head.0 }} {{ audit_head.1|short:12 }}</span></dd>
+      <dt>Method {% gl "method" %}</dt><dd>{% if method and method.locked_at %}v{{ method.version }} locked <span class="hash">{{ method.spec_hash|short:12 }}</span>{% else %}<span class="badge warn">not locked</span>{% endif %}</dd>
+      <dt>Audit head {% gl "audit" %}</dt><dd><span class="hash">#{{ audit_head.0 }} {{ audit_head.1|short:12 }}</span></dd>
       <dt>Open vote flags</dt><dd>{{ flags }}</dd>
       <dt>Latest run</dt><dd>{% if run %}<span class="hash">{{ run.output_hash|short:12 }}</span> · {{ run.created_at|timesince }} ago{% else %}–{% endif %}</dd>
     </dl></div>

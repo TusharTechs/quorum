@@ -97,9 +97,11 @@ def review(request, slug, aid):
     current = {s.criterion.key: int(s.value) if s.value == int(s.value) else float(s.value)
                for s in rv.scores.select_related("criterion")} if rv else {}
     pending, done, _ = _queue(a.judge_role, ev)
-    order = [x.pk for x in pending + done]
+    seq = pending + done
+    order = [x.pk for x in seq]
     idx = order.index(a.pk) if a.pk in order else 0
     nxt = next((x for x in pending if x.pk != a.pk), None)
+    prev = seq[idx - 1] if idx > 0 else None
     p = a.project
     criteria = []
     for c in ev.criteria.order_by("position"):
@@ -109,8 +111,21 @@ def review(request, slug, aid):
     return render(request, "judge/review.html", {
         "ev": ev, "a": a, "p": p, "rv": rv, "criteria": criteria, "images": p.images.all(),
         "answers": p.answers.select_related("question"), "position": idx + 1, "count": len(order),
-        "next": nxt, "nav": "judge", "window_open": ev.judging_opens_at <= now() < ev.judging_closes_at,
+        "next": nxt, "prev": prev, "done_count": len(done), "minutes_left": len(pending) * 8, "nav": "judge",
+        "window_open": ev.judging_opens_at <= now() < ev.judging_closes_at,
     })
+
+
+@policy("authenticated")
+def coach(request, slug):
+    """Live feedback advice for the judge console (htmx partial). Reads only the text posted."""
+    from quorum.intelligence.coach import advise
+
+    ev = get_event(slug)
+    request.actor.require_judge(ev)
+    text = (request.POST.get("feedback") or "")[:5000]
+    return render(request, "judge/_coach.html", {"advice": advise(text, ev.criteria.order_by("position"),
+                                                                  ev.min_feedback_chars)})
 
 
 @policy("authenticated")

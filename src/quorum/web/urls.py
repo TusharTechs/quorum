@@ -34,6 +34,7 @@ urlpatterns = [
     path("login", auth.login_view),
     path("signup", auth.signup_view),
     path("logout", auth.logout_view),
+    path("demo/as/<str:role>", auth.demo_as),
     path("magic/<str:token>", auth.magic_view),
     path("settings/tokens", auth.tokens_view),
     # participant
@@ -51,6 +52,7 @@ urlpatterns = [
     path("j/<slug:slug>/tiebreak/<uuid:tid>", judge.tiebreak),
     path("j/<slug:slug>/compare/<str:track>", judge.compare),
     path("j/<slug:slug>/protocol", judge.protocol),
+    path("j/<slug:slug>/coach", judge.coach),
     # organizer
     path("o", org.org_home),
     path("o/new", org.org_new),

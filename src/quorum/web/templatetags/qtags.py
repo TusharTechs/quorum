@@ -147,3 +147,40 @@ def hue(text):
     import hashlib
 
     return int(hashlib.sha256((text or "").encode()).hexdigest()[:4], 16) % 360
+
+
+GLOSSARY = {
+    "icc": ("How much the judges agree, from −1 to 1. Around 0 means their scores are no more alike than random "
+            "numbers; above 0.3 is typical of a panel that can rank projects.", "ICC(1) with a permutation test"),
+    "se": ("The score's margin of error. With other judges drawing this project, its score would usually land "
+           "within about two of these either side.", "GLS standard error of the calibrated score"),
+    "rank_interval": ("Where the project could plausibly finish, given how much the judges disagree: the range "
+                      "covers 90% of 4,000 simulated re-rankings.", "model-based bootstrap"),
+    "p_prize": ("How often the project wins a prize across 4,000 simulations of the uncertainty. 50% means the "
+                "scores genuinely cannot say.", "multivariate normal draws from the fit"),
+    "calibrated": ("The score after evening out harsh and generous judges: each judge's lean is measured on "
+                   "projects other judges also saw, and shrunk when the evidence is thin.", "additive offsets, REML"),
+    "tie": ("Two projects whose difference is smaller than the measurement noise. Quorum does not pretend to "
+            "order them; a tie at a prize goes to a head-to-head round.", "|Δ| < 1.96 × SE of the difference"),
+    "coverage": ("Projects that have reached the review target (or have reviews still pending). Below target "
+                 "means fewer judges than promised have looked at it.", "reviews_per_project in the method"),
+    "flat": ("A judge who gave every project the same scores. Those scores cannot separate projects, so they get "
+             "weight zero, visibly, and the projects get replacement reviews.", "flat-judge rule, ≥3 reviews"),
+    "tau": ("How similar two rankings are, from −1 (reversed) to 1 (identical). 0 means unrelated.",
+            "Kendall τ-b"),
+    "method": ("The judging method (criteria, weights, calibration, tie rule) fixed before registration opened. "
+               "Its fingerprint is public, so no one can change the rules after seeing the scores.",
+               "SHA-256 of the canonical method spec"),
+    "audit": ("The latest entry in the tamper-evident log. Every entry includes the fingerprint of the one "
+              "before it, so editing history breaks the chain.", "SHA-256 hash chain, signed checkpoints"),
+}
+
+
+@register.simple_tag
+def gl(key):
+    """A '?' button that explains a statistic in plain words (see app.js)."""
+    text, src = GLOSSARY.get(key, ("", ""))
+    if not text:
+        return ""
+    return mark_safe(f'<button type="button" class="gl" data-gl="{escape(text)}" data-src="{escape(src)}" '
+                     f'aria-label="What does this mean?" aria-expanded="false">?</button>')

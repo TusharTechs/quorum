@@ -120,11 +120,35 @@ def overview(request, slug):
     if pending_mod:
         decisions.append(("", f"{pending_mod} feedback item(s) await moderation.", f"/o/{ev.slug}/feedback", "Moderate"))
     dup = EligibilityItem.objects.filter(event=ev).count()
+    from quorum.judging.models import Assignment
     from quorum.web.views_public import _phase_steps
+
+    m = methods.current(ev)
+    has_pub = hasattr(ev, "publication")
+    checklist = [
+        {"what": "Write the rubric and weights", "why": "What judges score, and how much each part counts.",
+         "done": ev.criteria.exists(), "url": f"/o/{ev.slug}/setup"},
+        {"what": "Add tracks and prizes", "why": "Where projects compete and what they can win.",
+         "done": ev.tracks.exists() and ev.prizes.exists(), "url": f"/o/{ev.slug}/setup"},
+        {"what": "Publish and lock the method", "why": "Fixes the rules before anyone registers; the fingerprint is public.",
+         "done": bool(m and m.locked_at), "url": f"/o/{ev.slug}/setup"},
+        {"what": "Invite judges", "why": "Each gets a sign-in link by e-mail.", "done": bool(progress),
+         "url": f"/o/{ev.slug}/judges"},
+        {"what": "Send judging batches", "why": "Balanced, conflict-free batches of 10–12.",
+         "done": Assignment.objects.filter(event=ev).exists(), "url": f"/o/{ev.slug}/ops"},
+        {"what": "Settle ties and lock results", "why": "Focus round, tie-break if needed, then a signed lock.",
+         "done": has_pub, "url": f"/o/{ev.slug}/results"},
+        {"what": "Publish results and feedback", "why": "Scorecards to every team, protocols to every judge.",
+         "done": bool(has_pub and ev.publication.published_at), "url": f"/o/{ev.slug}/results"},
+    ]
+    nxt = next((c for c in checklist if not c["done"]), None)
+    if nxt:
+        nxt["next"] = True
 
     return render(request, "org/overview.html", _ctx(
         ev, "overview", steps=_phase_steps(ev), progress=progress, cov=cov, fcov=fcov, run=run, out=out,
-        decisions=decisions, flags=flags, dup=dup, method=methods.current(ev),
+        decisions=decisions, flags=flags, dup=dup, method=m, checklist=checklist,
+        checklist_done=sum(c["done"] for c in checklist),
         n_projects=Project.objects.filter(event=ev, status="submitted", duplicate_of__isnull=True).count(),
         n_teams=ev.teams.count(), n_judges=len(progress),
         n_reviews=Review.objects.filter(event=ev, status="submitted").count(),
