@@ -6,13 +6,15 @@ cd /app/src
 case "$1" in
   web)
     python manage.py wait_for_db
-    python manage.py migrate --noinput -v0
-    python manage.py check --fail-level ERROR     # deny-by-default: refuses to boot if a route lacks a policy
-    python manage.py production_guards            # refuses demo credentials / default secret in production
-    python manage.py seed_fixtures
+    python manage.py boot    # migrate, check (deny-by-default), production guards, seed: one replica at a time
     python manage.py warm_intelligence || true   # local model; features fall back to keywords if unavailable
-    exec gunicorn quorum.wsgi:application --bind 0.0.0.0:8080 --workers "${WEB_CONCURRENCY:-3}" --no-control-socket \
-         --timeout 120 --access-logfile - --forwarded-allow-ips="${TRUSTED_PROXY_IPS:-127.0.0.1}"
+    # threaded workers: WEB_CONCURRENCY processes x WEB_THREADS threads, each thread with its own
+    # persistent database connection (budget: replicas x workers x threads < Postgres max_connections)
+    exec gunicorn quorum.wsgi:application --bind 0.0.0.0:8080 --worker-class gthread \
+         --workers "${WEB_CONCURRENCY:-$(python -c "import os; print(min(os.cpu_count() or 2, 8))")}" \
+         --threads "${WEB_THREADS:-4}" --no-control-socket \
+         --max-requests 2000 --max-requests-jitter 200 --timeout 120 --graceful-timeout 20 \
+         --access-logfile - --forwarded-allow-ips="${TRUSTED_PROXY_IPS:-127.0.0.1}"
     ;;
   worker)
     python manage.py wait_for_db --migrated

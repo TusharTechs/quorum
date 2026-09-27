@@ -35,13 +35,46 @@ def hit(key: str, limit: int, window_seconds: int) -> tuple[bool, int]:
     return count <= limit, count
 
 
+def _proxy_networks():
+    import ipaddress
+
+    nets = []
+    for t in getattr(settings, "TRUSTED_PROXIES", []):
+        try:
+            nets.append(ipaddress.ip_network(t, strict=False))  # "10.0.0.5" or "172.16.0.0/12"
+        except ValueError:
+            continue
+    return nets
+
+
+def _is_trusted(ip: str, nets) -> bool:
+    import ipaddress
+
+    try:
+        a = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    return any(a in n for n in nets)
+
+
+def client_ip(request) -> str:
+    """The client's address. X-Forwarded-For is only believed when the direct peer is a trusted
+    proxy, and then read from the right: the first hop that is not itself a trusted proxy is the
+    client. The left-most entry is whatever the client chose to send, so it is never used."""
+    ip = request.META.get("REMOTE_ADDR", "")
+    nets = _proxy_networks()
+    if not nets or not _is_trusted(ip, nets):
+        return ip
+    hops = [h.strip() for h in request.META.get("HTTP_X_FORWARDED_FOR", "").split(",") if h.strip()]
+    for h in reversed(hops):
+        if not _is_trusted(h, nets):
+            return h
+    return hops[0] if hops else ip
+
+
 def client_net(request) -> str:
     """Client network (/24 for IPv4, /48 for IPv6), never stored raw."""
-    ip = request.META.get("REMOTE_ADDR", "")
-    xff = request.META.get("HTTP_X_FORWARDED_FOR")
-    trusted = getattr(settings, "TRUSTED_PROXIES", [])
-    if xff and ip in trusted:
-        ip = xff.split(",")[0].strip()
+    ip = client_ip(request)
     if ":" in ip:
         return ":".join(ip.split(":")[:3]) + "::/48"
     parts = ip.split(".")

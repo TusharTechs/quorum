@@ -1,0 +1,9 @@
+# Load testing only: the load generator plays the reverse proxy, so the app believes its
+# X-Forwarded-For and each simulated voter arrives from its own network (as in production,
+# behind Caddy or nginx). Never use this override for a real event.
+#   docker compose -f docker-compose.yml -f docker-compose.loadtest.yml up -d --wait
+#   python3 tools/loadtest.py .dogfood.toml
+services:
+  web:
+    environment:
+      TRUSTED_PROXY_IPS: "0.0.0.0/0,::/0"

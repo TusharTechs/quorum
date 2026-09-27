@@ -1,0 +1,24 @@
+# Quorum behind Caddy: automatic HTTPS for QUORUM_DOMAIN (a public name gets a certificate
+# automatically; "localhost" gets a locally trusted one), compression, and load balancing across
+# every `web` replica (docker compose --scale web=N).
+{
+	servers {
+		# only believe X-Forwarded-For from private networks (another proxy or a load balancer
+		# in front of this one); public clients cannot forge their address this way
+		trusted_proxies static private_ranges
+	}
+}
+
+{$QUORUM_DOMAIN:localhost} {
+	encode zstd gzip
+	reverse_proxy web:8080 {
+		lb_policy least_conn
+		health_uri /healthz
+		health_interval 5s
+		fail_duration 10s
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}

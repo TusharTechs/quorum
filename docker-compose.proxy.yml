@@ -1,0 +1,33 @@
+# Production topology: Caddy in front (HTTPS, compression, load balancing), N web replicas,
+# one worker, Postgres. Horizontal scaling is safe because every piece of shared state (sessions,
+# rate-limit counters, the job queue, the outbox, the audit-chain lock) lives in Postgres.
+#
+#   QUORUM_DOMAIN=judging.example.org docker compose -f docker-compose.yml -f docker-compose.proxy.yml \
+#     up -d --scale web=3
+#
+# Web replicas are not published; only the proxy is. See OPERATIONS.md, "Production deployment".
+services:
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      QUORUM_DOMAIN: ${QUORUM_DOMAIN:-localhost}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      web:
+        condition: service_healthy
+  web:
+    ports: !reset []
+    environment:
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      QUORUM_PUBLIC_ORIGIN: ${QUORUM_PUBLIC_ORIGIN:-https://localhost}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-4}
+      WEB_THREADS: ${WEB_THREADS:-4}
+  db:
+    # budget: replicas x WEB_CONCURRENCY x WEB_THREADS (+ worker, admin) must stay below this
+    command: ["postgres", "-c", "max_connections=250"]
+volumes:
+  caddy-data:
