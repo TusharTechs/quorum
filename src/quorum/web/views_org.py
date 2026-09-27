@@ -90,35 +90,11 @@ def org_new(request):
 @policy("authenticated")
 def overview(request, slug):
     ev = _org(request, slug)
-    progress = ops.judge_progress(ev)
-    cov = ops.coverage(ev)
-    fcov = ops.feedback_coverage(ev)
-    run = latest_run(ev)
-    out = run.output if run else {}
-    ties = decide.boundary_ties(run, ev.prize_positions) if run and out.get("status") == "ok" else []
-    flags = IntegrityFlag.objects.filter(event=ev, status="open").count()
-    pending_mod = Review.objects.filter(event=ev, status="submitted", moderation="pending").count()
-    stalled = [p for p in progress if p["status"] in ("stalled", "behind")]
-    decisions = []
-    if cov["below"]:
-        decisions.append(("warn", f"{cov['below']} project(s) are below {cov['target']} reviews with nothing pending.",
-                          f"/o/{ev.slug}/ops", "Fill coverage gaps"))
-    if stalled:
-        decisions.append(("warn", f"{len(stalled)} judge(s) are stalled or behind pace.", f"/o/{ev.slug}/ops",
-                          "Rebalance or nudge"))
-    if out.get("signal", {}).get("verdict") == "no_signal":
-        decisions.append(("bad", "The judges' scores show no detectable agreement: the ranking cannot be "
-                                 "distinguished from chance.", f"/o/{ev.slug}/results", "See the signal check"))
-    for t in ties:
-        decisions.append(("tie", f"Prize position {t['boundary']} falls inside a statistical tie "
-                                 f"({len(t['projects'])} projects).", f"/o/{ev.slug}/results#ties", "Open a tie-break"))
-    if fcov["none"]:
-        decisions.append(("warn", f"{len(fcov['none'])} team(s) would receive no written feedback.",
-                          f"/o/{ev.slug}/feedback", "See feedback coverage"))
-    if flags:
-        decisions.append(("warn", f"{flags} voting integrity flag(s) await review.", f"/o/{ev.slug}/voting", "Review votes"))
-    if pending_mod:
-        decisions.append(("", f"{pending_mod} feedback item(s) await moderation.", f"/o/{ev.slug}/feedback", "Moderate"))
+    from quorum.intelligence import briefing
+
+    st = briefing.state(ev)
+    progress, cov, fcov, run, out, flags = st["progress"], st["cov"], st["fcov"], st["run"], st["out"], st["flags"]
+    decisions = briefing.decisions(ev, st)
     dup = EligibilityItem.objects.filter(event=ev).count()
     from quorum.judging.models import Assignment
     from quorum.web.views_public import _phase_steps
@@ -222,9 +198,16 @@ def participants(request, slug):
         return redirect(f"/o/{ev.slug}/participants")
     projects = Project.objects.filter(event=ev).select_related("team", "track", "duplicate_of").annotate(
         n_members=Count("team__members", distinct=True)).order_by("ref")
+    from quorum.intelligence import embed, semantic
+
+    subs = [p for p in projects if p.status == "submitted"]
+    dups = semantic.possible_duplicates(subs)
+    for d in dups:
+        d["merged"] = d["a"].duplicate_of_id == d["b"].pk or d["b"].duplicate_of_id == d["a"].pk
     return render(request, "org/participants.html", _ctx(
         ev, "participants", projects=projects, items=EligibilityItem.objects.filter(event=ev).select_related("project"),
-        n_people=TeamMember.objects.filter(event=ev).count()))
+        n_people=TeamMember.objects.filter(event=ev).count(), dups=dups, semantic_ok=embed.available(),
+        n_subs=len(subs)))
 
 
 # --------------------------------------------------------------------------- judges

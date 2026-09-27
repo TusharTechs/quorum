@@ -10,6 +10,7 @@ case "$1" in
     python manage.py check --fail-level ERROR     # deny-by-default: refuses to boot if a route lacks a policy
     python manage.py production_guards            # refuses demo credentials / default secret in production
     python manage.py seed_fixtures
+    python manage.py warm_intelligence || true   # local model; features fall back to keywords if unavailable
     exec gunicorn quorum.wsgi:application --bind 0.0.0.0:8080 --workers "${WEB_CONCURRENCY:-3}" \
          --timeout 120 --access-logfile - --forwarded-allow-ips="${TRUSTED_PROXY_IPS:-127.0.0.1}"
     ;;

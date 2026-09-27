@@ -14,6 +14,9 @@
   {% if not chips %}<select name="track" aria-label="Track"><option value="">All tracks</option>{% for t in tracks %}<option value="{{ t.ref }}" {% if track == t.ref %}selected{% endif %}>{{ t.name }}{% if not ev %} · {{ t.event.name }}{% endif %}</option>{% endfor %}</select>{% else %}<input type="hidden" name="track" value="{{ track }}">{% endif %}
   <select name="sort" aria-label="Sort"><option value="">Submission order</option><option value="title" {% if sort == "title" %}selected{% endif %}>Title A–Z</option><option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest first</option><option value="track" {% if sort == "track" %}selected{% endif %}>By track</option></select>
   {% if tag %}<input type="hidden" name="tag" value="{{ tag }}">{% endif %}
+  {% if smart_ok %}<div class="seg" role="radiogroup" aria-label="Search mode">
+    <input class="sr-only" type="radio" id="mode-smart" name="mode" value="smart" {% if mode == "smart" %}checked{% endif %}><label for="mode-smart" title="Finds projects by meaning, not just matching words. Runs on this server.">{% icon "sparkles" 13 %} Smart</label>
+    <input class="sr-only" type="radio" id="mode-exact" name="mode" value="exact" {% if mode == "exact" %}checked{% endif %}><label for="mode-exact">Exact words</label></div>{% endif %}
   <button class="btn primary" type="submit">Search</button>
 </form>
 {% if chips %}<nav class="chips" aria-label="Filter by track">
@@ -26,7 +29,7 @@
   <a class="pcard" href="/p/{{ p.pk }}">
     <div class="thumb" {% if not p.thumbnail %}style="--h:{{ p.title|hue }}"{% endif %}>{% if p.thumbnail %}<img src="/media/{{ p.thumbnail }}" alt="" loading="lazy">{% else %}<span class="mono-thumb gen" aria-hidden="true">{{ p.title|slice:":2" }}</span>{% endif %}</div>
     <div class="body">
-      <h3>{{ p.title }}</h3>
+      <h3>{{ p.title }}</h3>{% if p.match_how == "meaning" %}<span class="assist" style="align-self:flex-start">{% icon "sparkles" 11 %} related by meaning</span>{% endif %}
       <p class="tag">{{ p.tagline }}</p>
       {% if p.tech_tags %}<div class="tags">{% for t in p.tech_tags|slice:":4" %}<span>{{ t }}</span>{% endfor %}</div>{% endif %}
       <div class="meta">{% if p.track %}<span class="chip">{{ p.track.name }}</span>{% endif %}<span>{{ p.team.name }}</span>{% if not ev %}<span>· {{ p.event.name }}</span>{% endif %}</div>

@@ -1,3 +1,4 @@
+PYTHON ?= python3
 # Quorum developer and operator shortcuts. Everything also works without make.
 .PHONY: up down reset check check-ext test wheels logs shell backup restore demo-burst
 
@@ -20,7 +21,7 @@ test:          ## unit, API and engine tests (needs the dev database: docker com
 	cd src && QUORUM_ENV=test DJANGO_DEBUG=1 ../.venv/bin/python -m pytest ../tests -q
 
 wheels:        ## download dependency wheels for an air-gapped image build (linux, this machine's arch)
-	pip download --only-binary=:all: --python-version 3.12 --implementation cp \
+	$(PYTHON) -m pip download --only-binary=:all: --python-version 3.12 --implementation cp \
 	  --platform manylinux2014_$$(docker info --format '{{.Architecture}}' | sed 's/amd64/x86_64/') \
 	  --platform manylinux_2_28_$$(docker info --format '{{.Architecture}}' | sed 's/amd64/x86_64/') \
 	  -r requirements.txt -d vendor/wheels

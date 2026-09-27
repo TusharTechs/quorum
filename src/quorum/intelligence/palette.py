@@ -97,11 +97,19 @@ def search(actor, q: str, event_slug: str | None = None) -> dict:
     if focus:
         groups.append({"title": "Do", "items": _rank(q, actions, 4)})
 
+    answer = None
     if q:
-        pq = public_projects(ev).filter(Q(title__icontains=q) | Q(tagline__icontains=q) | Q(team__name__icontains=q))
+        from . import ask, embed, semantic
+
+        answer = ask.ask(actor, q, ev or (focus[0] if focus else None))
+        if embed.available():
+            hits = [p for p, _s, _h in semantic.search(public_projects(ev), q, limit=6)]
+        else:
+            hits = list(public_projects(ev).filter(Q(title__icontains=q) | Q(tagline__icontains=q) |
+                                                   Q(team__name__icontains=q)).order_by("title")[:6])
         groups.append({"title": "Projects", "items": [
             {"title": p.title, "sub": f"{p.team.name} · {p.track.name if p.track else ''}", "url": f"/p/{p.pk}", "icon": "rocket"}
-            for p in pq.order_by("title")[:6]]})
+            for p in hits]})
         people = []
         for e in focus:
             for r in (EventRole.objects.filter(event=e, role="judge")
@@ -113,4 +121,6 @@ def search(actor, q: str, event_slug: str | None = None) -> dict:
                 people.append({"title": t.name, "sub": f"team · {e.name}", "url": f"/o/{e.slug}/participants#{t.ref}",
                                "icon": "users"})
         groups.append({"title": "People and teams", "items": people[:7]})
-    return {"query": q, "groups": [g for g in groups if g["items"]]}
+    if answer and answer.get("links"):
+        groups.insert(0, {"title": "From the answer", "items": [dict(l, sub="") for l in answer["links"]]})
+    return {"query": q, "answer": answer, "groups": [g for g in groups if g["items"]]}

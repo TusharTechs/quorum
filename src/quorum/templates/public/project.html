@@ -39,4 +39,8 @@
     </div>
   </aside>
 </div>
+{% if similar %}<section style="margin-top:28px" aria-labelledby="sim-h">
+  <div class="row between"><h2 id="sim-h" style="margin:0">Similar projects</h2><span class="assist">{% icon "sparkles" 11 %} related by meaning · computed on this server</span></div>
+  <div class="gallery" style="margin-top:12px">{% for q, score in similar %}<a class="pcard" href="/p/{{ q.pk }}"><div class="body"><h3>{{ q.title }}</h3><p class="tag">{{ q.tagline }}</p><div class="meta">{% if q.track %}<span class="chip">{{ q.track.name }}</span>{% endif %}<span>{{ q.team.name }}</span></div></div></a>{% endfor %}</div>
+</section>{% endif %}
 {% endblock %}

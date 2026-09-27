@@ -76,6 +76,7 @@ MATRIX = {
     ("POST", "/api/v1/me/events/{e}/pairwise"): "assignee",  # only projects the caller reviewed
     ("GET", "/api/v1/events/{e}/certificates"): O, ("POST", "/api/v1/certificates/{cid}/revoke"): O,
     ("GET", "/api/v1/search"): P,  # results are filtered by role; see test_search.py
+    ("GET", "/api/v1/ask"): P,  # answers are filtered by role; see test_ask.py
 }
 
 DENY = {  # role -> refused? per category (True = must be 401/403)
@@ -167,7 +168,7 @@ BODIES = {
     "/api/v1/me/events/{e}/pairwise": lambda p: {"a": p["pair"][0], "b": p["pair"][1], "outcome": "a"},
 }
 MULTIPART = {"/api/v1/projects/{pid}/images", "/api/v1/events/{e}/imports"}
-QUERY = {"/api/v1/me/scorecard": "?event=evt_01"}
+QUERY = {"/api/v1/me/scorecard": "?event=evt_01", "/api/v1/ask": "?q=who+is+winning&event=evt_01"}
 PNG = bytes.fromhex("89504e470d0a1a0a0000000d4948445200000001000000010806000000"
                     "1f15c4890000000d49444154789c6360000002000001e221bc330000000049454e44ae426082")
 

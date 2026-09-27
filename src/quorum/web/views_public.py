@@ -100,14 +100,24 @@ def _gallery(request, ev=None):
     track = request.GET.get("track", "")
     tag = request.GET.get("tag", "")
     sort = request.GET.get("sort", "")
-    qs = search_projects(public_projects(ev), q, track, tag, sort)
-    projects = list(qs[:200])
+    from quorum.intelligence import embed, semantic
+
+    mode = "exact" if request.GET.get("mode") == "exact" else "smart"
+    how = {}
+    if q and mode == "smart" and embed.available():
+        hits = semantic.search(search_projects(public_projects(ev), "", track, tag, sort), q)
+        projects = [p for p, _s, _h in hits]
+        how = {p.pk: h for p, _s, h in hits}
+    else:
+        projects = list(search_projects(public_projects(ev), q, track, tag, sort)[:200])
+    for p in projects:
+        p.match_how = how.get(p.pk, "")
     tracks = Track.objects.filter(event=ev) if ev else Track.objects.filter(event__is_listed=True).select_related("event")
     counts = dict(public_projects(ev).values_list("track__ref").annotate(n=Count("id")).values_list("track__ref", "n"))
     chips = [{"t": t, "n": counts.get(t.ref, 0)} for t in tracks if counts.get(t.ref)] if ev else []
     return render(request, "public/gallery.html", {
         "projects": projects, "ev": ev, "q": q, "track": track, "tag": tag, "sort": sort, "tracks": tracks,
-        "chips": chips, "total": sum(counts.values()),
+        "chips": chips, "total": sum(counts.values()), "mode": mode, "smart_ok": embed.available(),
         "events": Event.objects.filter(is_listed=True) if not ev else None, "nav": "gallery",
     })
 
@@ -146,6 +156,10 @@ def project_page(request, pid):
         "voting": voting.ballot_state(request, p.event), "nav": "gallery",
         "duplicate_of": p.duplicate_of,
     }
+    if p.status == Project.Status.SUBMITTED and p.duplicate_of_id is None:
+        from quorum.intelligence import semantic
+
+        ctx["similar"] = semantic.similar(p, list(public_projects(p.event)), n=3)
     return render(request, "public/project.html", ctx)
 
 

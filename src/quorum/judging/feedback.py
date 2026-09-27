@@ -125,3 +125,8 @@ def coverage_rows(event):
                      "longest": max((len(t) for t in texts), default=0),
                      "pending": sum(1 for r in rs if r.moderation == "pending")})
     return rows
+
+
+def pending_moderation(event) -> int:
+    """Submitted reviews whose feedback awaits an organizer's moderation (organizer-facing count)."""
+    return Review.objects.filter(event=event, status="submitted", moderation="pending").count()

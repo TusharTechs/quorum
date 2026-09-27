@@ -140,6 +140,9 @@ STORAGES = {
                     "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 DATA_DIR = Path(env("QUORUM_DATA_DIR", str(REPO_DIR / "var")))
+# Quorum Intelligence: local embeddings (no network). Off switch for very small hosts.
+QUORUM_INTELLIGENCE = env_bool("QUORUM_INTELLIGENCE", True)
+QUORUM_MODEL_DIR = env("QUORUM_MODEL_DIR", "")
 MEDIA_ROOT = DATA_DIR / "media"
 MEDIA_URL = "/media/"
 KEY_DIR = DATA_DIR / "keys"
