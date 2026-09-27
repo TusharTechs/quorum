@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · audit{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<div class="split">
+<div class="card flush">
+  <div class="card-head"><h2>Audit trail <span class="muted small">({{ total }} entries, append-only)</span></h2><a class="btn sm" href="/api/v1/events/{{ ev.ref }}/exports/audit.csv">CSV</a></div>
+  <form method="get" class="filters card-body" style="margin:0;padding-bottom:0">
+    <select name="action" aria-label="Action"><option value="">All actions</option>{% for a in actions %}<option {% if a == action %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>
+    <input type="search" name="actor" value="{{ actor_q }}" placeholder="Actor" style="max-width:160px"><input type="search" name="q" value="{{ q }}" placeholder="Search summaries" style="max-width:220px"><button class="btn sm">Filter</button>
+  </form>
+  <ul class="timeline" style="margin-top:12px">
+  {% for a in entries %}<li><span class="seq">#{{ a.seq }}</span><span class="when">{{ a.ts|date:"j M H:i:s" }}<br><span class="act">{{ a.action }}</span></span><span><strong>{{ a.actor_label }}</strong>{% if a.actor_role %} <span class="tiny muted">{{ a.actor_role }}</span>{% endif %} · {{ a.summary }}<br><span class="hash" title="hash">{{ a.hash|short:20 }}… ← {{ a.prev_hash|short:10 }}…</span></span></li>
+  {% empty %}<li class="muted">No entries match.</li>{% endfor %}
+  </ul>
+</div>
+<aside class="stack">
+  <div class="card"><h3>Chain integrity</h3><p class="small muted">Every entry stores sha256(previous hash ‖ entry). The database refuses UPDATE and DELETE on this table. Verifying recomputes every hash.</p>
+    <p class="small">Head: <span class="hash">#{{ head.0 }} {{ head.1 }}</span></p>
+    {% if verify %}<div class="callout {% if verify.ok %}good{% else %}bad{% endif %} small">{% if verify.ok %}Intact: {{ verify.checked }} entries verified.{% else %}Broken at #{{ verify.broken_seq }}: {{ verify.reason }}{% endif %}</div>{% endif %}
+    <form method="post">{% csrf_token %}<button class="btn primary">Verify chain</button></form></div>
+  <div class="card"><h3>Signed checkpoints</h3><p class="tiny muted">Ed25519 signatures over the chain head, made at every phase change. Once published, any later rewrite of history contradicts them.</p>{% for c in checkpoints %}<div class="small" style="margin-bottom:6px">#{{ c.seq }} · {{ c.reason }}<br><span class="hash">{{ c.head|short:24 }}…</span></div>{% empty %}<p class="small muted">None yet.</p>{% endfor %}<a class="small" href="/.well-known/quorum-keys.json">Public keys →</a></div>
+</aside>
+</div>
+{% endblock %}

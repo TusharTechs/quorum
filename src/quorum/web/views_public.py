@@ -180,3 +180,13 @@ def readyz(request):
     with connection.cursor() as cur:
         cur.execute("SELECT 1")
     return JsonResponse({"ok": True, "db": True, "time": now().isoformat()})
+
+
+@policy("public")
+def embed_gallery(request, slug):
+    """Embeddable gallery: frameable (CSP frame-ancestors *), rendered as an anonymous
+    visitor whoever is looking, so it can never show a draft or private data."""
+    ev = get_event(slug)
+    projects = list(public_projects(ev).order_by("title")[:200])
+    resp = render(request, "public/embed.html", {"ev": ev, "projects": projects})
+    return resp

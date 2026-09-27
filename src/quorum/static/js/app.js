@@ -145,5 +145,23 @@
     });
   }
 
-  document.addEventListener("DOMContentLoaded", function () { initConsole(); initPairwise(); });
+  // ---- submission editor autosave ----------------------------------------------
+  function initProjectAutosave() {
+    var f = $("form[data-autosave-form]");
+    if (!f) return;
+    var url = f.getAttribute("data-autosave-form"), st = $("#autosave-status"), t = null;
+    f.addEventListener("input", function () {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        var d = new FormData(f); d.set("action", "autosave");
+        st && (st.textContent = "saving…");
+        fetch(url, { method: "POST", body: d, headers: { "X-CSRFToken": d.get("csrfmiddlewaretoken") } })
+          .then(function (r) { return r.json(); })
+          .then(function (j) { st && (st.textContent = j.ok ? "saved v" + j.version : (j.detail || "not saved")); })
+          .catch(function () { st && (st.textContent = "offline: not saved"); });
+      }, 1200);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () { initConsole(); initPairwise(); initProjectAutosave(); });
 })();

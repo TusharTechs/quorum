@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}My hackathons{% endblock %}
+{% block content %}
+<h1>My hackathons</h1>
+{% if rows %}
+<div class="grid cols-2">
+{% for r in rows %}
+  <div class="card stack">
+    <div class="row between"><h2 style="margin:0">{{ r.event.name }}</h2>{% if r.open %}<span class="badge accent"><time data-countdown datetime="{{ r.event.submissions_close_at|date:'c' }}">…</time> left</span>{% else %}<span class="badge">closed</span>{% endif %}</div>
+    <p class="small muted">Team <strong>{{ r.m.team.name }}</strong> · {{ r.m.role }}</p>
+    {% if r.project %}
+      <p><a href="/p/{{ r.project.pk }}">{{ r.project.title }}</a> <span class="badge {% if r.project.status == 'submitted' %}good{% else %}warn{% endif %}">{{ r.project.status }}</span></p>
+    {% else %}<p class="muted small">No submission yet.</p>{% endif %}
+    <div class="row">
+      <a class="btn" href="/me/e/{{ r.event.slug }}">Team &amp; submission</a>
+      {% if r.released %}<a class="btn primary" href="/me/scorecard/{{ r.event.slug }}">Scorecard &amp; feedback</a>{% endif %}
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% else %}
+<div class="empty">You are not in any team yet.</div>
+{% endif %}
+{% if open_events %}<h2 style="margin-top:28px">Open for submissions</h2><div class="gallery">{% for e in open_events %}<a class="pcard" href="/me/e/{{ e.slug }}"><div class="body"><h3>{{ e.name }}</h3><p class="tag">{{ e.tagline }}</p><div class="meta">closes {{ e.submissions_close_at|date:"j M, H:i" }} UTC</div></div></a>{% endfor %}</div>{% endif %}
+{% if roles %}<h2 style="margin-top:28px">Other roles</h2><ul>{% for r in roles %}<li>{{ r.get_role_display }} at <a href="/{% if r.role == 'judge' %}j{% else %}o{% endif %}/{{ r.event.slug }}">{{ r.event.name }}</a></li>{% endfor %}</ul>{% endif %}
+{% if certs %}<h2 style="margin-top:28px">Certificates</h2><ul>{% for c in certs %}<li><a href="/certificates/{{ c.pk }}">{{ c.get_kind_display }} · {{ c.event.name }}</a> <span class="mono tiny">{{ c.serial }}</span></li>{% endfor %}</ul>{% endif %}
+<p class="small muted" style="margin-top:28px"><a href="/settings/tokens">API tokens</a></p>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · calibration{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<div class="callout small" style="margin-bottom:16px">These cards describe <em>patterns</em>, not verdicts. A strong offset usually means a strict or generous marker; the model corrects for it. <strong>Leniency</strong> is estimated only from projects this judge shares with others, and shrunk toward zero in proportion to how little evidence there is (k = {{ out.k|f2 }}). <strong>Evidence</strong> is how many effective comparisons support that estimate.</div>
+<div class="gallery">
+{% for j in judges %}{% with r=names|get:j.judge %}
+<div class="card">
+  <div class="row between"><strong>{{ r.user.name|default:j.judge }}</strong><span class="mono tiny muted">{{ j.judge }}</span></div>
+  <dl class="kv small" style="margin-top:8px">
+    <dt>Reviews</dt><dd>{{ j.n }}</dd>
+    <dt>Mean score</dt><dd>{{ j.mean|f2 }} <span class="muted">sd {{ j.sd|f2 }}</span></dd>
+    <dt>Leniency</dt><dd><strong>{{ j.offset|signed }}</strong> <span class="muted">vs co-judges</span></dd>
+    <dt>Evidence</dt><dd>{{ j.info|f2 }} effective comparisons</dd>
+    <dt>Agreement</dt><dd>{% if j.agreement is not None %}{{ j.agreement|f2 }} (Spearman){% else %}<span class="muted">too few reviews</span>{% endif %}</dd>
+  </dl>
+  <div class="row" style="margin-top:8px">{% for s in j.signals %}<span class="badge {% if s == 'flat' %}bad{% else %}warn{% endif %}" title="worth a look">{{ s|cut:"_"|capfirst }}</span>{% empty %}<span class="badge good">no signals</span>{% endfor %}</div>
+  {% if j.flat %}<p class="tiny" style="margin-top:8px;color:var(--bad)">Gave the same score to everything, so these reviews carry no information about which project is better. Weight 0 in the ranking; kept in the record.</p>{% endif %}
+</div>
+{% endwith %}{% empty %}<div class="empty">No reviews yet.</div>{% endfor %}
+</div>
+{% endblock %}

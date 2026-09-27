@@ -216,6 +216,8 @@ class Command(BaseCommand):
         for s in fx["scores"]:
             p = remap.get(s["project"], s["project"])
             cells.setdefault((s["judge"], p), []).append(s)
+        stalled_pending = self.infer_unfinished_batches(fx, cells, remap, k=ev.reviews_per_project)
+        stalled = {j for j, _ in stalled_pending}
         span = (t0 - ev.judging_opens_at).total_seconds() - 3600 * 12
         batches = {}
         for (jid, pid), rows in sorted(cells.items()):
@@ -225,7 +227,8 @@ class Command(BaseCommand):
                                                          sent_at=ev.judging_opens_at, due_at=ev.judging_closes_at)
             a = Assignment.objects.create(event=ev, batch=batches[jid], judge_role=role, project=projects[pid],
                                           status="submitted", source="import", strategy="fixture")
-            submitted = ev.judging_opens_at + timedelta(seconds=3600 * 6 + (_h(jid, pid) % int(span)))
+            offset = (_h(jid, pid) % 7200) if jid in stalled else (_h(jid, pid) % int(span))
+            submitted = ev.judging_opens_at + timedelta(seconds=3600 * 6 + offset)
             comments = [r.get("comment", "") for r in rows if r.get("comment")]
             rv = Review.objects.create(
                 assignment=a, event=ev, judge_role=role, project=projects[pid], status="submitted",
@@ -242,6 +245,20 @@ class Command(BaseCommand):
             if role.last_activity_at is None or submitted > role.last_activity_at:
                 role.last_activity_at = submitted
                 role.save(update_fields=["last_activity_at"])
+        for jid, pid in stalled_pending:
+            role = judge_roles[jid]
+            if jid not in batches:
+                batches[jid] = JudgeBatch.objects.create(event=ev, judge_role=role, kind="import",
+                                                         sent_at=ev.judging_opens_at, due_at=ev.judging_closes_at)
+            Assignment.objects.create(event=ev, batch=batches[jid], judge_role=role, project=projects[pid],
+                                      status="pending", source="import", strategy="fixture-inferred")
+        if stalled_pending:
+            audit.record(
+                "UNFINISHED_BATCHES_INFERRED",
+                f"The fixture describes review batches nobody finished but has no assignment list. Reconstructed "
+                f"{len(stalled_pending)} pending assignment(s) for {', '.join(sorted(stalled))}: each missing review of "
+                f"an under-covered project is attributed to the least-complete judge (<30%) in its track.",
+                event=ev, actor_role="system", data={"pending": [list(x) for x in stalled_pending]})
         audit.record(
             "IMPORT_COMPLETED",
             f"DOGFOOD fixture imported: {len(fx['projects'])} projects, {len(fx['judges'])} judges, "
@@ -250,6 +267,40 @@ class Command(BaseCommand):
                   "score_rows": len(fx["scores"]), "reviews": len(cells), "duplicates": dups},
         )
         audit.checkpoint(ev, "fixture imported")
+
+    @staticmethod
+    def infer_unfinished_batches(fx, cells, remap, k=3, threshold=0.30):
+        """Reconstruct the fixture's 'review batches nobody finished' (it has no assignment
+        list). For every canonical project below k reviews, attribute each missing review to
+        the least-complete judge in its track, if that judge completed < threshold of the
+        projects in their tracks. On the DOGFOOD fixture this yields jdg_23 and jdg_12."""
+        canon = [p for p in fx["projects"] if p["id"] not in remap]
+        track_of = {p["id"]: p["track"] for p in canon}
+        per_track = {}
+        for p in canon:
+            per_track.setdefault(p["track"], []).append(p["id"])
+        done = {}
+        for (j, p) in cells:
+            done.setdefault(j, set()).add(p)
+        judges = {j["id"]: j for j in fx["judges"]}
+        completion = {}
+        for jid, j in judges.items():
+            pool = sum(len(per_track.get(t, [])) for t in j.get("tracks", []))
+            completion[jid] = len(done.get(jid, ())) / pool if pool else 1.0
+        counts = {}
+        for (j, p) in cells:
+            counts[p] = counts.get(p, 0) + 1
+        out = []
+        for pid in sorted(track_of):
+            missing = k - counts.get(pid, 0)
+            if missing <= 0:
+                continue
+            cands = sorted((completion[j], len(done.get(j, ())), j) for j, jj in judges.items()
+                           if track_of[pid] in jj.get("tracks", []) and pid not in done.get(j, set())
+                           and completion[j] < threshold)
+            for _, _, j in cands[:missing]:
+                out.append((j, pid))
+        return out
 
     def _user(self, email: str, name: str) -> User:
         u = User.objects.filter(email__iexact=email).first()

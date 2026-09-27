@@ -127,6 +127,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = Path(env("QUORUM_STATIC_ROOT", str(REPO_DIR / "var" / "static")))
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},

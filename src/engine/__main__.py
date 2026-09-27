@@ -62,7 +62,7 @@ def cmd_recompute(path: str) -> int:
         return 2
     ok = True
     for run in runs:
-        res = compute(run["input"], heavy=True)
+        res = compute(run["input"], heavy=run.get("heavy", True))
         match = res["output_hash"] == run["output_hash"]
         ok &= match
         print(f"{'MATCH' if match else 'MISMATCH'} run {run.get('id', '?')} ({run.get('kind')}) "

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{% if p %}Edit {{ p.title }}{% else %}New submission{% endif %}{% endblock %}
+{% block content %}
+<p class="small"><a href="/me/e/{{ ev.slug }}">← Team</a></p>
+<div class="row between">
+  <h1>{% if p %}{{ p.title }}{% else %}New submission{% endif %}</h1>
+  <div class="row">{% if p %}<span class="badge {% if p.status == 'submitted' %}good{% else %}warn{% endif %}">{{ p.status }}</span><span class="saved" id="autosave-status">v{{ p.version }}</span>{% endif %}
+  {% if open %}<span class="badge accent">closes in <time data-countdown datetime="{{ ev.submissions_close_at|date:'c' }}">…</time></span>{% else %}<span class="badge bad">closed</span>{% endif %}</div>
+</div>
+{% if not open %}<div class="callout bad">Submissions closed at {{ ev.submissions_close_at|date:"j M Y, H:i" }} UTC. The server refuses every change after the deadline, including from the API.</div>{% endif %}
+<div class="split">
+<form method="post" class="card" id="project-form" {% if p %}data-autosave-form="/me/projects/{{ p.pk }}/edit"{% endif %}>{% csrf_token %}
+  {% if questions %}<input type="hidden" name="has_questions" value="1">{% endif %}
+  <div class="field {% if errors.title %}error{% endif %}"><label for="title">Project name</label><input id="title" type="text" name="title" value="{{ data.title }}" maxlength="120" required>{% if errors.title %}<div class="err">{{ errors.title }}</div>{% endif %}</div>
+  <div class="field"><label for="tagline">Tagline</label><input id="tagline" type="text" name="tagline" value="{{ data.tagline }}" maxlength="200"><div class="help">One line: what it does, for whom.</div></div>
+  {% if tracks %}<div class="field {% if errors.track %}error{% endif %}"><label for="track">Track</label><select id="track" name="track"><option value="">Choose…</option>{% for t in tracks %}<option value="{{ t.ref }}" {% if data.track == t.ref %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select>{% if errors.track %}<div class="err">{{ errors.track }}</div>{% endif %}</div>{% endif %}
+  <div class="field"><label for="desc">Description <span class="muted small">(markdown)</span></label><textarea id="desc" name="description_md" style="min-height:220px">{{ data.description_md }}</textarea></div>
+  <div class="form-grid">
+    <div class="field {% if errors.repo_url %}error{% endif %}"><label for="repo">Repository URL</label><input id="repo" type="url" name="repo_url" value="{{ data.repo_url }}" placeholder="https://">{% if errors.repo_url %}<div class="err">{{ errors.repo_url }}</div>{% endif %}</div>
+    <div class="field {% if errors.demo_video_url %}error{% endif %}"><label for="video">Demo video URL</label><input id="video" type="url" name="demo_video_url" value="{{ data.demo_video_url }}" placeholder="https://"></div>
+    <div class="field {% if errors.live_url %}error{% endif %}"><label for="live">Live URL</label><input id="live" type="url" name="live_url" value="{{ data.live_url }}" placeholder="https://"></div>
+    <div class="field {% if errors.declared_commit_sha %}error{% endif %}"><label for="sha">Final commit SHA</label><input id="sha" type="text" name="declared_commit_sha" value="{{ data.declared_commit_sha }}" class="mono"><div class="help">Judges compare the repo against this commit.</div></div>
+  </div>
+  <div class="field"><label for="tags">Tech tags</label><input id="tags" type="text" name="tech_tags" value="{{ data.tech_tags }}" placeholder="python, postgres, htmx"></div>
+  {% for q in questions %}
+    <div class="field"><label for="q_{{ q.ref }}">{{ q.label }}{% if q.required %} *{% endif %}</label>
+    {% if q.kind == "long_text" %}<textarea id="q_{{ q.ref }}" name="q_{{ q.ref }}">{{ answers|get:q.ref|default:"" }}</textarea>
+    {% elif q.kind == "choice" %}<select id="q_{{ q.ref }}" name="q_{{ q.ref }}"><option value=""></option>{% for o in q.options %}<option {% if answers|get:q.ref == o %}selected{% endif %}>{{ o }}</option>{% endfor %}</select>
+    {% elif q.kind == "bool" %}<label class="check"><input type="checkbox" name="q_{{ q.ref }}" value="yes" {% if answers|get:q.ref %}checked{% endif %}> yes</label>
+    {% else %}<input id="q_{{ q.ref }}" type="{% if q.kind == 'url' %}url{% else %}text{% endif %}" name="q_{{ q.ref }}" value="{{ answers|get:q.ref|default:'' }}">{% endif %}
+    {% if q.help %}<div class="help">{{ q.help }}</div>{% endif %}</div>
+  {% endfor %}
+  {% if open %}<div class="row">
+    <button class="btn" name="action" value="save">Save draft</button>
+    {% if p %}<button class="btn primary" name="action" value="submit">{% if p.status == 'submitted' %}Save &amp; keep submitted{% else %}Submit{% endif %}</button>{% endif %}
+  </div>{% endif %}
+</form>
+<aside class="stack">
+  {% if p %}
+  {% if missing and p.status != "submitted" %}<div class="callout warn small"><strong>Before you can submit:</strong> {{ missing|join:", " }}</div>{% endif %}
+  <div class="card stack">
+    <h3>Images</h3>
+    {% for i in images %}<div class="row between"><img src="/media/{{ i.path }}" alt="" style="width:96px;border-radius:6px"><form method="post">{% csrf_token %}<input type="hidden" name="image" value="{{ i.pk }}"><button class="btn sm ghost" name="action" value="remove_image" {% if not open %}disabled{% endif %}>Remove</button></form></div>{% empty %}<p class="small muted">The first image becomes the thumbnail.</p>{% endfor %}
+    {% if open %}<form method="post" enctype="multipart/form-data">{% csrf_token %}<input type="file" name="image" accept="image/png,image/jpeg,image/webp,image/gif" required><button class="btn sm" name="action" value="upload" style="margin-top:6px">Upload</button><div class="help">PNG, JPEG, WebP or GIF, 5 MB max. Images are re-encoded (metadata stripped).</div></form>{% endif %}
+  </div>
+  <div class="card small"><h3>History</h3><ul style="padding-left:18px;margin:0">{% for r in revisions %}<li>v{{ r.version }} · {{ r.created_at|date:"j M H:i" }} · <span class="hash">{{ r.content_hash|short:10 }}</span></li>{% endfor %}</ul>
+  {% if open and p.status == "submitted" %}<form method="post" style="margin-top:10px" data-confirm="Withdraw this submission?">{% csrf_token %}<button class="btn sm danger" name="action" value="withdraw">Withdraw</button></form>{% endif %}</div>
+  {% endif %}
+</aside>
+</div>
+{% endblock %}

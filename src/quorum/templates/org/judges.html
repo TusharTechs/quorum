@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · judges{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<div class="split">
+<div class="card flush"><div class="card-head"><h2>Judges ({{ progress|length }})</h2><a class="btn sm" href="/o/{{ ev.slug }}/judges/stats">Calibration cards →</a></div>
+<div class="table-wrap"><table><thead><tr><th>Judge</th><th>Tracks</th><th class="num">Done</th><th>Status</th><th class="num">Leniency</th><th>Signals</th><th>Available</th></tr></thead><tbody>
+{% for j in progress %}<tr><td><strong>{{ j.name }}</strong> <span class="mono tiny muted">{{ j.ref }}</span><div class="tiny muted">{{ j.email }}</div></td><td class="small">{{ j.tracks|join:", " }}</td><td class="num">{{ j.submitted }}/{{ j.assigned }}</td><td><span class="badge {% if j.status == 'done' %}good{% elif j.status == 'stalled' or j.status == 'unavailable' %}bad{% elif j.status == 'behind' %}warn{% endif %}">{{ j.status }}</span></td>
+<td class="num">{% if j.stat %}{{ j.stat.offset|signed }}{% else %}–{% endif %}</td><td>{% for s in j.stat.signals %}<span class="badge {% if s == 'flat' %}bad{% else %}warn{% endif %}">{{ s }}</span> {% endfor %}</td>
+<td><form method="post">{% csrf_token %}<input type="hidden" name="action" value="availability"><input type="hidden" name="role" value="{{ j.role.pk }}">{% if j.role.available %}<button class="btn sm" name="available" value="0">Mark away</button>{% else %}<button class="btn sm" name="available" value="1">Mark back</button>{% endif %}</form></td></tr>{% endfor %}
+</tbody></table></div></div>
+<aside class="stack">
+  <form method="post" class="card">{% csrf_token %}<input type="hidden" name="action" value="invite"><h3>Invite a judge</h3>
+    <div class="field"><label>E-mail</label><input type="email" name="email" required></div><div class="field"><label>Name</label><input type="text" name="name"></div>
+    <div class="field"><label>Tracks</label>{% for t in tracks %}<label class="check"><input type="checkbox" name="tracks" value="{{ t.ref }}"> {{ t.name }}</label>{% endfor %}</div>
+    <div class="field"><label>Capacity (reviews)</label><input type="number" name="capacity" value="{{ ev.batch_size }}"></div>
+    <button class="btn primary">Send invitation</button><p class="tiny muted">A 7-day sign-in link. Offline, it lands in the mail catcher.</p></form>
+  <div class="card"><div class="row between"><h3 style="margin:0">Conflicts of interest</h3><form method="post">{% csrf_token %}<button class="btn sm" name="action" value="suggest_conflicts">Suggest</button></form></div>
+  <p class="tiny muted">Judges can declare conflicts; shared e-mail domains are suggested. Confirmed conflicts are excluded from assignment and enforced by the server.</p>
+  {% for c in conflicts %}<div class="small" style="padding:6px 0;border-bottom:1px solid var(--line)">{{ c.judge_role.user.name }} ↔ {{ c.team.name }} <span class="badge {% if c.status == 'confirmed' %}bad{% elif c.status == 'suggested' %}warn{% endif %}">{{ c.status }}</span> <span class="tiny muted">{{ c.source }}</span>
+  {% if c.status == "suggested" %}<form method="post" class="row" style="margin-top:4px">{% csrf_token %}<input type="hidden" name="action" value="conflict"><input type="hidden" name="conflict" value="{{ c.pk }}"><button class="btn sm" name="status" value="confirmed">Confirm</button><button class="btn sm" name="status" value="dismissed">Dismiss</button></form>{% endif %}</div>{% empty %}<p class="small muted">None recorded.</p>{% endfor %}</div>
+</aside>
+</div>
+{% endblock %}

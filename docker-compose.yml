@@ -1,0 +1,71 @@
+# One command: `docker compose up`  ->  seeded portal on http://localhost:8080
+# Works with the network off once images are built/pulled: no CDN, no hosted services,
+# e-mail goes to the local Mailpit catcher on http://localhost:8025.
+name: quorum
+
+x-app: &app
+  image: quorum:local
+  build: .
+  restart: unless-stopped
+  environment:
+    QUORUM_ENV: ${QUORUM_ENV:-demo}
+    QUORUM_DEMO: ${QUORUM_DEMO:-1}
+    QUORUM_PUBLIC_ORIGIN: ${QUORUM_PUBLIC_ORIGIN:-http://localhost:8080}
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-quorum-demo-secret-key-change-me-in-production-0000000000}
+    POSTGRES_HOST: db
+    POSTGRES_DB: quorum
+    POSTGRES_USER: quorum
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quorum}
+    SMTP_HOST: ${SMTP_HOST:-mail}
+    SMTP_PORT: ${SMTP_PORT:-1025}
+    SMTP_USER: ${SMTP_USER:-}
+    SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+    SMTP_TLS: ${SMTP_TLS:-0}
+    QUORUM_BUILD: ${QUORUM_BUILD:-local}
+  volumes:
+    - quorum-data:/data
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: quorum
+      POSTGRES_USER: quorum
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quorum}
+    volumes:
+      - quorum-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quorum -d quorum"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  web:
+    <<: *app
+    command: ["web"]
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3).status == 200 else 1)"]
+      interval: 5s
+      timeout: 4s
+      retries: 60
+      start_period: 20s
+
+  worker:
+    <<: *app
+    command: ["worker"]
+
+  mail:
+    image: axllent/mailpit:v1.21
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+
+volumes:
+  quorum-db:
+  quorum-data:

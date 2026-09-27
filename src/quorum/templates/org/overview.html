@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · overview{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<ol class="steps" aria-label="Lifecycle" style="margin-bottom:18px">{% for s in steps %}<li class="{{ s.state }}">{{ s.label }}</li>{% endfor %}</ol>
+<div class="grid cols-4">
+  <div class="stat"><div class="k">Projects</div><div class="v">{{ n_projects }}</div><div class="s">{{ n_teams }} teams{% if dup %} · {{ dup }} eligibility item{{ dup|pluralize }}{% endif %}</div></div>
+  <div class="stat"><div class="k">Reviews</div><div class="v">{{ n_reviews }}</div><div class="s">{{ n_judges }} judges</div></div>
+  <div class="stat {% if cov.below %}warn{% else %}good{% endif %}"><div class="k">At review target ({{ cov.target }})</div><div class="v">{{ cov.ok }} / {{ cov.total }}</div><div class="s">{{ cov.pending }} with work pending · {{ cov.below }} short</div></div>
+  <div class="stat {% if out.signal.verdict == 'no_signal' %}bad{% elif out.signal.verdict == 'weak' %}warn{% else %}good{% endif %}"><div class="k">Panel agreement</div><div class="v">{% if out.signal %}ICC {{ out.signal.icc1|f2 }}{% else %}–{% endif %}</div><div class="s">{% if out.signal.verdict == "no_signal" %}indistinguishable from chance (p={{ out.signal.p_value|f2 }}){% else %}{{ out.signal.verdict|default:"not computed" }}{% endif %}</div></div>
+</div>
+<div class="split" style="margin-top:20px">
+  <div class="card">
+    <div class="row between"><h2 style="margin:0">Decisions that need you</h2><span class="badge">{{ decisions|length }}</span></div>
+    <p class="small muted">Everything else is running. These are the only places the process needs a human.</p>
+    {% for kind, text, url, cta in decisions %}
+      <div class="callout {{ kind }}" style="margin-top:10px"><div class="row between"><span>{{ text }}</span><a class="btn sm" href="{{ url }}">{{ cta }} →</a></div></div>
+    {% empty %}<div class="callout good">Nothing needs a decision right now.</div>{% endfor %}
+  </div>
+  <aside class="stack">
+    <div class="card small"><h3>Integrity</h3><dl class="kv">
+      <dt>Method</dt><dd>{% if method and method.locked_at %}v{{ method.version }} locked <span class="hash">{{ method.spec_hash|short:12 }}</span>{% else %}<span class="badge warn">not locked</span>{% endif %}</dd>
+      <dt>Audit head</dt><dd><span class="hash">#{{ audit_head.0 }} {{ audit_head.1|short:12 }}</span></dd>
+      <dt>Open vote flags</dt><dd>{{ flags }}</dd>
+      <dt>Latest run</dt><dd>{% if run %}<span class="hash">{{ run.output_hash|short:12 }}</span> · {{ run.created_at|timesince }} ago{% else %}–{% endif %}</dd>
+    </dl></div>
+    <div class="card small"><h3>Feedback coverage</h3><p>{{ fcov.with_feedback }} of {{ fcov.total }} teams have written feedback{% if fcov.none %}; <strong>{{ fcov.none|length }} would receive none</strong>{% endif %}.</p>{% bar fcov.with_feedback fcov.total "good" %}</div>
+  </aside>
+</div>
+{% endblock %}

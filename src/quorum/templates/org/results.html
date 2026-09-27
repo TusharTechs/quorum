@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · results{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+{% if method.override_reason %}<div class="callout bad" style="margin-bottom:14px"><strong>The judging method was changed after it was locked.</strong> Reason: “{{ method.override_reason }}”. This notice appears on the published results.</div>{% endif %}
+{% with s=out.signal %}
+<div class="callout {% if s.verdict == 'no_signal' %}bad{% elif s.verdict == 'weak' %}warn{% else %}good{% endif %}" style="margin-bottom:16px">
+  <div class="row between">
+    <div><h3>Signal check: {% if s.verdict == "no_signal" %}the judges do not agree beyond chance{% elif s.verdict == "weak" %}weak agreement{% elif s.verdict == "moderate" %}moderate agreement{% else %}good agreement{% endif %}</h3>
+    <p class="small" style="margin:0">Panel agreement ICC(1) = <strong>{{ s.icc1|f3 }}</strong>, permutation p = {{ s.p_value|f3 }} ({{ s.permutations }} shuffles).
+    {% if s.verdict == "no_signal" %}Shuffling scores randomly between projects produces agreement this strong or stronger {{ s.p_value|pct }} of the time. <strong>These scores cannot separate the projects.</strong> Quorum will not print a confident podium: every adjacent position below is a statistical tie. Add reviews (focus round), or decide the prizes with a tie-break round.
+    {% else %}The ranking carries real signal; uncertainty is shown for every position.{% endif %}</p></div>
+    <form method="post">{% csrf_token %}<button class="btn sm" name="action" value="compute">Recompute</button></form>
+  </div>
+</div>
+{% endwith %}
+<div class="grid cols-4" style="margin-bottom:16px">
+  <div class="stat"><div class="k">Calibration</div><div class="v" style="font-size:18px">{{ out.method.calibration }}</div><div class="s">shrinkage k = {{ out.k|f2 }} ({{ out.k_source }})</div></div>
+  <div class="stat"><div class="k">Flat judges (weight 0)</div><div class="v">{{ out.flat_judges|length }}</div><div class="s">{% for j in out.flat_judges %}{{ j }} {% endfor %}</div></div>
+  <div class="stat"><div class="k">Raw vs calibrated</div><div class="v">τ {{ out.agreement.raw_vs_calibrated|f2 }}</div><div class="s">z-score vs calibrated τ {{ out.agreement.zscore_vs_calibrated|f2 }}</div></div>
+  <div class="stat"><div class="k">Run</div><div class="v" style="font-size:14px"><span class="hash">{{ run.output_hash|short:16 }}</span></div><div class="s">{{ run.get_kind_display }} · {{ run.created_at|timesince }} ago</div></div>
+</div>
+<div class="split">
+<div class="stack-lg">
+  <div class="card flush">
+    <div class="card-head"><h2>Ranking</h2><span class="small muted">calibrated · ± one standard error · 90% rank interval · <span class="badge tie">tie</span> = within measurement noise of the next · <a href="/api/v1/events/{{ ev.ref }}/exports/results.csv">CSV</a></span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th class="num">#</th><th>Project</th><th class="num">n</th><th class="num">Raw</th><th class="num">Calibrated</th><th>Plausible rank</th><th class="num">P(prize)</th><th class="num">vs raw</th><th></th></tr></thead>
+      <tbody>
+      {% for e in entries %}{% with p=titles|get:e.project %}
+      <tr {% if forloop.counter0 and not prev_tie %}{% endif %}>
+        <td class="num"><strong>{{ e.rank }}</strong></td>
+        <td><a href="/o/{{ ev.slug }}/results/{{ e.project }}">{{ p.title|default:e.project }}</a> <span class="tiny muted">{{ p.track.name }}</span>{% if e.flat_only %} <span class="badge bad">only flat reviews</span>{% endif %}</td>
+        <td class="num">{{ e.n_reviews }}{% if e.n_effective and e.n_effective < e.n_reviews|add:"-0.5" %}<span class="tiny muted"> ({{ e.n_effective|floatformat:1 }})</span>{% endif %}</td>
+        <td class="num">{{ e.raw|f2 }}</td>
+        <td class="num"><strong>{{ e.calibrated|f2 }}</strong><span class="tiny muted"> ±{{ e.se|f2 }}</span></td>
+        <td>{% whisker e.rank_lo e.rank_hi e.rank n %}<span class="tiny muted">{{ e.rank_lo }}–{{ e.rank_hi }}</span></td>
+        <td class="num">{{ e.p_prize|pct }}</td>
+        <td class="num">{% if e.move_vs_raw > 0 %}<span style="color:var(--good)">▲{{ e.move_vs_raw }}</span>{% elif e.move_vs_raw < 0 %}<span style="color:var(--bad)">▼{{ e.move_vs_raw|stringformat:"d"|cut:"-" }}</span>{% else %}–{% endif %}</td>
+        <td>{% if e.tied_with_next %}<span class="badge tie" title="P(ranked above next) = {{ e.p_above_next|pct }}">tie</span>{% endif %}</td>
+      </tr>{% endwith %}{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card"><h2>Robustness</h2>
+    <div class="grid cols-2">
+      <div><h3>Pivotal judges</h3><p class="small muted">Removing one of these judges changes who wins a prize (refit without them).</p>
+        {% for j, d in pivotal %}<div class="small">{{ j }}: moves a project up to {{ d.max_move }} place{{ d.max_move|pluralize }}{% if d.top1_changes %} · <strong>changes #1</strong>{% endif %}</div>{% empty %}<p class="small">None: no single judge decides a prize.</p>{% endfor %}</div>
+      <div><h3>Weight sensitivity</h3><p class="small muted">Each weight ±10%: does the podium change?</p>
+        {% if sens.stable %}<p class="small"><span class="badge good">stable</span> The podium holds under every ±10% change.</p>{% else %}<p class="small"><span class="badge warn">sensitive</span></p>{% for r in sens.perturbations %}{% if r.podium_changed %}<div class="small">{{ r.criterion }} {{ r.change|pct }} → {{ r.podium|join:", " }}</div>{% endif %}{% endfor %}{% endif %}</div>
+    </div>
+  </div>
+</div>
+<aside class="stack">
+  <div class="card" id="ties"><h3>Ties at prize boundaries</h3>
+    {% for t in ties %}
+      <div class="callout tie small" style="margin-bottom:10px"><strong>Position {{ t.boundary }}</strong> is inside a tie of ranks {{ t.ranks.0 }}–{{ t.ranks.1 }}.
+      <form method="post" style="margin-top:6px">{% csrf_token %}<input type="hidden" name="boundary" value="{{ t.boundary }}">{% for r in t.projects %}<label class="check"><input type="checkbox" name="project" value="{{ r }}" checked> {{ titles|get:r }}</label>{% endfor %}<button class="btn sm primary" name="action" value="open_tiebreak">Open tie-break round</button></form></div>
+    {% empty %}<p class="small muted">No prize position falls inside a statistical tie.</p>{% endfor %}
+    {% for t in tiebreaks %}
+      <div class="sunk small" style="margin-top:10px"><div class="row between"><strong>Tie-break · position {{ t.tb.boundary }}</strong><span class="badge {% if t.tb.status == 'open' %}warn{% else %}good{% endif %}">{{ t.tb.status }}</span></div>
+      <p class="tiny muted" style="margin:4px 0">Panel: {% for r in t.panel %}{{ r.user.name }}{% if not forloop.last %}, {% endif %}{% endfor %} · {{ t.state.comparisons }} comparison{{ t.state.comparisons|pluralize }}</p>
+      <ol style="margin:4px 0;padding-left:18px">{% for r in t.state.order %}<li>{{ titles|get:r }}</li>{% endfor %}</ol>
+      {% for a in t.state.adjacent %}<div class="tiny">P({{ a.higher }} above {{ a.lower }}) = {{ a.p|pct }}</div>{% endfor %}
+      {% if t.tb.status == "open" %}<form method="post" style="margin-top:6px">{% csrf_token %}<input type="hidden" name="tiebreak" value="{{ t.tb.pk }}">
+        {% if t.state.resolved %}<button class="btn sm primary" name="action" value="resolve_tiebreak">Resolve (every P ≥ 80%)</button>
+        {% else %}<p class="tiny muted">Not yet decisive. Wait for more comparisons, or record a decision:</p><input type="text" name="order" placeholder="order: prj_a,prj_b,…" value="{{ t.state.order|join:',' }}"><input type="text" name="note" placeholder="reason (required)" style="margin-top:4px"><button class="btn sm" name="action" value="resolve_tiebreak" style="margin-top:4px">Record organizer decision</button>{% endif %}
+      </form>{% else %}<p class="tiny">{{ t.state.method }}</p>{% endif %}</div>
+    {% endfor %}
+  </div>
+  <div class="card"><h3>Focus round</h3>
+    <p class="small muted">Send spare judge capacity only to projects whose prize is still uncertain. In simulation this picks the true winner 43.5% of the time, against 33.5% for uniform reviews on the same budget.</p>
+    {% if focus_plan %}
+      <p class="small">Budget {{ focus_plan.budget }} review{{ focus_plan.budget|pluralize }} · planned {{ focus_plan.rows|length }}:</p>
+      <table class="small"><thead><tr><th>Project</th><th>Judge</th><th class="num">P(prize)</th><th class="num">SE</th></tr></thead><tbody>{% for r in focus_plan.rows %}<tr><td>{{ titles|get:r.project }}</td><td class="mono tiny">{{ r.judge }}</td><td class="num">{{ r.p_prize|pct }}</td><td class="num">{{ r.se_before|f2 }}→{{ r.se_after|f2 }}</td></tr>{% endfor %}</tbody></table>
+      <form method="post" class="row" style="margin-top:8px">{% csrf_token %}<button class="btn sm primary" name="action" value="commit_focus">Commit focus round</button><button class="btn sm" name="action" value="discard_focus">Discard</button></form>
+    {% else %}<form method="post" class="row">{% csrf_token %}<input type="number" name="budget" placeholder="budget ({{ ev.focus_budget_pct }}% default)" style="width:170px"><button class="btn sm" name="action" value="plan_focus">Plan focus round</button></form>{% endif %}
+  </div>
+  <div class="card"><h3>Lock &amp; publish</h3>
+    {% if pub and ev.phase == "published" %}<p class="small"><span class="badge good">published</span> {{ pub.published_at|date:"j M Y H:i" }}</p><p class="small">Frozen run <span class="hash">{{ pub.run.output_hash|short:16 }}</span>, audit head <span class="hash">{{ pub.audit_head|short:16 }}</span>, signed.</p><a class="btn sm" href="/e/{{ ev.slug }}/results">Public results</a>
+    {% elif pub and ev.phase == "locked" %}<p class="small"><span class="badge accent">locked</span> Final order: {{ pub.final_order|slice:":3"|join:", " }}…</p>
+      <form method="post" data-confirm="Publish results, release feedback to every team, and issue certificates?">{% csrf_token %}<button class="btn primary" name="action" value="publish">Publish results</button></form>
+      <form method="post" style="margin-top:8px">{% csrf_token %}<input type="text" name="reason" placeholder="reason to reopen"><button class="btn sm" name="action" value="reopen" style="margin-top:4px">Reopen</button></form>
+    {% else %}<p class="small muted">Locking freezes an official run (full robustness), applies resolved tie-breaks, signs the audit head and blocks further review edits.</p><form method="post" data-confirm="Lock the results?">{% csrf_token %}<button class="btn primary" name="action" value="lock">Lock results</button></form>{% endif %}
+  </div>
+  <div class="card small"><h3>Method comparison</h3><p class="tiny muted">Kendall τ against the calibrated ranking.</p><dl class="kv"><dt>Raw average</dt><dd>{{ out.agreement.raw_vs_calibrated|f2 }}</dd><dt>Raptors classic (k=10)</dt><dd>{{ out.agreement.classic_vs_calibrated|f2 }}</dd><dt>Per-judge z-score</dt><dd>{{ out.agreement.zscore_vs_calibrated|f2 }}</dd><dt>Ordinal (pairwise)</dt><dd>{{ out.agreement.ordinal_vs_calibrated|f2 }}</dd></dl>
+  {% if out.zscore_degenerate_judges %}<p class="tiny muted">z-scores are undefined for {{ out.zscore_degenerate_judges|length }} judge{{ out.zscore_degenerate_judges|length|pluralize }} (one review, or identical scores).</p>{% endif %}</div>
+  <div class="card small"><h3>Runs</h3>{% for r in runs %}<div><span class="badge">{{ r.kind }}</span> <span class="hash">{{ r.output_hash|short:10 }}</span> <span class="muted">{{ r.created_at|timesince }} ago</span></div>{% endfor %}</div>
+</aside>
+</div>
+{% endblock %}

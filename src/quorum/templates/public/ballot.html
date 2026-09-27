@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Vote · {{ ev.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/e/{{ ev.slug }}">← {{ ev.name }}</a></p>
+<h1>Community vote</h1>
+<p class="muted">Pick the projects you like best: {{ ev.votes_per_voter }} vote{{ ev.votes_per_voter|pluralize }}{% if credits is not None %} (quadratic: {{ credits }} voice credits left; n votes on one project cost n²){% endif %}. The order below is shuffled for you, so no project gets an advantage from being listed first. Results stay hidden until voting closes. The community prize is separate from the judges' prizes.</p>
+{% if not open %}<div class="callout warn">Voting is {% if ev.voting_opens_at and now < ev.voting_opens_at %}not open yet{% else %}closed{% endif %}.</div>{% endif %}
+{% if open and not voter %}
+<div class="card" style="max-width:640px">
+  {% if ev.voting_mode == "email" %}<h2>Confirm your e-mail to vote</h2><form method="post" class="row">{% csrf_token %}<input type="hidden" name="action" value="email"><input type="email" name="email" required placeholder="you@example.org" style="max-width:320px"><button class="btn primary">Send link</button></form><p class="tiny muted">One set of votes per verified address. We store only a keyed hash of your address.</p>
+  {% elif ev.voting_mode == "code" %}<h2>Enter your voting code</h2><form method="post" class="row">{% csrf_token %}<input type="hidden" name="action" value="code"><input type="text" name="code" required placeholder="ABCD-EFGH-JKLM" class="mono" style="max-width:240px"><button class="btn primary">Continue</button></form>
+  {% elif ev.voting_mode == "authenticated" %}<h2>Sign in to vote</h2><a class="btn primary" href="/login?next=/e/{{ ev.slug }}/vote">Sign in</a>
+  {% else %}<h2>Start voting</h2><form method="post">{% csrf_token %}<button class="btn primary" name="action" value="open">Get a ballot</button></form><p class="tiny muted">Open voting is a popularity signal only; it cannot stop one person voting twice.</p>{% endif %}
+</div>
+{% endif %}
+{% if voter %}<p class="small"><span class="badge accent">{{ remaining }} vote{{ remaining|pluralize }} left</span></p>{% endif %}
+<div class="gallery" style="margin-top:14px">
+{% for p in projects %}
+  <div class="pcard" style="cursor:default">
+    <div class="body">
+      <h3><a href="/p/{{ p.pk }}">{{ p.title }}</a></h3><p class="tag">{{ p.tagline }}</p>
+      <div class="meta">{% if p.track %}<span class="chip">{{ p.track.name }}</span>{% endif %}<span>{{ p.team.name }}</span></div>
+      {% if voter and open %}{% if p.pk in voted %}<span class="badge good">✓ voted</span>{% elif remaining > 0 or credits %}<form method="post">{% csrf_token %}<input type="hidden" name="action" value="vote"><input type="hidden" name="project" value="{{ p.pk }}"><input type="hidden" name="ballot" value="{{ token }}">{% if credits is not None %}<input type="number" name="weight" value="1" min="1" style="width:70px">{% endif %}<button class="btn sm primary">Vote</button></form>{% endif %}{% endif %}
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% if tallies %}<div class="card" style="margin-top:20px"><h2>Tallies <span class="badge warn">organizer view</span></h2>{% for t in tallies|slice:":10" %}<div class="small">{{ t.project.title }}: {{ t.valid }}</div>{% endfor %}</div>{% endif %}
+{% endblock %}

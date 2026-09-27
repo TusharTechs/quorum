@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · feedback{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<div class="grid cols-4" style="margin-bottom:16px">
+  <div class="stat {% if fcov.none %}warn{% else %}good{% endif %}"><div class="k">Teams with feedback</div><div class="v">{{ fcov.with_feedback }}/{{ fcov.total }}</div><div class="s">{{ fcov.none|length }} would receive none</div></div>
+  <div class="stat"><div class="k">Awaiting moderation</div><div class="v">{{ counts.pending }}</div></div>
+  <div class="stat"><div class="k">Approved / edited / hidden</div><div class="v" style="font-size:20px">{{ counts.approved }} / {{ counts.edited }} / {{ counts.hidden }}</div></div>
+  <div class="stat {% if ev.feedback_released_at %}good{% endif %}"><div class="k">Release</div><div class="v" style="font-size:18px">{% if ev.feedback_released_at %}released {{ ev.feedback_released_at|date:"j M" }}{% else %}not yet{% endif %}</div></div>
+</div>
+<div class="split">
+<div class="stack-lg">
+  <div class="card flush"><div class="card-head"><h2>Moderation</h2><div class="row"><a class="btn sm {% if status == 'pending' %}primary{% endif %}" href="?status=pending">Pending</a><a class="btn sm" href="?status=approved">Approved</a><a class="btn sm" href="?status=edited">Edited</a><a class="btn sm" href="?status=hidden">Hidden</a><a class="btn sm" href="?status=all">All</a>
+    {% if counts.pending %}<form method="post">{% csrf_token %}<button class="btn sm" name="action" value="approve_all">Approve all pending</button></form>{% endif %}</div></div>
+  {% for r in reviews %}
+    <div style="padding:12px 18px;border-bottom:1px solid var(--line)">
+      <div class="row between small"><span><strong>{{ r.project.title }}</strong> · <span class="muted">{{ r.judge_role.user.name }} ({{ r.judge_role.ref }})</span> · quote: {{ r.get_quotable_display }}</span><span class="badge {% if r.moderation == 'pending' %}warn{% elif r.moderation == 'hidden' %}bad{% else %}good{% endif %}">{{ r.moderation }}</span></div>
+      <p style="margin:6px 0">{{ r.feedback_for_team|default:r.feedback_to_team }}</p>
+      <form method="post" class="row">{% csrf_token %}<input type="hidden" name="review" value="{{ r.pk }}">
+        <button class="btn sm" name="action" value="approve">Approve</button>
+        <input type="text" name="text" placeholder="Edited text (optional)" style="max-width:320px"><input type="text" name="note" placeholder="Note to judge" style="max-width:160px"><button class="btn sm" name="action" value="edit">Save edit</button>
+        <button class="btn sm danger" name="action" value="hide">Hide</button>
+        {% if r.quotable != "no" %}<button class="btn sm" name="action" value="feature">Feature quote</button>{% endif %}
+      </form>
+    </div>
+  {% empty %}<div class="card-body muted">Nothing here.</div>{% endfor %}
+  </div>
+</div>
+<aside class="stack">
+  <div class="card"><h3>Release scorecards</h3><p class="small muted">Every team member gets an e-mail with a sign-in link to their scorecard: calibrated score, standing, per-criterion percentiles, how the score was computed, and every judge's feedback (judges appear as "Judge A/B/C").</p>
+    {% if ev.feedback_released_at %}<p class="small"><span class="badge good">released</span></p>{% else %}<form method="post" data-confirm="Release feedback and scorecards to every team?">{% csrf_token %}<button class="btn primary" name="action" value="release" {% if counts.pending and not ev.auto_approve_feedback %}disabled title="Moderate pending items first"{% endif %}>Release to all teams</button></form>{% endif %}</div>
+  <div class="card"><h3>Teams without feedback</h3>{% for p in fcov.none %}<div class="small">{{ p.title }} <span class="muted">({{ p.team.name }})</span></div>{% empty %}<p class="small">Every team has written feedback.</p>{% endfor %}
+    {% if fcov.short %}<p class="tiny muted" style="margin-top:8px">{{ fcov.short|length }} more have only very short feedback (under {{ fcov.min_chars }} characters).</p>{% endif %}</div>
+  {% if quotes %}<div class="card"><h3>Featured quotes</h3>{% for q in quotes %}<div class="small" style="margin-bottom:8px"><strong>{{ q.project.title }}</strong><br>“{{ q.text }}”</div>{% endfor %}</div>{% endif %}
+</aside>
+</div>
+{% endblock %}

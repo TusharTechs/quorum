@@ -1,1 +1,7 @@
-<div class="card" id="vote-box"><h3>Community vote</h3><p class="small muted">Voting is being set up.</p></div>
+<div class="card" id="vote-box"><h3>Community vote</h3>
+{% if voting.open %}
+  {% if voting.voter %}{% if p.pk in voting.voted %}<p class="small"><span class="badge good">You voted for this project</span></p>{% else %}<p class="small muted">{{ voting.remaining }} vote{{ voting.remaining|pluralize }} left.</p>{% endif %}{% endif %}
+  <a class="btn primary" href="/e/{{ ev.slug }}/vote">Open the ballot</a>
+  <p class="tiny muted" style="margin-top:8px">Closes {{ voting.closes_at|date:"j M, H:i" }} UTC. Tallies stay hidden until then.</p>
+{% else %}<p class="small muted">{% if voting.opens_at and voting.opens_at > voting.closes_at %}Not open.{% else %}Voting is closed.{% endif %}</p>{% endif %}
+</div>

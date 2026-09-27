@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Verify a record{% endblock %}
+{% block head %}<script type="module" src="{% static 'js/verify.js' %}"></script>{% endblock %}
+{% block content %}
+<div style="max-width:820px">
+<h1>Verify a signed record</h1>
+<p class="muted">Paste a certificate, evaluation protocol or audit checkpoint record. Your browser checks the Ed25519 signature locally against the published key (<a href="/.well-known/quorum-keys.json">/.well-known/quorum-keys.json</a>); nothing is sent anywhere. The server check below confirms it too.</p>
+<form method="post" class="card stack">{% csrf_token %}
+  <textarea name="record" id="record-input" style="min-height:160px" class="mono" placeholder='{"payload": "…", "signature": "…", "key_id": "…"}'>{{ request.POST.record }}</textarea>
+  <div class="row"><button class="btn primary" type="button" id="verify-local">Verify in my browser</button><button class="btn" type="submit">Verify on the server</button></div>
+  <div id="local-result" class="small" aria-live="polite"></div>
+</form>
+{% if result %}<div class="callout {% if result.valid %}good{% else %}bad{% endif %}" style="margin-top:14px"><h3>{% if result.valid %}Valid signature{% else %}Not valid{% endif %}</h3>
+{% if result.valid %}<p class="small">Serial {{ result.serial|default:"(checkpoint)" }} · {% if result.revoked %}<strong>revoked</strong>{% else %}not revoked{% endif %}.</p><pre class="hash" style="white-space:pre-wrap">{{ result.data }}</pre>{% else %}<p class="small">{{ result.error|default:"The signature does not match this record and key." }}</p>{% endif %}</div>{% endif %}
+</div>
+{% endblock %}

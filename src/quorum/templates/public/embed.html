@@ -1,0 +1,5 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ ev.name }} · projects</title><link rel="stylesheet" href="{% static 'css/app.css' %}"><base target="_blank"></head>
+<body style="background:transparent"><div style="padding:12px">
+<div class="row between" style="margin-bottom:10px"><strong>{{ ev.name }}</strong><a class="small" href="{{ PUBLIC_ORIGIN }}/e/{{ ev.slug }}/projects">Open gallery ↗</a></div>
+<div class="gallery">{% for p in projects %}<a class="pcard" href="{{ PUBLIC_ORIGIN }}/p/{{ p.pk }}"><div class="body"><h3>{{ p.title }}</h3><p class="tag">{{ p.tagline }}</p><div class="meta">{% if p.track %}<span class="chip">{{ p.track.name }}</span>{% endif %}<span>{{ p.team.name }}</span></div></div></a>{% empty %}<div class="empty">No projects yet.</div>{% endfor %}</div>
+<p class="tiny muted" style="margin-top:10px">Powered by Quorum</p></div></body></html>

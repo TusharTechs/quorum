@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ c.serial }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:760px;margin:10px auto;padding:36px">
+  <p class="eyebrow muted small">{{ c.get_kind_display }} · {{ c.serial }}</p>
+  <h1 style="font-size:34px">{{ data.holder.name }}</h1>
+  {% if c.kind == "judge_protocol" %}
+    <p style="font-size:17px">served as a judge at <strong>{{ data.event.name }}</strong>, completing <strong>{{ data.reviews_completed }}</strong> review{{ data.reviews_completed|pluralize }}{% if data.pairwise_comparisons %} and {{ data.pairwise_comparisons }} pairwise comparison{{ data.pairwise_comparisons|pluralize }}{% endif %}{% if data.tracks %} in {{ data.tracks|join:", " }}{% endif %}, between {{ data.period.from }} and {{ data.period.to }}.</p>
+    <p class="small muted">{{ data.statement }}</p>
+  {% elif c.kind == "winner" %}<p style="font-size:17px">placed <strong>#{{ data.place }}</strong> at <strong>{{ data.event.name }}</strong> with <strong>{{ data.project }}</strong> ({{ data.team }}).</p>
+  {% else %}<p style="font-size:17px">took part in <strong>{{ data.event.name }}</strong> with <strong>{{ data.project }}</strong> ({{ data.team }}).</p>{% endif %}
+  <hr>
+  <p class="small">Signed with Ed25519 key <span class="mono">{{ c.key_id }}</span>, anchored to audit checkpoint #{{ data.audit_checkpoint.seq }}. {% if c.revoked_at %}<span class="badge bad">revoked</span>{% endif %}</p>
+  <details><summary class="small">Machine-readable record (paste into /verify, or check with any Ed25519 tool)</summary><pre class="hash" id="record" style="white-space:pre-wrap">{{ bundle }}</pre><button class="btn sm" data-copy-target="#record" data-copy="">Copy record</button></details>
+  <div class="row" style="margin-top:14px"><a class="btn" href="/verify">Verify a record</a><span class="tiny muted">Print this page (Ctrl/⌘+P) for a PDF.</span></div>
+</div>
+{% endblock %}

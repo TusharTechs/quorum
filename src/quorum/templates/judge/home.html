@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Judging{% endblock %}
+{% block content %}
+<h1>Judging</h1>
+<ul>{% for r in roles %}<li><a href="/j/{{ r.event.slug }}">{{ r.event.name }}</a></li>{% empty %}<li class="muted">You are not a judge in any event.</li>{% endfor %}</ul>
+{% endblock %}

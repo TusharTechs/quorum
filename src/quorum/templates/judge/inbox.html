@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Judge · {{ ev.name }}{% endblock %}
+{% block content %}
+<p class="eyebrow muted small">{{ ev.name }} · judge {{ role.ref }}</p>
+<div class="row between"><h1>Your batch</h1>{% if pending %}<a class="btn primary" href="/j/{{ ev.slug }}/review/{{ pending.0.pk }}">{% if pending.0.status == 'in_progress' %}Resume{% else %}Start{% endif %} reviewing →</a>{% endif %}</div>
+<div class="grid cols-4" style="margin:12px 0 20px">
+  <div class="stat"><div class="k">Done</div><div class="v">{{ done|length }} / {{ total }}</div>{% bar done|length total "good" %}</div>
+  <div class="stat"><div class="k">Left</div><div class="v">{{ pending|length }}</div><div class="s">about {{ est_minutes }} minutes</div></div>
+  <div class="stat"><div class="k">Due</div><div class="v" style="font-size:18px">{{ ev.judging_closes_at|date:"j M, H:i" }}</div><div class="s">{% if window_open %}<time data-countdown datetime="{{ ev.judging_closes_at|date:'c' }}">…</time> left{% else %}window closed{% endif %}</div></div>
+  <div class="stat"><div class="k">Tracks</div><div class="s" style="margin-top:8px">{% for t in tracks %}<span class="chip">{{ t.name }}</span> {% endfor %}</div></div>
+</div>
+<div class="callout small" style="margin-bottom:16px"><strong>How this works.</strong> Score each criterion using the anchors, and write feedback the team will read (every team gets it, placed or not). Your scores are private: no other judge can see them, and the server enforces that. Keyboard: <kbd>1</kbd>–<kbd>5</kbd> to score, <kbd>J</kbd>/<kbd>K</kbd> to move, <kbd>F</kbd> for feedback, <kbd>⌘</kbd>+<kbd>↵</kbd> to submit.</div>
+{% if tiebreaks %}<div class="callout tie" style="margin-bottom:16px"><h3>Tie-break requested</h3>{% for t in tiebreaks %}<p class="small">Position {{ t.tb.boundary }}: {{ t.done }} of {{ t.total }} comparisons done. <a class="btn sm" href="/j/{{ ev.slug }}/tiebreak/{{ t.tb.pk }}">{% if t.next %}Compare →{% else %}Review{% endif %}</a></p>{% endfor %}</div>{% endif %}
+<div class="card flush">
+  <table><thead><tr><th>Project</th><th>Track</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for a in pending %}<tr><td><strong>{{ a.project.title }}</strong><div class="small muted">{{ a.project.tagline|truncatechars:90 }}</div></td><td class="small">{{ a.project.track.name|default:"–" }}</td><td><span class="badge {% if a.status == 'in_progress' %}accent{% else %}warn{% endif %}">{{ a.get_status_display }}</span>{% if a.batch and a.batch.kind == "focus" %} <span class="badge tie">focus</span>{% endif %}</td><td class="right"><a class="btn sm primary" href="/j/{{ ev.slug }}/review/{{ a.pk }}">Review</a></td></tr>{% endfor %}
+  {% for a in done %}<tr><td>{{ a.project.title }}</td><td class="small">{{ a.project.track.name|default:"–" }}</td><td><span class="badge good">submitted</span></td><td class="right">{% if window_open %}<a class="btn sm" href="/j/{{ ev.slug }}/review/{{ a.pk }}">Edit</a>{% endif %}</td></tr>{% endfor %}
+  {% for a in recused %}<tr><td class="muted">{{ a.project.title }}</td><td class="small">{{ a.project.track.name|default:"–" }}</td><td><span class="badge">recused</span></td><td></td></tr>{% endfor %}
+  {% if not pending and not done %}<tr><td colspan="4" class="muted">No assignments yet. You will get an e-mail when your batch is ready.</td></tr>{% endif %}
+  </tbody></table>
+</div>
+<div class="card" style="margin-top:16px"><div class="row between"><div><h3 style="margin:0">Signed evaluation protocol</h3><p class="small muted" style="margin:4px 0 0">A numbered, signed record of the work you completed (no scores), verifiable by anyone.</p></div>
+{% if protocol %}<a class="btn" href="/certificates/{{ protocol.pk }}">View {{ protocol.serial }}</a>{% else %}<form method="post" action="/j/{{ ev.slug }}/protocol">{% csrf_token %}<button class="btn" {% if pending %}disabled title="Finish your batch first"{% endif %}>Issue my protocol</button></form>{% endif %}</div></div>
+{% endblock %}

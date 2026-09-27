@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Why #{{ e.rank }} · {{ p.title }}{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<p class="small"><a href="/o/{{ ev.slug }}/results">← Ranking</a></p>
+<div class="row between"><div><p class="eyebrow muted small" style="margin:0">Why is this project #{{ e.rank }}?</p><h1>{{ p.title }}</h1><p class="muted">{{ p.team.name }} · {{ p.track.name }}</p></div>
+<div class="grid cols-3" style="min-width:420px"><div class="stat"><div class="k">Calibrated</div><div class="v">{{ e.calibrated|f3 }}</div><div class="s">± {{ e.se|f3 }}</div></div><div class="stat"><div class="k">Plausible rank</div><div class="v">{{ e.rank_lo }}–{{ e.rank_hi }}</div><div class="s">90% of simulations</div></div><div class="stat"><div class="k">P(prize)</div><div class="v">{{ e.p_prize|pct }}</div><div class="s">P(#1) {{ e.p_first|pct }}</div></div></div></div>
+<div class="split">
+<div class="stack-lg">
+  <div class="card"><h2>From raw average to calibrated score</h2>{% waterfall expl names %}
+    <p class="small muted">Exact decomposition: raw {{ expl.raw_mean|f3 }}{% for l in expl.lines %} {{ l.contribution|signed }}{% endfor %} = {{ expl.check_sum|f3 }} (model {{ expl.final|f3 }}, {% if expl.exact %}exact{% else %}rounding{% endif %}). Each judge's line is minus their leniency divided by the number of judges on this project. Leniency is measured only against other judges <em>on the same projects</em>, then shrunk toward zero with k = {{ k|f2 }}.</p></div>
+  <div class="card flush"><div class="card-head"><h2>Reviews</h2><span class="small muted">visible to organizers only</span></div>
+    <table><thead><tr><th>Judge</th>{% for c in criteria %}<th class="num">{{ c.name|truncatechars:14 }}</th>{% endfor %}<th class="num">Leniency</th><th>Signals</th></tr></thead><tbody>
+    {% for r in rows %}<tr><td><strong>{{ names|get:r.ref }}</strong> <span class="mono tiny muted">{{ r.ref }}</span>{% if r.source|length > 1 %}<div class="tiny muted">merged from {{ r.source|length }} scores (duplicate submission)</div>{% endif %}</td>{% for c in criteria %}<td class="num">{{ r.scores|get:c.key|default:"–" }}</td>{% endfor %}<td class="num">{{ r.stat.offset|signed }}</td><td>{% for s in r.stat.signals %}<span class="badge {% if s == 'flat' %}bad{% else %}warn{% endif %}">{{ s }}</span> {% endfor %}</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+<aside class="stack">
+  <div class="card"><h3>Neighbours</h3>{% for n in neighbours %}<div class="small row between" style="padding:4px 0;{% if n.project == e.project %}font-weight:700{% endif %}"><span>#{{ n.rank }} {{ titles|get:n.project }}</span><span class="num">{{ n.calibrated|f3 }}{% if n.tied_with_next %} <span class="badge tie">tie</span>{% endif %}</span></div>{% endfor %}
+  {% if e.p_above_next is not None %}<p class="tiny muted" style="margin-top:8px">P(this project truly above the next one) = {{ e.p_above_next|pct }}{% if e.tied_with_next %}: within measurement noise{% endif %}.</p>{% endif %}</div>
+  <div class="card small"><h3>By criterion</h3><dl class="kv">{% for c in criteria %}<dt>{{ c.name }}</dt><dd>{{ e.criteria|get:c.key|f2 }}</dd>{% endfor %}</dl></div>
+  <div class="card small"><h3>Other methods</h3><dl class="kv"><dt>Raw rank</dt><dd>#{{ e.raw_rank }}</dd><dt>Raptors classic</dt><dd>{{ e.classic|f3 }} (#{{ e.classic_rank }})</dd><dt>Per-judge z</dt><dd>#{{ e.zscore_rank }}</dd></dl></div>
+  <div class="card tiny muted">Run <span class="hash">{{ run.output_hash }}</span>. Recompute from the exported bundle with <code>python -m engine recompute bundle.json</code>.</div>
+</aside>
+</div>
+{% endblock %}

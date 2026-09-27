@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · team{% endblock %}
+{% block content %}
+<p class="small"><a href="/e/{{ ev.slug }}">← {{ ev.name }}</a></p>
+<div class="row between"><h1>{% if team %}{{ team.name }}{% else %}Join {{ ev.name }}{% endif %}</h1>
+{% if open %}<span class="badge accent">submissions close in <time data-countdown datetime="{{ ev.submissions_close_at|date:'c' }}">…</time></span>{% else %}<span class="badge bad">submissions closed {{ ev.submissions_close_at|date:"j M Y, H:i" }} UTC</span>{% endif %}</div>
+{% if team %}
+<div class="split">
+  <div class="stack-lg">
+    <div class="card">
+      <h2>Submission</h2>
+      {% if project %}
+        <p><strong>{{ project.title }}</strong> <span class="badge {% if project.status == 'submitted' %}good{% else %}warn{% endif %}">{{ project.status }}</span> <span class="muted small">v{{ project.version }}</span></p>
+        <div class="row">{% if open %}<a class="btn primary" href="/me/projects/{{ project.pk }}/edit">Edit submission</a>{% endif %}<a class="btn" href="/p/{{ project.pk }}">View page</a></div>
+      {% elif open %}
+        <p class="muted">Start a draft; it saves as you type and stays private until you submit.</p>
+        <a class="btn primary" href="/me/e/{{ ev.slug }}/submit">Start the submission</a>
+      {% else %}<p class="muted">No submission was made before the deadline.</p>{% endif %}
+    </div>
+    <div class="card">
+      <h2>Members <span class="muted small">({{ members|length }} / {{ ev.team_size_max }})</span></h2>
+      <ul>{% for m in members %}<li>{{ m.user.display }} <span class="muted small">{{ m.user.email }}</span>{% if m.role == "owner" %} <span class="badge">owner</span>{% endif %}</li>{% endfor %}</ul>
+    </div>
+  </div>
+  <aside class="stack">
+    <div class="card stack">
+      <h3>Invite teammates</h3>
+      {% if invite_url %}<div class="sunk"><code id="inv" class="small" style="word-break:break-all">{{ invite_url }}</code></div><button class="btn sm" data-copy-target="#inv" data-copy="">Copy link</button><p class="tiny muted">Shown once. We store only a hash of it.</p>{% else %}<p class="small muted">Invite links are shown once and stored hashed. Create a fresh one to share.</p>{% endif %}
+      {% if open %}<form method="post">{% csrf_token %}<button class="btn" name="action" value="rotate">New invite link</button></form>{% endif %}
+    </div>
+    {% if open %}<form method="post" class="card" data-confirm="Leave this team?">{% csrf_token %}<button class="btn danger sm" name="action" value="leave">Leave team</button></form>{% endif %}
+  </aside>
+</div>
+{% elif open %}
+<div class="grid cols-2">
+  <form method="post" class="card">{% csrf_token %}<h2>Create a team</h2><div class="field"><label for="tn">Team name</label><input id="tn" type="text" name="name" required maxlength="80"></div><button class="btn primary" name="action" value="create">Create team</button></form>
+  <div class="card"><h2>Join a team</h2><p class="muted">Ask a teammate for their invite link and open it; you will join in one click.</p></div>
+</div>
+{% else %}<div class="callout warn">Teams are frozen: submissions have closed.</div>{% endif %}
+{% endblock %}

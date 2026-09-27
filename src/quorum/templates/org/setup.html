@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · setup{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<div class="split">
+<div class="stack-lg">
+  <form method="post" class="card">{% csrf_token %}<input type="hidden" name="action" value="event">
+    <h2>Event</h2>
+    <div class="form-grid">
+      <div class="field"><label>Name</label><input type="text" name="name" value="{{ ev.name }}"></div>
+      <div class="field"><label>Tagline</label><input type="text" name="tagline" value="{{ ev.tagline }}"></div>
+      <div class="field"><label>Submissions open (UTC)</label><input type="datetime-local" name="submissions_open_at" value="{{ ev.submissions_open_at|date:'Y-m-d\TH:i' }}"></div>
+      <div class="field"><label>Submissions close (UTC)</label><input type="datetime-local" name="submissions_close_at" value="{{ ev.submissions_close_at|date:'Y-m-d\TH:i' }}"><div class="help">Changing this after submissions open is recorded as a deadline change in the audit log.</div></div>
+      <div class="field"><label>Judging opens</label><input type="datetime-local" name="judging_opens_at" value="{{ ev.judging_opens_at|date:'Y-m-d\TH:i' }}"></div>
+      <div class="field"><label>Judging closes</label><input type="datetime-local" name="judging_closes_at" value="{{ ev.judging_closes_at|date:'Y-m-d\TH:i' }}"></div>
+      <div class="field"><label>Voting opens</label><input type="datetime-local" name="voting_opens_at" value="{{ ev.voting_opens_at|date:'Y-m-d\TH:i' }}"></div>
+      <div class="field"><label>Voting closes</label><input type="datetime-local" name="voting_closes_at" value="{{ ev.voting_closes_at|date:'Y-m-d\TH:i' }}"></div>
+      <div class="field"><label>Grace period (seconds)</label><input type="number" name="grace_seconds" value="{{ ev.grace_seconds }}" min="0"></div>
+      <div class="field"><label>Team size max</label><input type="number" name="team_size_max" value="{{ ev.team_size_max }}" min="1"></div>
+      <div class="field"><label>Reviews per project</label><input type="number" name="reviews_per_project" value="{{ ev.reviews_per_project }}" min="1"></div>
+      <div class="field"><label>Batch size</label><input type="number" name="batch_size" value="{{ ev.batch_size }}" min="1"></div>
+      <div class="field"><label>Minimum feedback (characters)</label><input type="number" name="min_feedback_chars" value="{{ ev.min_feedback_chars }}" min="0"></div>
+      <div class="field"><label>Focus budget (% of baseline reviews)</label><input type="number" name="focus_budget_pct" value="{{ ev.focus_budget_pct }}" min="0" max="100"></div>
+      <div class="field"><label>Paid prize positions</label><input type="number" name="prize_positions" value="{{ ev.prize_positions }}" min="1"></div>
+      <div class="field"><label>Voting</label><select name="voting_mode">{% for v, l in ev.VotingMode.choices %}<option value="{{ v }}" {% if ev.voting_mode == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+      <div class="field"><label>Votes per voter</label><input type="number" name="votes_per_voter" value="{{ ev.votes_per_voter }}" min="1"></div>
+      <div class="field"><label>Rank shown to teams</label><select name="rank_display">{% for v, l in ev.RankDisplay.choices %}<option value="{{ v }}" {% if ev.rank_display == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+    </div>
+    <label class="check"><input type="hidden" name="quadratic_voting" value="0"><input type="checkbox" name="quadratic_voting" value="1" {% if ev.quadratic_voting %}checked{% endif %}> Quadratic voting (only with signed-in or one-time-code voters)</label>
+    <label class="check"><input type="hidden" name="auto_approve_feedback" value="0"><input type="checkbox" name="auto_approve_feedback" value="1" {% if ev.auto_approve_feedback %}checked{% endif %}> Release judge feedback without moderation</label>
+    <div class="field" style="margin-top:12px"><label>Description (markdown)</label><textarea name="description_md">{{ ev.description_md }}</textarea></div>
+    <div class="field"><label>Rules</label><textarea name="rules_md" style="min-height:80px">{{ ev.rules_md }}</textarea></div>
+    <button class="btn primary">Save event</button>
+  </form>
+  <form method="post" class="card">{% csrf_token %}<input type="hidden" name="action" value="rubric">
+    <div class="row between"><h2 style="margin:0">Rubric</h2>{% if locked %}<span class="badge good">locked</span>{% endif %}</div>
+    <p class="small muted">Weights must total 100%. The rubric is locked when you publish the event, and its hash becomes public. That is Hackathon Raptors' own rule: weights are published before registration and never change.</p>
+    <table><thead><tr><th>Criterion</th><th>Description</th><th class="num">Weight %</th><th class="num">Scale max</th></tr></thead><tbody>
+    {% for c in criteria %}<tr><td><input type="hidden" name="key_{{ forloop.counter0 }}" value="{{ c.key }}"><input type="text" name="name_{{ forloop.counter0 }}" value="{{ c.name }}" {% if locked and not user.is_superuser %}disabled{% endif %}></td><td><input type="text" name="desc_{{ forloop.counter0 }}" value="{{ c.description }}" {% if locked and not user.is_superuser %}disabled{% endif %}></td><td class="num"><input type="number" step="0.01" name="weight_{{ forloop.counter0 }}" value="{{ c.weight_pct }}" style="width:90px" {% if locked and not user.is_superuser %}disabled{% endif %}></td><td class="num"><input type="number" name="scale_{{ forloop.counter0 }}" value="{{ c.scale_max }}" style="width:70px" {% if locked and not user.is_superuser %}disabled{% endif %}></td></tr>{% endfor %}
+    {% if not locked %}<tr><td><input type="text" name="name_{{ criteria|length }}" placeholder="Add a criterion"></td><td><input type="text" name="desc_{{ criteria|length }}"></td><td class="num"><input type="number" step="0.01" name="weight_{{ criteria|length }}" style="width:90px"></td><td class="num"><input type="number" name="scale_{{ criteria|length }}" value="5" style="width:70px"></td></tr>{% endif %}
+    </tbody></table>
+    {% if not locked %}<button class="btn" style="margin-top:12px">Save rubric</button>
+    {% elif user.is_superuser %}<div class="callout bad small" style="margin-top:12px"><strong>Administrator override.</strong> Changing a locked method creates a new version, is recorded in the audit log, and shows a permanent notice on the results page.<div class="field" style="margin-top:8px"><label>Reason (required)</label><input type="text" name="override_reason" minlength="10"></div><button class="btn danger">Override and re-lock</button></div>{% endif %}
+  </form>
+</div>
+<aside class="stack">
+  <div class="card">
+    <h3>Publish &amp; lock</h3>
+    {% if locked %}<p class="small">Method v{{ method.version }} locked {{ method.locked_at|date:"j M Y H:i" }}.</p><p class="hash">{{ method.spec_hash }}</p><a class="small" href="/e/{{ ev.slug }}/methodology">View the public method →</a>
+    {% else %}<p class="small muted">Publishing opens registration and locks the judging method: rubric, weights, calibration, tie-break rule and focus budget. Its hash is shown publicly.</p><form method="post" data-confirm="Publish and lock the judging method? Only an administrator can change it afterwards.">{% csrf_token %}<button class="btn primary" name="action" value="publish">Publish &amp; lock method</button></form>{% endif %}
+  </div>
+  <div class="card"><h3>Phase</h3><p class="small muted">Submission windows follow the clock. Judging phases are yours to move.</p>
+    <form method="post" class="row">{% csrf_token %}<input type="hidden" name="action" value="phase"><select name="phase" style="width:auto"><option value="judging">Judging</option><option value="focus">Focus round</option><option value="deliberation">Deliberation</option><option value="archived">Archived</option></select><button class="btn sm">Set</button></form></div>
+  <form method="post" class="card">{% csrf_token %}<input type="hidden" name="action" value="track"><h3>Tracks</h3><div class="row" style="margin-bottom:8px">{% for t in tracks %}<span class="chip">{{ t.name }}</span>{% empty %}<span class="muted small">none</span>{% endfor %}</div><div class="row"><input type="text" name="track_name" placeholder="New track"><button class="btn sm">Add</button></div></form>
+  <form method="post" class="card">{% csrf_token %}<input type="hidden" name="action" value="prize"><h3>Prizes</h3>{% for p in prizes %}<div class="small">{{ p.name }} · {{ p.places }} place{{ p.places|pluralize }} {% if p.kind == "community" %}<span class="badge">community</span>{% endif %} <span class="muted">{{ p.value_text }}</span></div>{% endfor %}
+    <div class="stack" style="margin-top:8px"><input type="text" name="prize_name" placeholder="Prize name"><div class="row"><input type="number" name="places" value="1" style="width:80px"><select name="kind" style="width:auto"><option value="judged">judged</option><option value="community">community</option></select><input type="text" name="value_text" placeholder="$800" style="width:100px"></div><button class="btn sm">Add prize</button></div></form>
+  <form method="post" class="card">{% csrf_token %}<input type="hidden" name="action" value="question"><h3>Custom questions</h3>{% for q in questions %}<div class="small">{{ q.label }} <span class="muted">({{ q.kind }}{% if q.required %}, required{% endif %})</span></div>{% endfor %}
+    <div class="stack" style="margin-top:8px"><input type="text" name="label" placeholder="Question"><div class="row"><select name="kind" style="width:auto"><option value="text">short text</option><option value="long_text">long text</option><option value="url">URL</option><option value="choice">choice</option><option value="bool">yes/no</option></select><label class="check"><input type="checkbox" name="required"> required</label></div><input type="text" name="options" placeholder="Options (comma-separated, for choice)"><button class="btn sm">Add question</button></div></form>
+</aside>
+</div>
+{% endblock %}

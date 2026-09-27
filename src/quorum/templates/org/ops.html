@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · judging ops{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<div class="grid cols-4">
+  <div class="stat"><div class="k">Reviews remaining</div><div class="v">{{ bd.remaining }}</div><div class="s">of {{ bd.total }} assigned</div></div>
+  <div class="stat {% if cov.below %}warn{% else %}good{% endif %}"><div class="k">Projects at target</div><div class="v">{{ cov.ok }}/{{ cov.total }}</div><div class="s">{{ cov.below }} short, nothing pending</div></div>
+  <div class="stat {% if fc.at_risk %}bad{% else %}good{% endif %}"><div class="k">At risk by deadline</div><div class="v">{{ fc.at_risk|length }}</div><div class="s">projects, at current pace</div></div>
+  <div class="stat"><div class="k">Window</div><div class="v">{{ window_left|floatformat:1 }}d</div><div class="s">left · closes {{ ev.judging_closes_at|date:"j M H:i" }}</div></div>
+</div>
+<div class="split" style="margin-top:18px">
+  <div class="stack-lg">
+    <div class="card"><div class="row between"><h2 style="margin:0">Burn-down</h2><span class="small muted">remaining reviews vs the ideal pace</span></div>{% burndown bd.points bd.total %}</div>
+    {% if plan %}
+    <div class="card" style="border-color:var(--accent-line)">
+      <div class="row between"><h2 style="margin:0">Proposed assignment {% if plan.kind == "rebalance" and plan.drop_pending_of %}(rebalance){% endif %}</h2><span class="badge accent">dry run: nothing changed yet</span></div>
+      <div class="grid cols-4" style="margin:12px 0">
+        <div class="stat"><div class="k">New reviews</div><div class="v">{{ plan.metrics.new_assignments }}</div></div>
+        <div class="stat"><div class="k">At target after</div><div class="v">{{ plan.metrics.projects_at_target }}/{{ plan.metrics.projects }}</div></div>
+        <div class="stat {% if plan.metrics.components == 1 %}good{% else %}warn{% endif %}"><div class="k">Judge graph</div><div class="v">{{ plan.metrics.components }}</div><div class="s">component{{ plan.metrics.components|pluralize }} (1 = calibratable)</div></div>
+        <div class="stat good"><div class="k">Conflicts violated</div><div class="v">{{ plan.metrics.conflicts_violated }}</div></div>
+      </div>
+      <p class="small muted">Load per judge {{ plan.metrics.load_min }}–{{ plan.metrics.load_max }} · {{ plan.metrics.judge_pairs_sharing }} of {{ plan.metrics.judge_pairs_total }} judge pairs share a project (overlap is what makes leniency measurable){% if plan.unfilled %} · <strong>{{ plan.unfilled|length }} slot(s) could not be filled</strong> (no eligible judge with capacity){% endif %}.</p>
+      <details><summary class="small">Show the {{ plan.new|length }} new assignments</summary><div class="small mono" style="columns:3;margin-top:8px">{% for j, p in plan.new %}<div>{{ j }} → {{ p }}</div>{% endfor %}</div></details>
+      <form method="post" class="row" style="margin-top:12px">{% csrf_token %}<button class="btn primary" name="action" value="commit">Commit and e-mail judges</button><button class="btn" name="action" value="discard">Discard</button></form>
+    </div>
+    {% endif %}
+    <form method="post" class="card flush">{% csrf_token %}
+      <div class="card-head"><h2>Judges</h2><div class="row small">{% for s, n in status_counts.items %}<span class="badge {% if s == 'stalled' or s == 'unavailable' %}bad{% elif s == 'behind' %}warn{% elif s == 'done' %}good{% endif %}">{{ n }} {{ s }}</span>{% endfor %}</div></div>
+      <div class="table-wrap"><table><thead><tr><th></th><th>Judge</th><th>Progress</th><th class="num">Pending</th><th class="num">Pace/day</th><th>Last active</th><th>Status</th></tr></thead><tbody>
+      {% for j in progress %}<tr><td><input type="checkbox" name="role" value="{{ j.role.pk }}" aria-label="select {{ j.name }}" {% if j.status == "stalled" %}checked{% endif %}></td><td><strong>{{ j.name }}</strong> <span class="mono tiny muted">{{ j.ref }}</span><div class="tiny muted">{{ j.tracks|join:", " }}</div></td>
+      <td style="min-width:140px">{% bar j.submitted j.assigned %}<div class="tiny muted">{{ j.submitted }}/{{ j.assigned }}{% if j.empty_feedback %} · {{ j.empty_feedback }} without feedback{% endif %}</div></td><td class="num">{{ j.pending }}</td><td class="num">{{ j.rate_per_day|floatformat:1 }}</td>
+      <td class="small">{% if j.last_activity %}{{ j.last_activity|timesince }} ago{% else %}<span class="muted">never</span>{% endif %}</td>
+      <td><span class="badge {% if j.status == 'done' %}good{% elif j.status == 'stalled' or j.status == 'unavailable' %}bad{% elif j.status == 'behind' %}warn{% endif %}">{{ j.status }}</span></td></tr>{% endfor %}
+      </tbody></table></div>
+      <div class="card-body row">
+        <button class="btn" name="action" value="nudge">Nudge selected</button>
+        <button class="btn" name="action" value="plan_rebalance">Plan rebalance of selected</button>
+        <input type="text" name="message" placeholder="Optional message for the nudge" style="max-width:320px">
+      </div>
+    </form>
+  </div>
+  <aside class="stack">
+    <div class="card"><h3>Coverage</h3>
+      <p class="small">Target: <strong>{{ cov.target }}</strong> reviews per project.</p>
+      {% if cov.below %}<p class="small"><strong>{{ cov.below }}</strong> project{{ cov.below|pluralize }} below target with nothing pending:</p>
+      <ul class="small">{% for r in cov.rows %}{% if r.state == "below" %}<li>{{ r.project.title }} <span class="muted">({{ r.submitted }}/{{ r.target }})</span></li>{% endif %}{% endfor %}</ul>{% endif %}
+      <form method="post">{% csrf_token %}<button class="btn primary" name="action" value="plan_fill">Plan: fill coverage gaps</button></form>
+      <p class="tiny muted" style="margin-top:8px">The planner picks judges who are in the right track, free of conflicts, and have capacity. It prefers judges whose batches overlap with others', because that overlap is what makes leniency measurable.</p>
+    </div>
+    {% if fc.at_risk %}<div class="card"><h3>At risk by the deadline</h3><p class="tiny muted">Counting only pending work held by judges who are on pace.</p><ul class="small">{% for r in fc.at_risk %}<li>{{ r.project.title }}: short by {{ r.short_by }}</li>{% endfor %}</ul></div>{% endif %}
+    <div class="card"><h3>Feedback</h3><p class="small">{{ fcov.with_feedback }}/{{ fcov.total }} teams have written feedback.{% if fcov.none %} <strong>{{ fcov.none|length }}</strong> would get none: {% for p in fcov.none %}{{ p.title }}{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}</p></div>
+    <div class="card"><h3>Reminders</h3>{% for r in reminders %}<div class="small">{{ r.get_kind_display }} · {{ r.send_at|date:"j M H:i" }} {% if r.sent_at %}<span class="badge good">sent</span>{% else %}<span class="badge">scheduled</span>{% endif %}</div>{% empty %}<p class="small muted">Scheduled automatically when batches are sent: midpoint, 24 hours left, overdue.</p>{% endfor %}
+      <form method="post" style="margin-top:8px">{% csrf_token %}<button class="btn sm" name="action" value="send_batches">Send unsent batches</button></form></div>
+  </aside>
+</div>
+{% endblock %}

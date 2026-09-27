@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Organize{% endblock %}
+{% block content %}
+<h1>Your events</h1>
+<div class="gallery" style="margin-bottom:28px">{% for e in events %}<a class="pcard" href="/o/{{ e.slug }}"><div class="body"><div class="row between"><span class="badge accent">{{ e.get_phase_display }}</span><span class="tiny muted">{{ e.n_projects }} submitted</span></div><h3>{{ e.name }}</h3><p class="tag">{{ e.tagline }}</p><div class="meta">closes {{ e.submissions_close_at|date:"j M Y" }}</div></div></a>{% empty %}<div class="empty">No events yet.</div>{% endfor %}</div>
+{% if can_create %}
+<div class="grid cols-2">
+  <form method="post" action="/o/new" class="card">{% csrf_token %}
+    <h2>New event</h2>
+    <div class="field"><label for="n">Name</label><input id="n" type="text" name="name" required></div>
+    <div class="form-grid"><div class="field"><label for="so">Submissions open (UTC)</label><input id="so" type="datetime-local" name="submissions_open_at"></div><div class="field"><label for="sc">Submissions close (UTC)</label><input id="sc" type="datetime-local" name="submissions_close_at"></div></div>
+    <div class="field"><label for="tpl">Start from</label><select id="tpl" name="template">{% for k, t in templates.items %}<option value="{{ k }}">{{ t.label }}</option>{% endfor %}</select></div>
+    <button class="btn primary">Create</button>
+  </form>
+  <form method="post" action="/o/new" class="card">{% csrf_token %}
+    <h2>Run it again</h2>
+    <p class="small muted">Clone an event's tracks, prizes, questions and rubric, with every date shifted.</p>
+    <div class="field"><label for="src">Clone from</label><select id="src" name="clone_from">{% for e in events %}<option value="{{ e.slug }}">{{ e.name }}</option>{% endfor %}</select></div>
+    <div class="form-grid"><div class="field"><label for="cn">New name</label><input id="cn" type="text" name="name" required></div><div class="field"><label for="sh">Shift dates by (days)</label><input id="sh" type="number" name="shift_days" value="30"></div></div>
+    <button class="btn">Clone</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

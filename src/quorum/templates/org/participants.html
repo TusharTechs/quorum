@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · participants{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+{% if items %}<div class="card" style="margin-bottom:18px"><h2>Eligibility queue</h2><p class="small muted">Problems found automatically: duplicates, missing fields, late attempts. Nothing is deleted; every decision is recorded.</p>
+<table><thead><tr><th>Project</th><th>Issue</th><th>Details</th><th>Status</th><th></th></tr></thead><tbody>
+{% for i in items %}<tr><td><a href="/p/{{ i.project.pk }}">{{ i.project.title }}</a> <span class="mono tiny">{{ i.project.ref }}</span></td><td><span class="badge warn">{{ i.kind }}</span></td><td class="small">{% if i.kind == "duplicate" %}Duplicate of {{ i.details.canonical }} ({{ i.details.reason }}). {{ i.details.policy }}{% else %}{{ i.details }}{% endif %}</td><td><span class="badge {% if i.status == 'open' %}warn{% else %}good{% endif %}">{{ i.status }}</span>{% if i.resolution_note %}<div class="tiny muted">{{ i.resolution_note }}</div>{% endif %}</td>
+<td>{% if i.status == "open" %}<form method="post" class="row">{% csrf_token %}<input type="hidden" name="item" value="{{ i.pk }}"><input type="text" name="note" placeholder="reason" style="width:140px"><button class="btn sm" name="status" value="accepted">Accept</button><button class="btn sm danger" name="status" value="rejected">Reject</button></form>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div>{% endif %}
+<div class="card flush"><div class="card-head"><h2>Submissions</h2><span class="muted small">{{ projects|length }} projects · {{ n_people }} participants · <a href="/api/v1/events/{{ ev.ref }}/exports/projects.csv">CSV</a></span></div>
+<div class="table-wrap"><table><thead><tr><th>Ref</th><th>Project</th><th>Team</th><th>Track</th><th>Status</th><th class="num">Members</th><th>Submitted</th><th class="num">Version</th></tr></thead><tbody>
+{% for p in projects %}<tr><td class="mono tiny">{{ p.ref }}</td><td><a href="/p/{{ p.pk }}">{{ p.title }}</a>{% if p.duplicate_of %} <span class="badge tie">duplicate of {{ p.duplicate_of.ref }}</span>{% endif %}</td><td class="small">{{ p.team.name }}</td><td class="small">{{ p.track.name|default:"–" }}</td><td><span class="badge {% if p.status == 'submitted' %}good{% elif p.status == 'draft' %}warn{% endif %}">{{ p.status }}</span></td><td class="num">{{ p.n_members }}</td><td class="small">{{ p.submitted_at|date:"j M H:i"|default:"–" }}</td><td class="num">v{{ p.version }}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

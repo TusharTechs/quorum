@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Review · {{ p.title }}{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+<div class="row between" style="margin-bottom:12px">
+  <p class="small" style="margin:0"><a href="/j/{{ ev.slug }}">← Batch</a> · project {{ position }} of {{ count }}</p>
+  <div class="row small"><span class="saved" id="save-status">{% if rv.status == "submitted" %}Submitted {{ rv.submitted_at|date:"j M H:i" }}{% else %}Draft autosaves{% endif %}</span>{% if next %}<a id="next-link" class="btn sm ghost" href="/j/{{ ev.slug }}/review/{{ next.pk }}">Next <kbd>N</kbd></a>{% endif %}</div>
+</div>
+<div class="console">
+  <article class="stack-lg">
+    <div class="card">
+      <p class="small muted" style="margin:0 0 4px">{{ p.track.name|default:"" }} · {{ p.team.name }}</p>
+      <h1 style="margin-bottom:6px">{{ p.title }}</h1>
+      <p style="font-size:16px;color:var(--ink-2)">{{ p.tagline }}</p>
+      <div class="row">{% if p.demo_video_url %}<a class="btn primary" href="{{ p.demo_video_url }}" target="_blank" rel="noopener nofollow">▶ Demo video</a>{% endif %}{% if p.repo_url %}<a class="btn" href="{{ p.repo_url }}" target="_blank" rel="noopener nofollow">Repository</a>{% endif %}{% if p.live_url %}<a class="btn" href="{{ p.live_url }}" target="_blank" rel="noopener nofollow">Live</a>{% endif %}</div>
+      {% if p.declared_commit_sha %}<p class="small" style="margin-top:8px">Final commit: <span class="hash">{{ p.declared_commit_sha }}</span></p>{% endif %}
+    </div>
+    {% if images %}<div class="grid cols-2">{% for i in images %}<img src="/media/{{ i.path }}" alt="Screenshot {{ forloop.counter }}" style="border-radius:10px;border:1px solid var(--line)">{% endfor %}</div>{% endif %}
+    <div class="card prose">{% if p.description_html %}{{ p.description_html|safe }}{% else %}<p class="muted">No description.</p>{% endif %}</div>
+    {% if answers %}<div class="card"><dl class="kv">{% for x in answers %}<dt>{{ x.question.label }}</dt><dd>{{ x.value|default:"–" }}</dd>{% endfor %}</dl></div>{% endif %}
+  </article>
+  <div class="pane">
+    <form method="post" id="review-form" data-autosave="/j/{{ ev.slug }}/review/{{ a.pk }}" class="card">{% csrf_token %}
+      <input type="hidden" name="active_seconds" value="0">
+      <div class="row between"><h2 style="margin:0">Your scores</h2><span class="tiny muted"><kbd>1</kbd>–<kbd>{{ criteria.0.levels|length }}</kbd> score · <kbd>J</kbd>/<kbd>K</kbd> move</span></div>
+      <p class="tiny muted">Private to you and the organizers. Other judges cannot see them.</p>
+      {% for item in criteria %}
+      <fieldset class="crit" style="border:1px solid var(--line)">
+        <div class="head"><legend style="font-weight:650">{{ item.c.name }}</legend><span class="tiny muted">{{ item.c.weight_pct|floatformat:0 }}%</span></div>
+        {% if item.c.description %}<div class="tiny muted">{{ item.c.description }}</div>{% endif %}
+        <div class="scale">{% for l in item.levels %}<input type="radio" id="c_{{ item.c.key }}_{{ l.v }}" name="c_{{ item.c.key }}" value="{{ l.v }}" data-anchor="{{ l.anchor }}" {% if item.value == l.v %}checked{% endif %}><label for="c_{{ item.c.key }}_{{ l.v }}" title="{{ l.anchor }}">{{ l.v }}</label>{% endfor %}</div>
+        <div class="anchor" aria-live="polite"></div>
+      </fieldset>
+      {% endfor %}
+      <div class="field"><label for="feedback">Feedback to the team <kbd>F</kbd></label><textarea id="feedback" name="feedback" data-min="{{ ev.min_feedback_chars }}" placeholder="What works, what would make it better. The team reads this.">{{ rv.feedback_to_team }}</textarea><div class="meter" id="feedback-meter"></div></div>
+      <div class="field"><label for="note">Private note to organizers</label><textarea id="note" name="note" style="min-height:60px" placeholder="Optional: broken links, eligibility concerns…">{{ rv.note_to_organizers }}</textarea></div>
+      <div class="field"><label for="quotable">Quote permission</label><select id="quotable" name="quotable">{% for v, l in rv.Quotable.choices %}<option value="{{ v }}" {% if rv.quotable == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select><div class="help">Organizers may feature a line from your feedback on the results page.</div></div>
+      <div class="row between">
+        <button class="btn primary" id="submit-review" type="submit" name="action" value="submit" {% if not window_open %}disabled{% endif %}>{% if rv.status == 'submitted' %}Save changes{% else %}Submit review{% endif %} <kbd>⌘↵</kbd></button>
+        {% if a.status != "submitted" %}<button class="btn ghost sm" type="submit" form="recuse-form">I have a conflict</button>{% endif %}
+      </div>
+    </form>
+    {% if a.status != "submitted" %}<form method="post" action="/j/{{ ev.slug }}/recuse/{{ a.pk }}" id="recuse-form" data-confirm="Declare a conflict of interest with this team? The project will be reassigned and the conflict recorded.">{% csrf_token %}<input type="hidden" name="note" value="declared by judge"></form>{% endif %}
+  </div>
+</div>
+{% endblock %}

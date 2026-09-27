@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Scorecard · {{ team.name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/me">← My hackathons</a></p>
+<p class="eyebrow muted small">{{ ev.name }} · scorecard</p>
+<h1>{{ p.title }}</h1>
+<p class="muted">{{ team.name }} · {{ sc.n_reviews }} review{{ sc.n_reviews|pluralize }}</p>
+{% with e=sc.entry %}
+{% if e %}
+<div class="grid cols-4" style="margin:18px 0">
+  <div class="stat"><div class="k">Calibrated score</div><div class="v">{{ e.calibrated|f2 }}</div><div class="s">± {{ e.se|f2 }} (one standard error)</div></div>
+  <div class="stat"><div class="k">{% if ev.rank_display == "exact" %}Rank{% else %}Standing{% endif %}</div><div class="v">{% if ev.rank_display == "exact" %}#{{ e.rank }}{% elif ev.rank_display == "band" %}{{ sc.band }}{% else %}–{% endif %}</div><div class="s">of {{ sc.n_projects }} projects{% if ev.rank_display == "exact" %} · plausible {{ e.rank_lo }}–{{ e.rank_hi }}{% endif %}</div></div>
+  <div class="stat"><div class="k">Raw average</div><div class="v">{{ e.raw|f2 }}</div><div class="s">before calibration</div></div>
+  <div class="stat"><div class="k">Track</div><div class="v" style="font-size:18px">{{ p.track.name|default:"–" }}</div><div class="s">#{{ e.track_rank }} in track</div></div>
+</div>
+{% if e.tied_with_next %}<div class="callout tie small">Your score is within the measurement noise of the next project; small differences here are not meaningful.</div>{% endif %}
+<div class="grid cols-2">
+  <div class="card"><h2>By criterion</h2><table><thead><tr><th>Criterion</th><th class="num">Calibrated</th><th class="num">Percentile in track</th></tr></thead><tbody>
+  {% for c in sc.criteria %}<tr><td>{{ c.name }} <span class="muted small">({{ c.weight_pct|floatformat:0 }}%)</span></td><td class="num">{{ e.criteria|get:c.key|f2 }}</td><td class="num">{{ sc.percentiles|get:c.key|pct }}</td></tr>{% endfor %}
+  </tbody></table></div>
+  <div class="card"><h2>How your score was computed</h2>{% if sc.explanation %}{% waterfall sc.explanation %}<p class="small muted">Each judge's correction comes from comparing them with other judges on the same projects. The parts add up exactly. <a href="/e/{{ ev.slug }}/methodology">Method</a>.</p>{% endif %}</div>
+</div>
+{% endif %}
+{% endwith %}
+<div class="card" style="margin-top:16px"><h2>What the judges wrote</h2>
+{% for f in sc.feedback %}<div style="padding:12px 0;border-bottom:1px solid var(--line)"><p class="small muted" style="margin:0 0 4px"><strong>{{ f.judge }}</strong></p><div>{{ f.text|linebreaks }}</div></div>{% empty %}<p class="muted">No written feedback was released for this project.</p>{% endfor %}
+</div>
+{% if pub %}<p class="tiny muted" style="margin-top:12px">Results frozen on run <span class="hash">{{ pub.run.output_hash|short:16 }}</span> · audit head <span class="hash">{{ pub.audit_head|short:16 }}</span></p>{% endif %}
+{% endblock %}
