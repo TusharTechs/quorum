@@ -23,4 +23,16 @@
   <div class="card"><h3>Signed checkpoints</h3><p class="tiny muted">Ed25519 signatures over the chain head, made at every phase change. Once published, any later rewrite of history contradicts them.</p>{% for c in checkpoints %}<div class="small" style="margin-bottom:6px">#{{ c.seq }} · {{ c.reason }}<br><span class="hash">{{ c.head|short:24 }}…</span></div>{% empty %}<p class="small muted">None yet.</p>{% endfor %}<a class="small" href="/.well-known/quorum-keys.json">Public keys →</a></div>
 </aside>
 </div>
+<div class="card flush" id="records" style="margin-top:16px">
+  <div class="card-head"><h2>Signed records <span class="muted small">({{ certs|length }} issued)</span></h2><span class="small muted">Revocation is final and public: the record page and the <a href="/.well-known/quorum-revocations.json">signed revocation list</a> show it, and verifiers check that list.</span></div>
+  {% if certs %}<div class="table-wrap"><table>
+    <thead><tr><th>Serial</th><th>Kind</th><th>Holder</th><th>Issued</th><th>Key</th><th>Status</th></tr></thead>
+    <tbody>{% for c in certs %}<tr>
+      <td class="mono small"><a href="/certificates/{{ c.pk }}">{{ c.serial }}</a></td><td class="small">{{ c.get_kind_display }}</td><td class="small">{{ c.user.name|default:c.user.email }}</td>
+      <td class="small">{{ c.issued_at|date:"j M Y" }}</td><td class="mono tiny">{{ c.key_id }}{% if c.key_id in retired %} <span class="badge">retired key</span>{% endif %}</td>
+      <td>{% if c.revoked_at %}<span class="badge bad">revoked</span> <span class="tiny muted">{{ c.revoked_at|date:"j M" }}: {{ c.revoked_reason }}</span>
+      {% else %}<details><summary class="small">valid · revoke…</summary><form method="post" class="row" style="margin-top:6px" data-confirm="Revoke {{ c.serial }}? This is final and public.">{% csrf_token %}<input type="hidden" name="action" value="revoke"><input type="hidden" name="certificate" value="{{ c.pk }}"><input type="text" name="reason" required minlength="10" maxlength="300" placeholder="Public reason (10+ characters)" style="max-width:320px"><button class="btn sm danger">Revoke</button></form></details>{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>{% else %}<p class="card-body small muted">Nothing issued yet. Judges can issue their evaluation protocol when their batch is done; publishing results issues participant and winner certificates.</p>{% endif %}
+</div>
 {% endblock %}

@@ -172,6 +172,16 @@ def keys(request):
 
 
 @policy("public")
+def revocations(request):
+    from quorum.audit.certificates import revocation_list
+
+    resp = JsonResponse(revocation_list())
+    resp["Access-Control-Allow-Origin"] = "*"
+    resp["Cache-Control"] = "no-store"
+    return resp
+
+
+@policy("public")
 def healthz(request):
     return HttpResponse("ok", content_type="text/plain")
 

@@ -14,6 +14,7 @@ from quorum.api.common import get_event
 from quorum.audit import service as audit
 from quorum.audit.models import AuditCheckpoint, AuditEvent
 from quorum.core.clock import now
+from quorum.core.models import SigningKey
 from quorum.events import organize
 from quorum.events.models import EligibilityItem, Event, EventRole, Project, TeamMember
 from quorum.integrations.models import ImportJob, WebhookEndpoint
@@ -481,6 +482,24 @@ def voting_view(request, slug):
 def audit_view(request, slug):
     ev = _org(request, slug)
     verify = None
+    if request.method == "POST" and request.POST.get("action") == "revoke":
+        from quorum.audit.certificates import revoke
+        from quorum.audit.models import Certificate
+
+        from django.core.exceptions import ValidationError
+
+        try:
+            c = Certificate.objects.filter(event=ev, pk=request.POST.get("certificate")).first()
+        except ValidationError:
+            c = None
+        if not c:
+            raise NotFound("No such certificate in this event.")
+        try:
+            revoke(ev, request.actor, c, request.POST.get("reason", ""))
+            messages.success(request, f"{c.serial} revoked. The revocation list and the record page show it.")
+        except PolicyError as e:
+            _err(request, e)
+        return redirect(f"/o/{ev.slug}/audit#records")
     if request.method == "POST":
         verify = audit.verify_chain(ev)
         audit.record("AUDIT_VERIFIED", f"Audit chain verified: {'intact' if verify['ok'] else 'BROKEN at seq ' + str(verify.get('broken_seq'))}"
@@ -499,7 +518,9 @@ def audit_view(request, slug):
     return render(request, "org/audit.html", _ctx(
         ev, "audit", entries=qs[:300], total=AuditEvent.objects.filter(event_id=ev.pk).count(), actions=actions,
         action=action, actor_q=actor_q, q=q, verify=verify, head=audit.head(ev),
-        checkpoints=AuditCheckpoint.objects.filter(event_id=ev.pk).order_by("-seq")[:10]))
+        checkpoints=AuditCheckpoint.objects.filter(event_id=ev.pk).order_by("-seq")[:10],
+        certs=ev.certificates.select_related("user").order_by("kind", "serial"),
+        retired=set(SigningKey.objects.filter(retired_at__isnull=False).values_list("key_id", flat=True))))
 
 
 # --------------------------------------------------------------------------- data (exports, imports, webhooks)

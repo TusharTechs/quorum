@@ -74,6 +74,7 @@ MATRIX = {
     ("GET", "/api/v1/events/{e}/pairwise"): O, ("POST", "/api/v1/events/{e}/tracks/{track}/pairwise"): O,
     ("GET", "/api/v1/me/events/{e}/pairwise"): J,
     ("POST", "/api/v1/me/events/{e}/pairwise"): "assignee",  # only projects the caller reviewed
+    ("GET", "/api/v1/events/{e}/certificates"): O, ("POST", "/api/v1/certificates/{cid}/revoke"): O,
 }
 
 DENY = {  # role -> refused? per category (True = must be 401/403)
@@ -161,6 +162,7 @@ BODIES = {
     "/api/v1/imports/{jid}/mapping": {"mapping": {}}, "/api/v1/events/{e}/webhooks": {"url": "https://example.org/h"},
     "/api/v1/events/{e}/nudge": {}, "/api/v1/events/{e}/rebalance/plan": {"judges": []},
     "/api/v1/events/{e}/tracks/{track}/pairwise": {"enabled": True},
+    "/api/v1/certificates/{cid}/revoke": {"reason": "matrix revocation reason"},
     "/api/v1/me/events/{e}/pairwise": lambda p: {"a": p["pair"][0], "b": p["pair"][1], "outcome": "a"},
 }
 MULTIPART = {"/api/v1/projects/{pid}/images", "/api/v1/events/{e}/imports"}

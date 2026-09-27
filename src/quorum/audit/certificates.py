@@ -19,9 +19,11 @@ from django.db import transaction
 
 from engine.bundle import canonical_json
 from quorum.core.clock import now
-from quorum.core.crypto import sign, verify
+from quorum.core.crypto import key_status, sign, verify
+from quorum.core.text import clean_line
 from quorum.events.models import EventRole, Project, TeamMember
 from quorum.judging.models import Assignment, PairwiseComparison
+from quorum.policy.errors import Conflict, Invalid
 
 from . import service as audit
 from .models import Certificate
@@ -87,8 +89,54 @@ def issue_all(event) -> dict:
     return dict(counts)
 
 
+@transaction.atomic
+def revoke(event, actor, cert: Certificate, reason: str) -> Certificate:
+    """Withdraw a signed record (e.g. a prize taken back after a late disqualification).
+    The record itself never changes; revocation is final, public and audited, and appears on
+    the signed revocation list that offline verifiers check."""
+    reason = clean_line(reason, 300)
+    if len(reason) < 10:
+        raise Invalid("Give a public reason for the revocation (10+ characters).")
+    cert = Certificate.objects.select_for_update().get(pk=cert.pk)
+    if cert.revoked_at:
+        raise Conflict(f"{cert.serial} was already revoked.", code="already_revoked")
+    cert.revoked_at = now()
+    cert.revoked_reason = reason
+    cert.save(update_fields=["revoked_at", "revoked_reason"])
+    audit.record("CERTIFICATE_REVOKED", f"{cert.get_kind_display()} {cert.serial} revoked: {reason}", event=event,
+                 actor=actor, actor_role="organizer", target=cert, data={"serial": cert.serial, "reason": reason})
+    return cert
+
+
+def revocation_list() -> dict:
+    """Every revoked record, signed with the current key: a verifier that has this document
+    can check revocation without trusting the transport, or offline later."""
+    rows = [{"serial": c.serial, "event": c.event.ref, "kind": c.kind, "revoked_at": c.revoked_at.isoformat(),
+             "reason": c.revoked_reason}
+            for c in Certificate.objects.filter(revoked_at__isnull=False).select_related("event")
+            .order_by("revoked_at", "serial")]
+    payload = canonical_json({"type": "quorum.revocations/v1", "issued_at": now().isoformat(), "revoked": rows})
+    key_id, sig = sign(payload)
+    return {"payload": payload, "signature": sig, "key_id": key_id}
+
+
 def check(payload: str, signature: str, key_id: str) -> dict:
+    import json
+    from datetime import datetime
+
     ok = verify(payload, signature, key_id)
     cert = Certificate.objects.filter(signature=signature).first()
-    return {"valid": ok, "known": bool(cert), "revoked": bool(cert and cert.revoked_at),
-            "serial": cert.serial if cert else None}
+    key = key_status(key_id)
+    out = {"valid": ok, "known": bool(cert), "revoked": bool(cert and cert.revoked_at),
+           "revoked_at": cert.revoked_at.isoformat() if cert and cert.revoked_at else None,
+           "revoked_reason": cert.revoked_reason if cert and cert.revoked_at else "",
+           "serial": cert.serial if cert else None, "key": key}
+    if ok and key.get("retired_at"):
+        try:
+            d = json.loads(payload)
+            issued = datetime.fromisoformat(d.get("issued_at") or d.get("ts") or "")  # records / checkpoints
+        except (ValueError, TypeError, AttributeError):
+            issued = None
+        if issued is None or issued > datetime.fromisoformat(key["retired_at"]):
+            out.update(valid=False, error="Signed with a key after that key was retired.")
+    return out

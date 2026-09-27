@@ -15,10 +15,11 @@ T2+  rankings are hidden from judges, participants and visitors before publicati
 T2+  a judge cannot open another judge's review ..................................... PASS
 T2+  comparative (pairwise) judging: board organizer-only, only judges compare ...... PASS
 T4   REST API: OpenAPI document published ........................................... PASS
-       92 documented operations
+       94 documented operations
 T4   REST API: UI actions are API actions (create team) ............................. PASS
 T4   webhooks: organizer can register signed endpoints .............................. PASS
 T4   signed, publicly verifiable records (Ed25519; tampering detected) .............. PASS
+T4   signed revocation list published; revoking is organizer-only ................... PASS
 T4   bulk export: event bundle recomputes to the same results (MATCH) ............... PASS
        1 ranking run(s) recomputed: MATCH
 T4   CSV export at every stage (11 kinds), organizer-only ........................... PASS
@@ -26,5 +27,5 @@ T4   embeddable gallery widget (only the embed is frameable) ...................
 
 T2+: 3/3 pass
 T3: 10/10 pass
-T4: 7/7 pass
-total: 20/20 pass
+T4: 8/8 pass
+total: 21/21 pass

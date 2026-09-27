@@ -66,8 +66,39 @@ def verify(payload: str, signature: str, key_id: str) -> bool:
         return False
 
 
+def rotate_key() -> tuple[str | None, str]:
+    """Retire the current signing key and start a new one.
+
+    The retired key's public half stays published (marked retired), so every record signed
+    before the rotation still verifies. Its private half is deleted: nothing can be signed
+    with it again. Returns (old_key_id, new_key_id)."""
+    from django.utils import timezone
+
+    from .models import SigningKey
+
+    path = _key_path()
+    old = None
+    if path.exists():
+        old, _ = load_or_create_key()
+        SigningKey.objects.filter(key_id=old).update(retired_at=timezone.now())
+        path.unlink()
+    new, _ = load_or_create_key()
+    return old, new
+
+
+def key_status(key_id: str) -> dict:
+    from .models import SigningKey
+
+    k = SigningKey.objects.filter(key_id=key_id).first()
+    if not k:
+        return {"known": False}
+    return {"known": True, "retired_at": k.retired_at.isoformat() if k.retired_at else None}
+
+
 def public_jwks() -> dict:
     from .models import SigningKey
 
     return {"keys": [{"kty": "OKP", "crv": "Ed25519", "kid": k.key_id, "x": k.public_key_b64,
-                      "use": "sig", "retired": bool(k.retired_at)} for k in SigningKey.objects.order_by("created_at")]}
+                      "use": "sig", "retired": bool(k.retired_at),
+                      "retired_at": k.retired_at.isoformat() if k.retired_at else None}
+                     for k in SigningKey.objects.order_by("created_at")]}

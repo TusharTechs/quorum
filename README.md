@@ -16,11 +16,11 @@ It was built for DOGFOOD 2026, around the way Hackathon Raptors actually judges:
 DOGFOOD 2026 acceptance report                     Quorum extended report (T3/T4)
 T1  gallery is public ................. PASS        T2+: 3/3 pass
 T1  project from fixtures shown ....... PASS        T3: 10/10 pass
-T1  closed event refuses submissions .. PASS        T4:  7/7 pass
-T2  judge sees own scores ............. PASS        total: 20/20 pass
+T1  closed event refuses submissions .. PASS        T4:  8/8 pass
+T2  judge sees own scores ............. PASS        total: 21/21 pass
 T2  judge cannot see peer scores ...... PASS
-T2  participant blocked ............... PASS        144 automated tests · 92 API operations × 6 roles
-T2  csv export works .................. PASS        authorization matrix · 332-request live
+T2  participant blocked ............... PASS        150 automated tests · 94 API operations × 6 roles
+T2  csv export works .................. PASS        authorization matrix · 336-request live
 claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks
 ```
 
@@ -45,8 +45,8 @@ Check it yourself:
 
 ```bash
 python3 run.py .dogfood.toml                    # official DOGFOOD checker: 7/7
-python3 tools/acceptance_ext.py .dogfood.toml   # T3/T4 behaviour: 20/20
-python3 scripts/isolation_probe.py .dogfood.toml # 332 cross-role requests, 0 leaks
+python3 tools/acceptance_ext.py .dogfood.toml   # T3/T4 behaviour: 21/21
+python3 scripts/isolation_probe.py .dogfood.toml # 336 cross-role requests, 0 leaks
 ```
 
 ### Seeded accounts (demo mode only)
@@ -119,9 +119,11 @@ The judge's side (`/j/sample-hack-2026`) and the participant's side (`/me`, `/e/
 - Comments with moderation. An audit trail that organizers can read, filter and verify in the UI.
 
 ### T4: stretch
-- A REST API covering every UI action: **92 operations** with an OpenAPI 3 document at `/api/v1/docs` (served offline).
+- A REST API covering every UI action: **94 operations** with an OpenAPI 3 document at `/api/v1/docs` (served offline).
 - HMAC-signed webhooks with retries and an SSRF guard.
 - **Signed, publicly verifiable judge evaluation protocols**, plus participant and winner certificates (Ed25519), verified in the browser offline.
+  - **Revocation.** Organizers can revoke a record with a public reason. Revocation is final, which a database trigger enforces. The browser verifier checks a **signed revocation list** at `/.well-known/quorum-revocations.json`, and verifies the list's own signature first.
+  - **Key rotation.** `manage.py rotate_signing_key` retires the key. Everything signed before still verifies; nothing can be signed with the old key again.
 - An embeddable gallery.
 - A bulk import wizard (Devpost/Unstop/any CSV with automatic column mapping, or a Quorum bundle), always dry-run first. A full event bundle that recomputes to `MATCH`.
 
@@ -133,7 +135,6 @@ Better you read it here than find it:
 - **No link or repository checking.** The platform must run offline, so it cannot fetch GitHub to check commit times. It stores the declared commit SHA for judges instead.
 - **Calibration corrects linear leniency only** (see [JUDGING.md §14](JUDGING.md#14-known-limits)). Consistent collusion between judges is not detectable by statistics.
 - **Open-link voting cannot stop one person voting twice.** The UI labels it a popularity signal. E-mail mode is only as strong as the e-mail domain; one-time codes are the strong option.
-- **Certificates cannot be revoked from the UI yet** (the column exists), and the signing key has no rotation command yet.
 - **English only.** Templates are not yet wrapped for translation.
 - **Planning scope.** Focus-round planning targets overall prizes; per-track prize planning is reported but not yet planned against.
 
@@ -156,7 +157,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 docker compose -f docker-compose.dev.yml up -d           # Postgres + mail catcher
 cd src && DJANGO_DEBUG=1 ../.venv/bin/python manage.py migrate && DJANGO_DEBUG=1 ../.venv/bin/python manage.py seed_fixtures
 DJANGO_DEBUG=1 ../.venv/bin/python manage.py runserver 8080
-../.venv/bin/python -m pytest ../tests                   # 144 tests against real Postgres
+../.venv/bin/python -m pytest ../tests                   # 150 tests against real Postgres
 ```
 
 The stack is Python 3.12, Django 5.2, django-ninja, PostgreSQL 16, and htmx with server-rendered templates (no Node toolchain). The judging engine is pure standard-library Python in `src/engine/`.

@@ -278,6 +278,18 @@ def run(cfg):
             c.note(f"keys {len(keys)}, verify {t3[:60]}, tampered {t4[:60]}")
     check("T4", "signed, publicly verifiable records (Ed25519; tampering detected)", signed_records)
 
+    def revocations(c):
+        s, t, _ = req(base, "/.well-known/quorum-revocations.json")
+        lst = js(t) or {}
+        s2, t2, _ = req(base, "/api/v1/verify", None, "POST", {k: lst.get(k, "") for k in ("payload", "signature", "key_id")})
+        body = js(lst.get("payload", "")) or {}
+        s3, _, _ = req(base, f"/api/v1/events/{EVENT}/certificates", jb)
+        c.ok = (s == 200 and body.get("type") == "quorum.revocations/v1" and (js(t2) or {}).get("valid") is True
+                and s3 == 403)
+        if not c.ok:
+            c.note(f"list {s} type={body.get('type')}, verify {t2[:60]}, judge listing records {s3}")
+    check("T4", "signed revocation list published; revoking is organizer-only", revocations)
+
     def bundle(c):
         s, t, _ = req(base, f"/api/v1/events/{EVENT}/exports/bundle.json", org)
         b = js(t) or {}

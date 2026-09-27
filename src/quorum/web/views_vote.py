@@ -115,7 +115,10 @@ def certificate(request, cid):
     if not c:
         raise NotFound("No such certificate.")
     data = json.loads(c.payload)
-    return render(request, "public/certificate.html", {"c": c, "data": data, "nav": "verify",
+    from quorum.core.models import SigningKey
+
+    key_retired = SigningKey.objects.filter(key_id=c.key_id, retired_at__isnull=False).exists()
+    return render(request, "public/certificate.html", {"c": c, "data": data, "nav": "verify", "key_retired": key_retired,
                                                        "bundle": json.dumps({"payload": c.payload, "signature": c.signature,
                                                                              "key_id": c.key_id})})
 

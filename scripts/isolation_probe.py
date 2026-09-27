@@ -48,7 +48,7 @@ def main():
         if "get" not in item:
             continue
         rest = path.replace("/api/v1/events/{e}", "")
-        org_only = bool(ORG_ONLY.search(rest)) or rest == "/pairwise"
+        org_only = bool(ORG_ONLY.search(rest)) or rest in ("/pairwise", "/certificates")
         for_values = [{}]
         if "{j}" in path:
             for_values = [{"j": j} for j in jrefs]

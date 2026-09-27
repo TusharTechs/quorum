@@ -106,6 +106,8 @@ the webhooks you configure.
 - **API tokens.** Created under `/settings/tokens` and stored hashed. Revoke them there.
 - **Demo tokens.** `manage.py rotate_demo_tokens --revoke` removes them.
 - **Signing key.** Generated on first boot into `/data/keys` (0600). Its public half is at `/.well-known/quorum-keys.json`. Losing the private key does not invalidate issued records, but no new ones can be signed with it.
+- **Rotating the signing key.** Run `docker compose exec web python manage.py rotate_signing_key`, yearly or at once if `/data/keys` may have leaked. The old key is marked retired but stays published, so every record signed before still verifies. Its private half is deleted. Verifiers refuse a record that claims the retired key with a later timestamp. The rotation is audited.
+- **Revoking a record.** Use **Audit → Signed records → revoke** with a public reason, for example a prize withdrawn after a late disqualification. Revocation is final: the record page shows it, and it is added to the signed list at `/.well-known/quorum-revocations.json`, which the verifier checks.
 
 ## Troubleshooting
 

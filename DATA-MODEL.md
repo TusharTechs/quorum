@@ -51,7 +51,8 @@ outbox · job · rate_bucket · signing_key (public half only) · api_token (sha
 | `voting_vote` | voter, project, weight, ballot_position, net_key, ua_key, status, void_reason | UNIQUE(voter, project, category); voided, never deleted |
 | `voting_integrityflag` | rule, subject, evidence (JSON), vote_ids, fingerprint, status, resolution | UNIQUE(event, fingerprint): scans are idempotent |
 | `audit_auditevent` | seq, ts, actor, action, target, summary, data, prev_hash, hash | append-only (trigger); SHA-256 chain per event |
-| `audit_certificate` | kind, serial, payload (exact signed bytes), signature, key_id | UNIQUE(event, kind, serial); never contains scores |
+| `audit_certificate` | kind, serial, payload (exact signed bytes), signature, key_id, revoked_at, revoked_reason | UNIQUE(event, kind, serial); never contains scores; signed fields frozen and revocation final (trigger) |
+| `core_signingkey` | key_id, public half, retired_at | the private half lives in `/data/keys` (0600), never in the database; retired keys stay published so old records verify |
 
 ## Invariants enforced by Postgres triggers
 
@@ -59,6 +60,8 @@ outbox · job · rate_bucket · signing_key (public half only) · api_token (sha
 `member_not_judge`, `judge_not_member`, `team_size` (with a row lock, safe under
 concurrency), `criterion_frozen`, `method_locked`. See
 [`audit/migrations/0002_invariant_triggers.py`](src/quorum/audit/migrations/0002_invariant_triggers.py).
+`certificate_frozen` ([`0003`](src/quorum/audit/migrations/0003_certificate_revocation.py)): a signed record's
+payload, signature, key and identity never change, and a revocation cannot be cleared or reworded.
 
 ## Getting data in
 

@@ -70,6 +70,7 @@ class Certificate(models.Model):
     key_id = models.CharField(max_length=32)
     issued_at = models.DateTimeField(auto_now_add=True)
     revoked_at = models.DateTimeField(null=True, blank=True)
+    revoked_reason = models.CharField(max_length=300, blank=True)  # public: shown on the record and the list
 
     class Meta:
         constraints = [
