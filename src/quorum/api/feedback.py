@@ -76,7 +76,8 @@ def my_scorecard(request, event: str):
     pub = getattr(ev, "publication", None)
     sc = fb.scorecard(ev, p, pub.run if pub else latest_run(ev))
     e_ = sc["entry"] or {}
+    place = (pub.final_order.index(p.ref) + 1) if pub and p.ref in (pub.final_order or []) else e_.get("rank")
     return {"project": p.ref, "title": p.title, "calibrated": e_.get("calibrated"), "se": e_.get("se"),
-            "rank": e_.get("rank") if ev.rank_display == "exact" else None,
+            "rank": place if ev.rank_display == "exact" else None,
             "band": sc["band"] if ev.rank_display != "none" else None, "criteria": e_.get("criteria"),
             "percentiles_in_track": sc["percentiles"], "feedback": sc["feedback"], "explanation": sc["explanation"]}

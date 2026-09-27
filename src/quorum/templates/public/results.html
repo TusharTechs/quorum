@@ -5,18 +5,18 @@
 <p class="eyebrow muted small">Results{% if not pub.published_at %} · preview (not published){% endif %}</p>
 <h1>{{ ev.name }}</h1>
 {% if method.override_reason %}<div class="callout bad small">The judging method was changed after it was locked. Reason: “{{ method.override_reason }}”.</div>{% endif %}
-{% if signal.verdict == "no_signal" %}<div class="callout warn small">The judges' scores showed no detectable agreement (ICC {{ signal.icc1|f2 }}). Positions below are statistical ties and were decided by the rules published before the event.</div>{% endif %}
+{% if signal.verdict == "no_signal" %}<div class="callout warn small">The judges' scores showed no detectable agreement (ICC {{ signal.icc1|f3 }}, permutation p = {{ signal.p_value|f2 }}). Neighbouring positions are statistical ties; the paid places were decided by the rules published before the event.</div>{% endif %}
 <div class="podium" style="margin:22px 0">
 {% for r in podium %}<div class="place {% if r.place == 1 %}p1{% endif %}" style="order:{% if r.place == 1 %}2{% elif r.place == 2 %}1{% else %}3{% endif %}">
-  <div class="medal">#{{ r.place }}</div><h2 style="margin:6px 0 2px"><a href="/p/{{ r.p.pk }}">{{ r.p.title }}</a></h2><div class="small muted">{{ r.p.team.name }} · {{ r.p.track.name }}</div>
+  <div class="medal">#{{ r.place }}{% if r.p.ref in tb_refs %} · tie-break{% endif %}</div><h2 style="margin:6px 0 2px"><a href="/p/{{ r.p.pk }}">{{ r.p.title }}</a></h2><div class="small muted">{{ r.p.team.name }} · {{ r.p.track.name }}</div>
   <div class="num" style="font:700 22px var(--sans);margin-top:8px">{{ r.e.calibrated|f3 }}<span class="small muted"> ±{{ r.e.se|f2 }}</span></div>
   {% with q=quotes|get:r.p.ref %}{% if q %}<p class="small" style="margin-top:8px;font-style:italic">“{{ q.text }}”{% if q.attribution == "named" %}<br><span class="muted">judge</span>{% endif %}</p>{% endif %}{% endwith %}
 </div>{% endfor %}
 </div>
-{% if tiebreaks %}<div class="callout tie small">Decided by a tie-break round: {% for t in tiebreaks %}{{ t.method }} ({{ t.order|join:" › " }}){% if not forloop.last %}; {% endif %}{% endfor %}</div>{% endif %}
+{% if tiebreaks %}<div class="callout tie small"><strong>Tie-break.</strong> {% for t in tiebreaks %}{% for r in t.order %}{{ titles|get:r }}{% if not forloop.last %} › {% endif %}{% endfor %} ({{ t.method }}{% if t.note %}: “{{ t.note }}”{% endif %}){% if not forloop.last %}; {% endif %}{% endfor %}. The rubric scores could not separate these projects, so the order among them comes from the tie-break, not from the score column.</div>{% endif %}
 <div class="card flush" style="margin-top:18px"><div class="card-head"><h2>Full ranking</h2><span class="small muted">calibrated score ± one standard error · plausible rank (90%)</span></div>
 <table><thead><tr><th class="num">Place</th><th>Project</th><th>Track</th><th class="num">Score</th><th>Plausible rank</th></tr></thead><tbody>
-{% for r in rows %}<tr><td class="num">{{ r.place }}</td><td><a href="/p/{{ r.p.pk }}">{{ r.p.title }}</a> <span class="tiny muted">{{ r.p.team.name }}</span></td><td class="small">{{ r.p.track.name }}</td><td class="num">{{ r.e.calibrated|f2 }} <span class="tiny muted">±{{ r.e.se|f2 }}</span></td><td>{% whisker r.e.rank_lo r.e.rank_hi r.e.rank n %}</td></tr>{% endfor %}
+{% for r in rows %}<tr><td class="num">{{ r.place }}</td><td><a href="/p/{{ r.p.pk }}">{{ r.p.title }}</a> <span class="tiny muted">{{ r.p.team.name }}</span>{% if r.p.ref in tb_refs %} <span class="badge tie">tie-break</span>{% endif %}</td><td class="small">{{ r.p.track.name }}</td><td class="num">{{ r.e.calibrated|f2 }} <span class="tiny muted">±{{ r.e.se|f2 }}</span></td><td>{% whisker r.e.rank_lo r.e.rank_hi r.e.rank n %}</td></tr>{% endfor %}
 </tbody></table></div>
 <div class="grid cols-2" style="margin-top:18px">
   <div class="card small"><h3>Best in track</h3>{% for t, r in track_winners.items %}<div>{{ t }}: <strong>{{ r.p.title }}</strong></div>{% endfor %}</div>

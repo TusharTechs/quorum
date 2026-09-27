@@ -189,10 +189,11 @@ def plan_focus(event, budget: int | None = None, seed: int = 0) -> dict:
         load[a.judge_role_id] += 1
         existing.add((ops.jkey(a.judge_role), a.project.ref))
     flat = set((out.get("flat_judges") or {}).keys())
+    inactive = ops.inactive_role_ids(event)
     judges, capacity = [], {}
     default_cap = max(event.batch_size, 12)
     for r in roles:
-        if not r.available or ops.jkey(r) in flat:
+        if not r.available or ops.jkey(r) in flat or str(r.pk) in inactive:
             continue
         judges.append({"id": ops.jkey(r), "tracks": [jt.track.ref for jt in r.judge_tracks.all()] or None})
         capacity[ops.jkey(r)] = max(0, (r.capacity or default_cap) - load[r.pk])

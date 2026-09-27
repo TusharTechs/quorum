@@ -17,7 +17,7 @@
 <div class="gallery">
 {% for p in projects %}
   <a class="pcard" href="/p/{{ p.pk }}">
-    <div class="thumb">{% if p.thumbnail %}<img src="/media/{{ p.thumbnail }}" alt="" loading="lazy">{% else %}<span class="mono-thumb" aria-hidden="true">{{ p.title|slice:":2" }}</span>{% endif %}</div>
+    <div class="thumb" {% if not p.thumbnail %}style="--h:{{ p.title|hue }}"{% endif %}>{% if p.thumbnail %}<img src="/media/{{ p.thumbnail }}" alt="" loading="lazy">{% else %}<span class="mono-thumb gen" aria-hidden="true">{{ p.title|slice:":2" }}</span>{% endif %}</div>
     <div class="body">
       <h3>{{ p.title }}</h3>
       <p class="tag">{{ p.tagline }}</p>

@@ -9,7 +9,7 @@
 {% if e %}
 <div class="grid cols-4" style="margin:18px 0">
   <div class="stat"><div class="k">Calibrated score</div><div class="v">{{ e.calibrated|f2 }}</div><div class="s">± {{ e.se|f2 }} (one standard error)</div></div>
-  <div class="stat"><div class="k">{% if ev.rank_display == "exact" %}Rank{% else %}Standing{% endif %}</div><div class="v">{% if ev.rank_display == "exact" %}#{{ e.rank }}{% elif ev.rank_display == "band" %}{{ sc.band }}{% else %}–{% endif %}</div><div class="s">of {{ sc.n_projects }} projects{% if ev.rank_display == "exact" %} · plausible {{ e.rank_lo }}–{{ e.rank_hi }}{% endif %}</div></div>
+  <div class="stat"><div class="k">{% if ev.rank_display == "exact" %}Rank{% else %}Standing{% endif %}</div><div class="v">{% if ev.rank_display == "exact" %}#{% firstof place e.rank %}{% elif ev.rank_display == "band" %}{{ sc.band }}{% else %}–{% endif %}</div><div class="s">of {{ sc.n_projects }} projects{% if ev.rank_display == "exact" %} · plausible {{ e.rank_lo }}–{{ e.rank_hi }}{% endif %}</div></div>
   <div class="stat"><div class="k">Raw average</div><div class="v">{{ e.raw|f2 }}</div><div class="s">before calibration</div></div>
   <div class="stat"><div class="k">Track</div><div class="v" style="font-size:18px">{{ p.track.name|default:"–" }}</div><div class="s">#{{ e.track_rank }} in track</div></div>
 </div>

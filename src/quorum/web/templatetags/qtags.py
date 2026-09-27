@@ -130,3 +130,11 @@ def burndown(points, total, due_frac=None):
            f'<text x="{W - p}" y="{H - 8}" font-size="11" fill="var(--muted)" text-anchor="end">due</text>',
            "</svg>"]
     return mark_safe("".join(out))
+
+
+@register.filter
+def hue(text):
+    """A stable hue (0-359) per project title, for generated thumbnails."""
+    import hashlib
+
+    return int(hashlib.sha256((text or "").encode()).hexdigest()[:4], 16) % 360

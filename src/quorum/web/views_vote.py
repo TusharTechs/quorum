@@ -99,11 +99,13 @@ def public_results(request, slug):
         track_winners.setdefault(t, r)
     community = voting.tallies(ev)[:3] if voting.tallies_visible_to(request.actor, ev) else []
     cp = AuditCheckpoint.objects.filter(event_id=ev.pk).order_by("-seq").first()
+    tb_refs = {r for t in (pub.tiebreak_results or []) for r in (t.get("order") or [])}
+    titles = {ref: p.title for ref, p in projects.items()}
     return render(request, "public/results.html", {
         "ev": ev, "pub": pub, "rows": rows, "podium": rows[: ev.prize_positions], "quotes": quotes,
         "track_winners": track_winners, "signal": out.get("signal", {}), "community": community, "checkpoint": cp,
         "method": ev.methods.order_by("-version").first(), "n": len(rows), "nav": "events",
-        "tiebreaks": pub.tiebreak_results or [],
+        "tiebreaks": pub.tiebreak_results or [], "tb_refs": tb_refs, "titles": titles,
     })
 
 

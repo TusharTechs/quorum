@@ -242,3 +242,9 @@ footer.site { border-top: 1px solid var(--line); padding: 20px 0 40px; color: va
 .steps li { flex: 1; min-width: 110px; padding: 8px 10px; border-top: 3px solid var(--line); font-size: 12.5px; color: var(--muted); }
 .steps li.done { border-top-color: var(--good); color: var(--ink-2); }
 .steps li.now { border-top-color: var(--accent); color: var(--ink); font-weight: 650; }
+.card.prose { max-width: none; }
+.pcard .thumb[style*="--h"] { background: linear-gradient(135deg, hsl(var(--h) 70% 93%), hsl(calc(var(--h) + 45) 65% 84%)); }
+.pcard .thumb[style*="--h"] .mono-thumb { color: hsl(var(--h) 45% 38%); opacity: .85; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pcard .thumb[style*="--h"] { background: linear-gradient(135deg, hsl(var(--h) 35% 20%), hsl(calc(var(--h) + 45) 35% 14%)); } :root:not([data-theme="light"]) .pcard .thumb[style*="--h"] .mono-thumb { color: hsl(var(--h) 60% 75%); } }
+:root[data-theme="dark"] .pcard .thumb[style*="--h"] { background: linear-gradient(135deg, hsl(var(--h) 35% 20%), hsl(calc(var(--h) + 45) 35% 14%)); }
+:root[data-theme="dark"] .pcard .thumb[style*="--h"] .mono-thumb { color: hsl(var(--h) 60% 75%); }
