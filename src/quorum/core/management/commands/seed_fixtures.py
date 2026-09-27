@@ -121,7 +121,7 @@ class Command(BaseCommand):
             submissions_close_at=close, judging_opens_at=t0 - timedelta(days=6),
             judging_closes_at=t0 + timedelta(days=5), voting_opens_at=t0 - timedelta(hours=1),
             voting_closes_at=t0 + timedelta(days=14), phase=Event.Phase.JUDGING,
-            voting_mode=Event.VotingMode.EMAIL, reviews_per_project=3, batch_size=12, created_by=organizer,
+            voting_mode=Event.VotingMode.AUTHENTICATED, reviews_per_project=3, batch_size=12, created_by=organizer,
             options={"fixture_sha256": sha, "source": "DOGFOOD fixtures.json",
                      "judging_window_note": "fixture has no judging dates; window placed around first boot"},
         )

@@ -254,9 +254,25 @@ def commit_plan(event: Event, actor, plan: dict, source: str = "algorithm", batc
     batches = {}
     created = 0
     due = event.judging_closes_at
+    forbidden = conflict_pairs(event)
+    live = {(ops_key, pref) for ops_key, pref in
+            Assignment.objects.filter(event=event).filter(LIVE).values_list("judge_role__ref", "project__ref")}
+    skipped = []
     for jref, pref in plan["new"]:
         role, project = roles.get(jref), projects.get(pref)
         if not role or not project:
+            skipped.append((jref, pref, "unknown"))
+            continue
+        # plans can arrive from API clients: re-validate every pair before writing
+        tracks = {jt.track_id for jt in role.judge_tracks.all()}
+        if (jref, pref) in forbidden:
+            skipped.append((jref, pref, "conflict of interest"))
+            continue
+        if (jref, pref) in live:
+            skipped.append((jref, pref, "already assigned"))
+            continue
+        if batch_kind not in ("focus", "tiebreak") and tracks and project.track_id not in tracks:
+            skipped.append((jref, pref, "outside the judge's tracks"))
             continue
         if role.pk not in batches:
             batches[role.pk] = JudgeBatch.objects.create(event=event, judge_role=role, kind=batch_kind,
@@ -266,6 +282,9 @@ def commit_plan(event: Event, actor, plan: dict, source: str = "algorithm", batc
                                   source=source, strategy="overlap-greedy/v1", seed=plan.get("seed"), due_at=due,
                                   reassigned_from=moved.get(pref))
         created += 1
+    plan["skipped"] = skipped
+    if created == 0 and not moved:
+        return 0
     action = {"rebalance": "ASSIGNMENTS_REBALANCED", "focus": "FOCUS_COMMITTED"}.get(batch_kind, "JUDGES_ASSIGNED")
     audit.record(action, f"{created} assignments created ({batch_kind}); "
                          f"{plan['metrics']['projects_at_target']}/{plan['metrics']['projects']} projects at target, "

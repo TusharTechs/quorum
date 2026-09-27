@@ -23,11 +23,10 @@ def policy_error(request: HttpRequest, exc: PolicyError):
 
 
 def _register():
-    from . import exports, judging, projects
+    from . import audit, data, events, exports, feedback, judges, judging, ops, projects, results, teams, voting
 
-    api.add_router("", projects.router)
-    api.add_router("", judging.router)
-    api.add_router("", exports.router)
+    for mod in (events, teams, projects, judging, judges, ops, results, feedback, voting, audit, exports, data):
+        api.add_router("", mod.router)
 
 
 _register()

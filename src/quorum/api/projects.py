@@ -1,7 +1,8 @@
 
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db.models import Q
-from ninja import Router
+from ninja import File, Router
+from ninja.files import UploadedFile
 
 from quorum.events import services
 from quorum.policy.decorators import policy
@@ -92,3 +93,10 @@ def revisions(request, pid: str):
         raise Forbidden("Only the team and organizers can read the revision history.")
     return [{"version": r.version, "content_hash": r.content_hash, "created_at": r.created_at,
              "author": str(r.author) if r.author else None} for r in p.revisions.all()]
+
+
+@router.post("/projects/{pid}/images", response={201: dict}, summary="Upload a screenshot (re-encoded; until the deadline)")
+@policy("authenticated")
+def upload_image(request, pid: str, file: File[UploadedFile]):
+    img = services.add_image(request.actor, find_project(pid), file)
+    return 201, {"id": str(img.pk), "url": f"/media/{img.path}", "sha256": img.sha256}
