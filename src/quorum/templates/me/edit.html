@@ -7,6 +7,7 @@
   <div class="row">{% if p %}<span class="badge {% if p.status == 'submitted' %}good{% else %}warn{% endif %}">{{ p.status }}</span><span class="saved" id="autosave-status">v{{ p.version }}</span>{% endif %}
   {% if open %}<span class="badge accent">closes in <time data-countdown datetime="{{ ev.submissions_close_at|date:'c' }}">…</time></span>{% else %}<span class="badge bad">closed</span>{% endif %}</div>
 </div>
+{% if p %}{% participant_path ev p.team p %}{% else %}{% participant_path ev team p %}{% endif %}
 {% if not open %}<div class="callout bad">Submissions closed at {{ ev.submissions_close_at|date:"j M Y, H:i" }} UTC. The server refuses every change after the deadline, including from the API.</div>{% endif %}
 <div class="split">
 <form method="post" class="card" id="project-form" {% if p %}data-autosave-form="/me/projects/{{ p.pk }}/edit"{% endif %}>{% csrf_token %}
@@ -36,6 +37,20 @@
   </div>{% endif %}
 </form>
 <aside class="stack">
+  <div class="card">
+    <p class="eyebrow" style="margin:0 0 10px">Your gallery card · live preview</p>
+    <div class="pcard preview" aria-hidden="true">
+      <div class="thumb" style="--h:{{ data.title|default:'Quorum'|hue }}"><span class="mono-thumb gen" id="pv-mono">{{ data.title|default:"Pr"|slice:":2" }}</span></div>
+      <div class="body"><h3 id="pv-title">{{ data.title|default:"Your project name" }}</h3><p class="tag" id="pv-tag">{{ data.tagline|default:"One line: what it does, for whom." }}</p>
+        <div class="meta"><span class="chip" id="pv-track">{% for t in tracks %}{% if data.track == t.ref %}{{ t.name }}{% endif %}{% endfor %}</span><span>{% if team %}{{ team.name }}{% elif p %}{{ p.team.name }}{% endif %}</span></div></div>
+    </div>
+  </div>
+  <div class="card small">
+    <h3 style="margin-bottom:6px">How you will be judged</h3>
+    <p class="tiny muted" style="margin:0 0 8px">Published before registration and locked; every team gets a scorecard and written feedback.</p>
+    {% for c in ev.criteria.all %}<div style="margin-bottom:8px"><div class="row between"><strong>{{ c.name }}</strong><span class="tiny muted">{{ c.weight_pct|floatformat:0 }}%</span></div>{% bar c.weight_pct 100 %}{% if c.description %}<div class="tiny muted" style="margin-top:3px">{{ c.description }}</div>{% endif %}</div>{% endfor %}
+    <a class="tiny" href="/e/{{ ev.slug }}/methodology">How scores are calibrated {% icon "arrow-right" 12 %}</a>
+  </div>
   {% if p %}
   {% if missing and p.status != "submitted" %}<div class="callout warn small"><strong>Before you can submit:</strong> {{ missing|join:", " }}</div>{% endif %}
   <div class="card stack">

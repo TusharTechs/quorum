@@ -4,6 +4,7 @@
 <p class="small"><a href="/e/{{ ev.slug }}">← {{ ev.name }}</a></p>
 <div class="row between"><h1>{% if team %}{{ team.name }}{% else %}Join {{ ev.name }}{% endif %}</h1>
 {% if open %}<span class="badge accent">submissions close in <time data-countdown datetime="{{ ev.submissions_close_at|date:'c' }}">…</time></span>{% else %}<span class="badge bad">submissions closed {{ ev.submissions_close_at|date:"j M Y, H:i" }} UTC</span>{% endif %}</div>
+{% participant_path ev team project %}
 {% if team %}
 <div class="split">
   <div class="stack-lg">

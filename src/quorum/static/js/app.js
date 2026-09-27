@@ -231,3 +231,21 @@
   document.addEventListener("change", function (e) { var f = e.target.closest("#review-form"); if (f) update(f); });
   document.addEventListener("DOMContentLoaded", function () { var f = document.getElementById("review-form"); if (f) update(f); });
 })();
+
+/* submission form: live gallery-card preview */
+(function () {
+  "use strict";
+  document.addEventListener("input", function (e) {
+    var f = e.target.closest("#project-form"); if (!f) return;
+    var t = f.querySelector("#title"), g = f.querySelector("#tagline"), tr = f.querySelector("#track");
+    var set = function (id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+    if (e.target === t) { set("pv-title", t.value || "Your project name"); set("pv-mono", (t.value || "Pr").slice(0, 2)); }
+    if (e.target === g) set("pv-tag", g.value || "One line: what it does, for whom.");
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.id === "track" && e.target.closest("#project-form")) {
+      var o = e.target.options[e.target.selectedIndex]; var el = document.getElementById("pv-track");
+      if (el) el.textContent = e.target.value ? o.textContent : "";
+    }
+  });
+})();

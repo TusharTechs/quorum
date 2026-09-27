@@ -1,0 +1,1 @@
+<ol class="steps path" aria-label="Your progress">{% for s in steps %}<li class="{{ s.state }}"{% if s.state == "now" %} aria-current="step"{% endif %}><strong>{{ forloop.counter }}. {{ s.label }}</strong><span>{{ s.hint }}</span></li>{% endfor %}</ol>

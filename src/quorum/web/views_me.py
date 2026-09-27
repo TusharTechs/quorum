@@ -108,11 +108,11 @@ def new_submission(request, slug):
             return redirect(f"/me/projects/{p.pk}/edit")
         except PolicyError as e:
             errors = _flash_error(request, e)
-            return render(request, "me/edit.html", {"ev": ev, "p": None, "data": request.POST, "errors": errors,
+            return render(request, "me/edit.html", {"ev": ev, "p": None, "team": ev_services.team_of(request.user, ev), "data": request.POST, "errors": errors,
                                                     "tracks": ev.tracks.all(), "questions": ev.questions.all(),
                                                     "open": ev.submissions_open(now()), "nav": "me"}, status=e.status)
     ev_services.guard_submissions_open(ev)
-    return render(request, "me/edit.html", {"ev": ev, "p": None, "data": {}, "errors": {}, "tracks": ev.tracks.all(),
+    return render(request, "me/edit.html", {"ev": ev, "p": None, "team": ev_services.team_of(request.user, ev), "data": {}, "errors": {}, "tracks": ev.tracks.all(),
                                             "questions": ev.questions.all(), "open": True, "nav": "me"})
 
 

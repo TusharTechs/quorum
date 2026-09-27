@@ -237,3 +237,16 @@ def certainty_chart(entries, titles, prize_n=3, top=12):
         parts.append(f'<text class="tick" x="{x(t):.1f}" y="{h - 8}" text-anchor="middle">{t}</text>')
     parts.append("</svg>")
     return mark_safe("".join(parts))
+
+
+@register.inclusion_tag("partials/participant_path.html")
+def participant_path(ev, team=None, project=None):
+    """Where a participant is on the way to a scorecard: team, draft, submit, results."""
+    pub = getattr(ev, "publication", None)
+    steps = [("Team", "create one or join by invite link", bool(team)),
+             ("Draft", "autosaves as you type", bool(project)),
+             ("Submit", "before the deadline; edit until then", bool(project and project.status == "submitted")),
+             ("Scorecard", "feedback from every judge", bool(pub and pub.published_at))]
+    now_i = next((i for i, s in enumerate(steps) if not s[2]), len(steps))
+    return {"steps": [{"label": s[0], "hint": s[1], "state": "done" if s[2] else ("now" if i == now_i else "")}
+                      for i, s in enumerate(steps)]}
