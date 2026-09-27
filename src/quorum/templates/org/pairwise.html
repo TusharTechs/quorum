@@ -21,10 +21,10 @@
     <div class="stat"><div class="k">Per judge</div><div class="s" style="margin-top:8px">{% for j, n in b.per_judge.items %}<span class="chip">{{ j }} · {{ n }}</span> {% endfor %}</div></div>
   </div>
   <div class="table-wrap"><table>
-    <thead><tr><th class="num">Pairwise #</th><th>Project</th><th class="num">W–L–T</th><th class="num">Strength</th><th>Plausible rank (90%)</th><th class="num">P(beats typical)</th><th class="num">Rubric #</th><th class="num">Calibrated</th><th></th></tr></thead>
+    <thead><tr><th class="num" title="Pairwise rank">#</th><th>Project</th><th class="num nowrap">W–L–T</th><th class="num">Strength</th><th>Plausible rank (90%)</th><th class="num">P(beats typical)</th><th class="num nowrap">Rubric #</th><th class="num">Calibrated</th><th></th></tr></thead>
     <tbody>{% for p in b.projects %}
       <tr{% if p.flag %} class="flag"{% endif %}><td class="num">{{ p.rank }}</td><td><a href="/o/{{ ev.slug }}/results/{{ p.ref }}">{{ p.title }}</a><div class="tiny muted">{{ p.team }}</div></td>
-      <td class="num">{{ p.wins }}–{{ p.losses }}–{{ p.ties }}</td><td class="num">{{ p.strength|signed }}{% if p.se %} <span class="tiny muted">± {{ p.se|f2 }}</span>{% endif %}</td>
+      <td class="num nowrap">{{ p.wins }}–{{ p.losses }}–{{ p.ties }}</td><td class="num nowrap">{{ p.strength|signed }}{% if p.se %} <span class="tiny muted">± {{ p.se|f2 }}</span>{% endif %}</td>
       <td style="white-space:nowrap">{% whisker p.rank_lo p.rank_hi p.rank b.projects|length %} <span class="tiny muted">{{ p.rank_lo }}–{{ p.rank_hi }}</span></td>
       <td class="num">{{ p.p_vs_typical|pct }}</td><td class="num">{{ p.rubric_rank|default:"–" }}</td><td class="num">{{ p.calibrated|f2 }}</td>
       <td>{% if p.flag %}<span class="badge warn" title="The rubric places this project outside the range the comparisons allow. Worth a look: a focus review or a note. Nothing changes automatically.">disagree</span>{% endif %}</td></tr>

@@ -3,9 +3,9 @@
 {% block wrapclass %}wrap-wide{% endblock %}
 {% block content %}
 <p class="small"><a href="/j/{{ ev.slug }}">← Batch</a></p>
-<p class="eyebrow muted small">Comparative judging · {{ t.name }} · {{ st.done }} of {{ st.target }} asked · {{ st.pool|length }} projects you reviewed</p>
-<h1>Which of these two is stronger overall?</h1>
-<p class="muted">Both are projects you have already reviewed. There is no scale here, so how strictly you score plays no part: only which one you would rather see win. Your rubric scores are not changed and stay private. Keys: <kbd>A</kbd> / <kbd>←</kbd> left, <kbd>B</kbd> / <kbd>→</kbd> right, <kbd>T</kbd> too close to call.</p>
+<p class="eyebrow muted small">Comparative judging · {{ t.name }} · {% if st.done > st.target %}{{ st.done }} done ({{ st.target }} asked){% else %}{{ st.done }} of {{ st.target }} asked{% endif %} · {{ st.pool|length }} projects you reviewed</p>
+<h1>{% if a and b %}Which of these two is stronger overall?{% else %}Comparisons · {{ t.name }}{% endif %}</h1>
+{% if a and b %}<p class="muted">Both are projects you have already reviewed. There is no scale here, so how strictly you score plays no part: only which one you would rather see win. Your rubric scores are not changed and stay private. Keys: <kbd>A</kbd> / <kbd>←</kbd> left, <kbd>B</kbd> / <kbd>→</kbd> right, <kbd>T</kbd> too close to call.</p>{% endif %}
 <div style="max-width:420px;margin:0 0 16px">{% bar st.done st.target "good" %}</div>
 {% if not t.pairwise %}
 <div class="callout"><h3>Not switched on</h3><p>Comparative judging is not switched on for this track.</p></div>

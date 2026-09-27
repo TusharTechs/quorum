@@ -33,7 +33,7 @@
       <button class="btn ghost sm" type="button" data-theme-toggle aria-label="Toggle dark mode">◐</button>
       {% if user.is_authenticated %}
         <span class="nowrap">{{ user.display }}{% if user.is_superuser %} <span class="badge">admin</span>{% endif %}</span>
-        <form method="post" action="/logout">{% csrf_token %}<button class="btn sm" type="submit">Sign out</button></form>
+        <form method="post" action="/logout">{% csrf_token %}<button class="btn sm nowrap" type="submit">Sign out</button></form>
       {% else %}
         <a class="btn sm primary" href="/login">Sign in</a>
       {% endif %}
