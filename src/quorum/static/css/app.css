@@ -248,3 +248,4 @@ footer.site { border-top: 1px solid var(--line); padding: 20px 0 40px; color: va
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pcard .thumb[style*="--h"] { background: linear-gradient(135deg, hsl(var(--h) 35% 20%), hsl(calc(var(--h) + 45) 35% 14%)); } :root:not([data-theme="light"]) .pcard .thumb[style*="--h"] .mono-thumb { color: hsl(var(--h) 60% 75%); } }
 :root[data-theme="dark"] .pcard .thumb[style*="--h"] { background: linear-gradient(135deg, hsl(var(--h) 35% 20%), hsl(calc(var(--h) + 45) 35% 14%)); }
 :root[data-theme="dark"] .pcard .thumb[style*="--h"] .mono-thumb { color: hsl(var(--h) 60% 75%); }
+tr.flag td { background: var(--warn-soft); }

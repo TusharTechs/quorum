@@ -14,13 +14,13 @@ It was built for DOGFOOD 2026, around the way Hackathon Raptors actually judges:
 
 ```text
 DOGFOOD 2026 acceptance report                     Quorum extended report (T3/T4)
-T1  gallery is public ................. PASS        T2+: 2/2 pass
+T1  gallery is public ................. PASS        T2+: 3/3 pass
 T1  project from fixtures shown ....... PASS        T3: 10/10 pass
 T1  closed event refuses submissions .. PASS        T4:  7/7 pass
-T2  judge sees own scores ............. PASS        total: 19/19 pass
+T2  judge sees own scores ............. PASS        total: 20/20 pass
 T2  judge cannot see peer scores ...... PASS
-T2  participant blocked ............... PASS        135 automated tests · 88 API operations × 6 roles
-T2  csv export works .................. PASS        authorization matrix · 320-request live
+T2  participant blocked ............... PASS        144 automated tests · 92 API operations × 6 roles
+T2  csv export works .................. PASS        authorization matrix · 332-request live
 claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks
 ```
 
@@ -45,8 +45,8 @@ Check it yourself:
 
 ```bash
 python3 run.py .dogfood.toml                    # official DOGFOOD checker: 7/7
-python3 tools/acceptance_ext.py .dogfood.toml   # T3/T4 behaviour: 19/19
-python3 scripts/isolation_probe.py .dogfood.toml # 320 cross-role requests, 0 leaks
+python3 tools/acceptance_ext.py .dogfood.toml   # T3/T4 behaviour: 20/20
+python3 scripts/isolation_probe.py .dogfood.toml # 332 cross-role requests, 0 leaks
 ```
 
 ### Seeded accounts (demo mode only)
@@ -109,7 +109,8 @@ The judge's side (`/j/sample-hack-2026`) and the participant's side (`/me`, `/e/
 - Judge invitations and conflicts of interest (declared, or suggested by domain). Overlap-aware assignment with dry-run metrics, batches, reminders, a completion forecast, stalled detection and one-click rebalance.
 - A weighted, anchored rubric locked by **method pre-registration** (public SHA-256).
 - **Calibration** with REML-chosen shrinkage and the flat-judge rule. Every score has an exact per-judge explanation, a standard error, a plausible rank range and prize probabilities. There is a signal check, leave-one-judge-out and weight-sensitivity analysis. See [JUDGING.md](JUDGING.md) and the [proof](docs/proof/README.md).
-- CSV export at every stage (10 kinds), neutralised against spreadsheet formula injection.
+- **Comparative judging per track** (optional). Judges choose the stronger of two projects they have already reviewed, so leniency cancels. Organizers see a Bradley–Terry order beside the rubric order, with Kendall τ, plausible ranks and flagged disagreements. It is advisory and never changes the official ranking; see [JUDGING.md §10](JUDGING.md#10-tie-breaks-pairwise-where-it-earns-its-keep).
+- CSV export at every stage (11 kinds), neutralised against spreadsheet formula injection.
 
 ### T3: public
 - Community voting: open link, e-mail-verified, signed-in, or one-time codes. Capped approval by default, with quadratic voting optional where identity is strong.
@@ -118,7 +119,7 @@ The judge's side (`/j/sample-hack-2026`) and the participant's side (`/me`, `/e/
 - Comments with moderation. An audit trail that organizers can read, filter and verify in the UI.
 
 ### T4: stretch
-- A REST API covering every UI action: **88 operations** with an OpenAPI 3 document at `/api/v1/docs` (served offline).
+- A REST API covering every UI action: **92 operations** with an OpenAPI 3 document at `/api/v1/docs` (served offline).
 - HMAC-signed webhooks with retries and an SSRF guard.
 - **Signed, publicly verifiable judge evaluation protocols**, plus participant and winner certificates (Ed25519), verified in the browser offline.
 - An embeddable gallery.
@@ -155,7 +156,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 docker compose -f docker-compose.dev.yml up -d           # Postgres + mail catcher
 cd src && DJANGO_DEBUG=1 ../.venv/bin/python manage.py migrate && DJANGO_DEBUG=1 ../.venv/bin/python manage.py seed_fixtures
 DJANGO_DEBUG=1 ../.venv/bin/python manage.py runserver 8080
-../.venv/bin/python -m pytest ../tests                   # 135 tests against real Postgres
+../.venv/bin/python -m pytest ../tests                   # 144 tests against real Postgres
 ```
 
 The stack is Python 3.12, Django 5.2, django-ninja, PostgreSQL 16, and htmx with server-rendered templates (no Node toolchain). The judging engine is pure standard-library Python in `src/engine/`.

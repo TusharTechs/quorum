@@ -72,12 +72,12 @@ importer and the audited admin override; request handlers never set it.
 | `engine/` | calibration, uncertainty, focus allocation, Bradley–Terry and tie-break fusion, assignment, canonical JSON + hashing, CLI |
 | `quorum/policy/` | `Actor` (per-event roles), `@policy` (deny by default), `repos` (scoped queries), typed refusals |
 | `quorum/events/` | events, roles, tracks, prizes, questions, teams, submissions, revisions, eligibility, comments; organizer operations |
-| `quorum/judging/` | rubric, method pre-registration, conflicts, batches, assignments, reviews, pairwise, reminders; `ops` (Pillar 1) and `feedback` (Pillar 4) |
+| `quorum/judging/` | rubric, method pre-registration, conflicts, batches, assignments, reviews, pairwise, reminders; `ops` (Pillar 1), `feedback` (Pillar 4) and `pairwise` (comparative judging per track) |
 | `quorum/results/` | immutable ranking runs, focus rounds, tie-breaks, lock/publish (Pillars 2–3) |
 | `quorum/voting/` | voter identities, ballots, votes, integrity flags |
 | `quorum/audit/` | hash-chained audit writer and verifier, signed checkpoints, certificates and judge protocols |
 | `quorum/integrations/` | CSV exports, bundle export/import/verify, CSV import wizard, outbox worker (e-mail, webhooks) |
-| `quorum/api/` | ninja routers (88 operations), per-audience serializers |
+| `quorum/api/` | ninja routers (92 operations), per-audience serializers |
 | `quorum/web/` | HTML views for public, participant, judge and organizer; server-rendered SVG charts |
 
 ## Background work

@@ -13,6 +13,7 @@ from quorum.audit.models import Certificate
 from quorum.core.clock import now
 from quorum.events.models import EventRole, Project
 from quorum.judging import ops
+from quorum.judging import pairwise
 from quorum.judging import services as judging
 from quorum.judging.models import Assignment, Review
 from quorum.policy.decorators import policy
@@ -56,7 +57,7 @@ def inbox(request, slug):
     total = len(pending) + len(done)
     return render(request, "judge/inbox.html", {
         "ev": ev, "role": role, "pending": pending, "done": done, "recused": recused, "total": total,
-        "tiebreaks": tb_rows, "protocol": protocol, "tracks": [jt.track for jt in role.judge_tracks.select_related("track")],
+        "tiebreaks": tb_rows, "comparative": pairwise.judge_tracks(ev, role), "min_pool": pairwise.MIN_POOL, "protocol": protocol, "tracks": [jt.track for jt in role.judge_tracks.select_related("track")],
         "window_open": ev.judging_opens_at <= now() < ev.judging_closes_at, "nav": "judge",
         "est_minutes": len(pending) * 8,
     })
@@ -151,6 +152,34 @@ def tiebreak(request, slug, tid):
         pb = Project.objects.select_related("track", "team").get(event=ev, ref=pair[1])
     return render(request, "judge/tiebreak.html", {"ev": ev, "tb": tb, "a": pa, "b": pb, "done": mine,
                                                    "total": total, "projects": tb.projects.all(), "nav": "judge"})
+
+
+@policy("authenticated")
+def compare(request, slug, track):
+    ev = get_event(slug)
+    role = request.actor.require_judge(ev)
+    t = pairwise.get_track(ev, track)
+    if not role.judge_tracks.filter(track=t).exists():
+        raise Forbidden("You do not judge this track.")
+    if request.method == "POST":
+        pa = Project.objects.filter(event=ev, ref=request.POST.get("a")).select_related("track").first()
+        pb = Project.objects.filter(event=ev, ref=request.POST.get("b")).select_related("track").first()
+        if not pa or not pb:
+            raise NotFound("Unknown projects.")
+        try:
+            judging.record_comparison(request.actor, ev, role, pa, pb, request.POST.get("outcome"),
+                                      reason=request.POST.get("reason", ""),
+                                      active_seconds=int(request.POST.get("active_seconds") or 0))
+        except PolicyError as e:
+            messages.error(request, e.detail)
+        return redirect(f"/j/{ev.slug}/compare/{t.ref}")
+    st = pairwise.next_for(role, t)
+    pa = pb = None
+    if st["pair"] and t.pairwise:
+        pa = Project.objects.select_related("track", "team").get(event=ev, ref=st["pair"][0])
+        pb = Project.objects.select_related("track", "team").get(event=ev, ref=st["pair"][1])
+    return render(request, "judge/compare.html", {"ev": ev, "t": t, "st": st, "a": pa, "b": pb, "nav": "judge",
+                                                  "window_open": ev.judging_opens_at <= now() < ev.judging_closes_at})
 
 
 @policy("authenticated")

@@ -41,12 +41,14 @@ def main():
     pids = [p["id"] for p in json.loads(projects)]
     _, judges = get(base, "/api/v1/events/evt_01/judges", A["organizer"])
     jrefs = [j["ref"] for j in json.loads(judges)]
-    kinds = ["projects", "teams", "judges", "assignments", "reviews", "scores", "results", "votes", "feedback", "audit"]
+    kinds = ["projects", "teams", "judges", "assignments", "reviews", "scores", "results", "votes", "feedback",
+             "comparisons", "audit"]
     probes, failures = 0, []
     for path, item in spec["paths"].items():
         if "get" not in item:
             continue
-        org_only = bool(ORG_ONLY.search(path.replace("/api/v1/events/{e}", "")))
+        rest = path.replace("/api/v1/events/{e}", "")
+        org_only = bool(ORG_ONLY.search(rest)) or rest == "/pairwise"
         for_values = [{}]
         if "{j}" in path:
             for_values = [{"j": j} for j in jrefs]

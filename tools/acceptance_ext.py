@@ -221,6 +221,16 @@ def run(cfg):
             c.note(f"judge_a reading judge_b's review draft: got {s3}, wanted 403")
     check("T2+", "a judge cannot open another judge's review", judge_only_own_queue)
 
+    def comparative_board(c):
+        codes = {who: req(base, f"/api/v1/events/{EVENT}/pairwise", h)[0] for who, h in
+                 (("organizer", org), ("judge_a", ja), ("participant", par), ("anonymous", None))}
+        s, _, _ = req(base, f"/api/v1/me/events/{EVENT}/pairwise", par, method="POST",
+                      body={"a": "prj_02", "b": "prj_03", "outcome": "a"})
+        c.ok = codes == {"organizer": 200, "judge_a": 403, "participant": 403, "anonymous": 401} and s == 403
+        if not c.ok:
+            c.note(f"comparative board {codes}; participant comparing {s}")
+    check("T2+", "comparative (pairwise) judging: board organizer-only, only judges compare", comparative_board)
+
     # ---------------------------------------------------------------- T4 stretch
     def openapi(c):
         s, t, _ = req(base, "/api/v1/openapi.json")
@@ -283,7 +293,8 @@ def run(cfg):
 
     def csv_exports(c):
         bad = []
-        for kind in ("projects", "teams", "judges", "assignments", "reviews", "scores", "results", "votes", "feedback", "audit"):
+        for kind in ("projects", "teams", "judges", "assignments", "reviews", "scores", "results", "votes", "feedback",
+                     "comparisons", "audit"):
             s, t, h = req(base, f"/api/v1/events/{EVENT}/exports/{kind}.csv", org)
             if s != 200 or "," not in (t.splitlines() or [""])[0]:
                 bad.append(f"{kind}:{s}")
@@ -291,7 +302,7 @@ def run(cfg):
         c.ok = not bad and s == 403
         if not c.ok:
             c.note(f"failed exports {bad}; judge access {s}")
-    check("T4", "CSV export at every stage (10 kinds), organizer-only", csv_exports)
+    check("T4", "CSV export at every stage (11 kinds), organizer-only", csv_exports)
 
     def embed(c):
         s, t, h = req(base, "/embed/events/sample-hack-2026/gallery")

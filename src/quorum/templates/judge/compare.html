@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Compare · {{ t.name }}{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+<p class="small"><a href="/j/{{ ev.slug }}">← Batch</a></p>
+<p class="eyebrow muted small">Comparative judging · {{ t.name }} · {{ st.done }} of {{ st.target }} asked · {{ st.pool|length }} projects you reviewed</p>
+<h1>Which of these two is stronger overall?</h1>
+<p class="muted">Both are projects you have already reviewed. There is no scale here, so how strictly you score plays no part: only which one you would rather see win. Your rubric scores are not changed and stay private. Keys: <kbd>A</kbd> / <kbd>←</kbd> left, <kbd>B</kbd> / <kbd>→</kbd> right, <kbd>T</kbd> too close to call.</p>
+<div style="max-width:420px;margin:0 0 16px">{% bar st.done st.target "good" %}</div>
+{% if not t.pairwise %}
+<div class="callout"><h3>Not switched on</h3><p>Comparative judging is not switched on for this track.</p></div>
+{% elif not st.ready %}
+<div class="callout"><h3>Not yet</h3><p>Comparisons start once you have reviewed 3 projects in this track. You have reviewed {{ st.pool|length }}.</p></div>
+{% elif not window_open %}
+<div class="callout"><h3>The judging window is closed</h3><p>Comparisons can only be recorded while judging is open.</p></div>
+{% elif a and b %}
+{% if st.done >= st.target %}<div class="callout good" style="margin-bottom:12px"><strong>You have done the {{ st.target }} comparisons asked. Thank you.</strong> More are welcome while pairs remain, because each one sharpens the order. You can also <a href="/j/{{ ev.slug }}">stop here</a>.</div>{% endif %}
+<form method="post" id="pairwise-form">{% csrf_token %}<input type="hidden" name="a" value="{{ a.ref }}"><input type="hidden" name="b" value="{{ b.ref }}"><input type="hidden" name="active_seconds" value="0">
+<div class="grid cols-2">
+  <div class="card stack"><p class="small muted">{{ a.team.name }} · <span class="badge good">reviewed by you</span></p><h2>{{ a.title }}</h2><p>{{ a.tagline }}</p><div class="prose small">{{ a.description_html|safe|truncatewords_html:120 }}</div><div class="row"><a class="btn sm" href="/p/{{ a.pk }}" target="_blank">Open project</a>{% if a.demo_video_url %}<a class="btn sm" href="{{ a.demo_video_url }}" target="_blank" rel="noopener nofollow">Demo</a>{% endif %}</div><button class="btn primary" name="outcome" value="a">◀ This one is stronger</button></div>
+  <div class="card stack"><p class="small muted">{{ b.team.name }} · <span class="badge good">reviewed by you</span></p><h2>{{ b.title }}</h2><p>{{ b.tagline }}</p><div class="prose small">{{ b.description_html|safe|truncatewords_html:120 }}</div><div class="row"><a class="btn sm" href="/p/{{ b.pk }}" target="_blank">Open project</a>{% if b.demo_video_url %}<a class="btn sm" href="{{ b.demo_video_url }}" target="_blank" rel="noopener nofollow">Demo</a>{% endif %}</div><button class="btn primary" name="outcome" value="b">This one is stronger ▶</button></div>
+</div>
+<div class="row" style="margin-top:12px"><input type="text" name="reason" placeholder="Optional: one line on why (organizers only)" style="max-width:480px"><button class="btn" name="outcome" value="tie">Too close to call</button></div>
+</form>
+{% else %}
+<div class="callout good"><h3>Done, thank you</h3><p>You have compared every pair of projects you reviewed in this track. The organizers see these choices beside the rubric ranking.</p></div>
+{% endif %}
+{% endblock %}

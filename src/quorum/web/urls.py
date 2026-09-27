@@ -47,6 +47,7 @@ urlpatterns = [
     path("j/<slug:slug>/review/<uuid:aid>", judge.review),
     path("j/<slug:slug>/recuse/<uuid:aid>", judge.recuse),
     path("j/<slug:slug>/tiebreak/<uuid:tid>", judge.tiebreak),
+    path("j/<slug:slug>/compare/<str:track>", judge.compare),
     path("j/<slug:slug>/protocol", judge.protocol),
     # organizer
     path("o", org.org_home),
@@ -58,6 +59,7 @@ urlpatterns = [
     path("o/<slug:slug>/judges/stats", org.judge_stats),
     path("o/<slug:slug>/ops", org.ops_view),
     path("o/<slug:slug>/results", org.results),
+    path("o/<slug:slug>/results/pairwise", org.pairwise_view),
     path("o/<slug:slug>/results/<str:ref>", org.explain),
     path("o/<slug:slug>/feedback", org.feedback_view),
     path("o/<slug:slug>/voting", org.voting_view),

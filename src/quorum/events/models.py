@@ -135,6 +135,9 @@ class Track(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     position = models.PositiveSmallIntegerField(default=0)
+    # Comparative judging (spec 9.7): judges also compare pairs from their own reviewed batch.
+    # Advisory evidence shown beside the rubric ranking; it never changes the official order.
+    pairwise = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["position", "name"]

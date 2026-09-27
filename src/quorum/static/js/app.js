@@ -134,6 +134,8 @@
   function initPairwise() {
     var f = $("#pairwise-form");
     if (!f) return;
+    var t0 = Date.now(), secs = $("input[name=active_seconds]", f);
+    if (secs) f.addEventListener("submit", function () { secs.value = Math.min(1800, Math.round((Date.now() - t0) / 1000)); });
     document.addEventListener("keydown", function (e) {
       var tag = (e.target.tagName || "").toLowerCase();
       if (tag === "textarea" || tag === "input") return;

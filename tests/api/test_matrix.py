@@ -71,6 +71,9 @@ MATRIX = {
     ("POST", "/api/v1/imports/{jid}/mapping"): "import_org", ("POST", "/api/v1/imports/{jid}/commit"): "import_org",
     ("GET", "/api/v1/events/{e}/webhooks"): O, ("POST", "/api/v1/events/{e}/webhooks"): O,
     ("DELETE", "/api/v1/events/{e}/webhooks/{hid}"): O,
+    ("GET", "/api/v1/events/{e}/pairwise"): O, ("POST", "/api/v1/events/{e}/tracks/{track}/pairwise"): O,
+    ("GET", "/api/v1/me/events/{e}/pairwise"): J,
+    ("POST", "/api/v1/me/events/{e}/pairwise"): "assignee",  # only projects the caller reviewed
 }
 
 DENY = {  # role -> refused? per category (True = must be 401/403)
@@ -119,7 +122,15 @@ def params(db):
     comment = Comment.objects.create(project_id=pid, author_id=Project.objects.get(pk=pid).team.members.first().user_id,
                                      body="matrix", body_html="<p>matrix</p>")
     a = Assignment.objects.filter(judge_role__ref="jdg_24", event__ref="evt_01").first()
+    from quorum.events.models import EventRole, Track
+    from quorum.judging.pairwise import pool
+
+    trk = Track.objects.get(event__ref="evt_01", ref="trk_01")
+    mine = pool(EventRole.objects.get(event__ref="evt_01", ref="jdg_24"), trk)
+    theirs = set(pool(EventRole.objects.get(event__ref="evt_01", ref="jdg_26"), trk))
+    pair = [next(p for p in mine if p not in theirs), next(p for p in mine if p in theirs)]
     return {
+        "track": "trk_01", "pair": pair,
         "e": "evt_01", "j": "jdg_24", "tid": str(Team.objects.get(ref="tm_01", event__ref="evt_01").pk), "pid": str(pid),
         "aid": str(a.pk), "rid": str(Review.objects.filter(event__ref="evt_01").first().pk), "cid": str(comment.pk),
         "jid": str(uuid.uuid4()), "hid": str(uuid.uuid4()), "ref": "prj_02", "kind": "results",
@@ -149,6 +160,8 @@ BODIES = {
     "/api/v1/verify": {"payload": "{}", "signature": "x", "key_id": "x"}, "/api/v1/bundles/verify": {"format": "x"},
     "/api/v1/imports/{jid}/mapping": {"mapping": {}}, "/api/v1/events/{e}/webhooks": {"url": "https://example.org/h"},
     "/api/v1/events/{e}/nudge": {}, "/api/v1/events/{e}/rebalance/plan": {"judges": []},
+    "/api/v1/events/{e}/tracks/{track}/pairwise": {"enabled": True},
+    "/api/v1/me/events/{e}/pairwise": lambda p: {"a": p["pair"][0], "b": p["pair"][1], "outcome": "a"},
 }
 MULTIPART = {"/api/v1/projects/{pid}/images", "/api/v1/events/{e}/imports"}
 QUERY = {"/api/v1/me/scorecard": "?event=evt_01"}
@@ -164,7 +177,8 @@ def _call(c, method, path, params):
         f = io.BytesIO(PNG if path.endswith("images") else b"title,email\nA,a@example.test\n")
         f.name = "x.png" if path.endswith("images") else "x.csv"
         return c.post(url, {"file": f})
-    body = json.dumps(BODIES.get(path, {})) if method in ("POST", "PUT", "PATCH") else ""
+    body = BODIES.get(path, {})
+    body = json.dumps(body(params) if callable(body) else body) if method in ("POST", "PUT", "PATCH") else ""
     return c.generic(method, url, data=body, content_type="application/json")
 
 

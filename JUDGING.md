@@ -198,10 +198,24 @@ When a tie group crosses a paid prize position, three conflict-free judges compa
   - Otherwise the fallback applies: an organizer decision recorded with a written reason, or a shared prize. Either way it is audited and published as such.
 - **Rubric and pairwise are never averaged.** They are on different scales. Pairwise enters only as evidence conditioned on the rubric posterior, at a prize boundary, which is the one place the fusion is principled.
 
-**Full pairwise mode.** The Bradley–Terry estimator (Hunter's MM algorithm, with one virtual win and one virtual loss against a dummy of strength 1, so the fit exists for all-win projects and disconnected graphs) is also exposed for events that want Gavel-style comparative judging per track.
+**Comparative judging per track** (`judging/pairwise.py`, organizer page `/o/<event>/results/pairwise`). This is the second method, and it is optional. An organizer switches it on for a track; the switch is audited and the track's judges are e-mailed. The event's public methodology page lists the tracks where it is on.
 
-- In simulation it matches the rubric's within-track accuracy at 5 comparisons per judge and beats it at 10.
-- It produces no per-criterion scores or written feedback, which Raptors promises, so it is an option rather than the default.
+- **What a judge sees.** After scoring their batch with the rubric, a judge is asked for 10 choices of the form "which of these two is stronger overall?".
+  - **Pairs.** Pairs are drawn only from projects the judge has already reviewed in that track, so every choice is informed and the judge's leniency cancels inside it. The server enforces this rule, along with same-track, never twice (a `NULLS NOT DISTINCT` unique constraint in Postgres) and judging window open.
+  - **Order.** The same `next_pair` picks the order: uncertain pairs first, the chain bonus keeps the project the judge preferred last time on screen, and pairs that join disconnected parts of the graph win.
+  - **Sides.** Left and right are shuffled per judge and pair, so position bias averages out.
+  - **Start.** A track starts for a judge once they have reviewed 3 of its projects.
+- **What organizers see.** A Bradley–Terry fit per track, computed by Hunter's MM algorithm. Every project plays one virtual win and one virtual loss against a dummy of strength 1, so the fit exists for all-win projects and disconnected graphs. Each project shows:
+  - its log-strength against a typical project, with a standard error from the observed Fisher information;
+  - a 90% plausible rank from 2,000 draws, using an independent-normal approximation;
+  - its win–loss–tie record;
+  - its calibrated rubric rank among the same projects, beside the pairwise rank.
+- **Graph and agreement.** The page reports Kendall τ-b between the two orders, and whether the comparison graph is connected.
+- **Disagreements.** A disagreement is flagged when the rubric rank falls outside the pairwise 90% range. It is a prompt to look (a focus review, a note), and nothing changes automatically.
+- **Advisory, never fused.** Comparisons never change the official ranking. A test asserts that the ranking run's output hash is identical before and after a full round robin of comparisons. The rubric and pairwise methods meet only in a tie-break, as pre-registered.
+- **Exports.** Comparisons are exported (`comparisons.csv`, with context, judge, pair, winner and seconds spent) and carried in the event bundle.
+- **Evidence.** In simulation, BT matches the rubric's within-track accuracy at 5 comparisons per judge (τ .491 vs .494) and beats it at 10 (.546). See `research/math/REPORT.md` §9. That is why 10 is the ask.
+- **Why it is not the default.** It produces no per-criterion scores or written feedback, and Raptors promises both.
 - For tracks of 3 projects, ranking the track directly is better.
 - Crowd-BT judge-reliability parameters are not used: they are not identifiable at about 10 comparisons per judge.
 

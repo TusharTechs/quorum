@@ -218,8 +218,9 @@ class PairwiseComparison(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(condition=~Q(project_a=models.F("project_b")), name="pairwise_distinct"),
+            # NULLS NOT DISTINCT: outside a tie-break (tiebreak IS NULL) a judge still compares a pair once.
             models.UniqueConstraint(fields=["judge_role", "tiebreak", "project_a", "project_b"],
-                                    name="uniq_pairwise_per_judge"),
+                                    name="uniq_pairwise_per_judge", nulls_distinct=False),
         ]
 
 

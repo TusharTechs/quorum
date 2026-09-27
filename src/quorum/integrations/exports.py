@@ -8,7 +8,7 @@ from collections import defaultdict
 from quorum.audit.models import AuditEvent
 from quorum.core.csvsafe import to_csv
 from quorum.events.models import Event, EventRole, Project, TeamMember
-from quorum.judging.models import Assignment, Review, ReviewScore
+from quorum.judging.models import Assignment, PairwiseComparison, Review, ReviewScore
 from quorum.results.service import latest_run
 from quorum.voting.models import Vote
 
@@ -124,6 +124,19 @@ def feedback_csv(ev: Event) -> str:
     return to_csv(["project", "judge", "moderation", "feedback_as_released", "quotable"], rows)
 
 
+def comparisons_csv(ev: Event) -> str:
+    """Every pairwise choice: tie-break rounds and comparative judging per track."""
+    rows = []
+    for c in (PairwiseComparison.objects.filter(event=ev)
+              .select_related("judge_role", "project_a__track", "project_b").order_by("created_at", "id")):
+        winner = {"a": c.project_a.ref, "b": c.project_b.ref, "tie": "tie"}[c.outcome]
+        rows.append([str(c.pk), "tiebreak" if c.tiebreak_id else "comparative", str(c.tiebreak_id or ""),
+                     c.project_a.track.ref if c.project_a.track else "", c.judge_role.ref, c.project_a.ref,
+                     c.project_b.ref, winner, c.reason, c.active_seconds, c.created_at.isoformat()])
+    return to_csv(["comparison", "context", "tiebreak", "track", "judge", "project_a", "project_b", "winner",
+                   "reason", "active_seconds", "created_at"], rows)
+
+
 def audit_csv(ev: Event) -> str:
     rows = [[a.seq, a.ts.isoformat(), a.actor_label, a.actor_role, a.action, a.target_type, a.target_id,
              a.summary, a.prev_hash, a.hash]
@@ -139,5 +152,5 @@ def _r(x, nd=4):
 CSV_EXPORTS = {
     "projects": projects_csv, "teams": teams_csv, "judges": judges_csv, "assignments": assignments_csv,
     "reviews": reviews_csv, "scores": scores_csv, "results": results_csv, "votes": votes_csv,
-    "feedback": feedback_csv, "audit": audit_csv,
+    "feedback": feedback_csv, "comparisons": comparisons_csv, "audit": audit_csv,
 }

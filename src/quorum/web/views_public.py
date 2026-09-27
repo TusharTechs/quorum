@@ -160,6 +160,7 @@ def event_methodology(request, slug):
     return render(request, "public/event_methodology.html", {
         "ev": ev, "method": m, "criteria": ev.criteria.order_by("position"),
         "spec_json": methods.spec_json(m) if m else "", "versions": ev.methods.all(), "nav": "events",
+        "comparative": ev.tracks.filter(pairwise=True),
     })
 
 

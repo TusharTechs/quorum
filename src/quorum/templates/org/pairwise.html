@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · comparative judging{% endblock %}
+{% block wrapclass %}wrap-wide{% endblock %}
+{% block content %}
+{% include "org/_tabs.html" %}
+<p class="small"><a href="/o/{{ ev.slug }}/results">← Results</a></p>
+<h1>Comparative judging</h1>
+<p class="muted" style="max-width:860px">A second, independent method per track. Judges choose the stronger of two projects <em>they have already reviewed</em>, so each choice is informed and a judge's leniency cancels inside the comparison. Choices are fitted with Bradley–Terry and shown beside the calibrated rubric order. <strong>This is advisory: it never changes the official ranking.</strong> The only place pairwise evidence enters the ranking is a tie-break round, as pre-registered. Each judge is asked for {{ target }} comparisons per track, and a track starts once a judge has reviewed {{ min_pool }} of its projects.</p>
+{% for row in tracks %}{% with t=row.t b=row.board %}
+<div class="card" style="margin-top:16px">
+  <div class="row between">
+    <div><h2 style="margin:0">{{ t.name }} {% if t.pairwise %}<span class="badge good">on</span>{% else %}<span class="badge">off</span>{% endif %}</h2>
+    <p class="small muted" style="margin:4px 0 0">{{ row.judges }} judge{{ row.judges|pluralize }} in this track, {{ row.ready }} with enough reviewed projects to compare.{% if b %} {{ b.comparisons }} comparison{{ b.comparisons|pluralize }} from {{ b.judges }} judge{{ b.judges|pluralize }}.{% endif %}</p></div>
+    {% if not locked %}<form method="post" data-confirm="{% if t.pairwise %}Switch comparative judging off for {{ t.name }}? Recorded choices are kept.{% else %}Switch comparative judging on for {{ t.name }}? Its judges are e-mailed.{% endif %}">{% csrf_token %}<input type="hidden" name="track" value="{{ t.ref }}"><input type="hidden" name="enabled" value="{% if t.pairwise %}0{% else %}1{% endif %}"><button class="btn sm {% if not t.pairwise %}primary{% endif %}">{% if t.pairwise %}Switch off{% else %}Switch on{% endif %}</button></form>{% endif %}
+  </div>
+  {% if b and b.projects %}
+  <div class="grid cols-4" style="margin:14px 0">
+    <div class="stat"><div class="k">Agreement with rubric</div><div class="v">{% if b.tau is not None %}τ {{ b.tau|f2 }}{% else %}–{% endif %}</div><div class="s">Kendall τ-b, compared projects</div></div>
+    <div class="stat"><div class="k">Comparison graph</div><div class="v">{% if b.components == 1 %}connected{% else %}{{ b.components }} parts{% endif %}</div><div class="s">{% if b.components == 1 %}every project is linked to every other{% else %}parts cannot be ordered against each other yet{% endif %}</div></div>
+    <div class="stat"><div class="k">Disagreements</div><div class="v">{{ b.flagged }}</div><div class="s">rubric rank outside the pairwise 90% range</div></div>
+    <div class="stat"><div class="k">Per judge</div><div class="s" style="margin-top:8px">{% for j, n in b.per_judge.items %}<span class="chip">{{ j }} · {{ n }}</span> {% endfor %}</div></div>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th class="num">Pairwise #</th><th>Project</th><th class="num">W–L–T</th><th class="num">Strength</th><th>Plausible rank (90%)</th><th class="num">P(beats typical)</th><th class="num">Rubric #</th><th class="num">Calibrated</th><th></th></tr></thead>
+    <tbody>{% for p in b.projects %}
+      <tr{% if p.flag %} class="flag"{% endif %}><td class="num">{{ p.rank }}</td><td><a href="/o/{{ ev.slug }}/results/{{ p.ref }}">{{ p.title }}</a><div class="tiny muted">{{ p.team }}</div></td>
+      <td class="num">{{ p.wins }}–{{ p.losses }}–{{ p.ties }}</td><td class="num">{{ p.strength|signed }}{% if p.se %} <span class="tiny muted">± {{ p.se|f2 }}</span>{% endif %}</td>
+      <td style="white-space:nowrap">{% whisker p.rank_lo p.rank_hi p.rank b.projects|length %} <span class="tiny muted">{{ p.rank_lo }}–{{ p.rank_hi }}</span></td>
+      <td class="num">{{ p.p_vs_typical|pct }}</td><td class="num">{{ p.rubric_rank|default:"–" }}</td><td class="num">{{ p.calibrated|f2 }}</td>
+      <td>{% if p.flag %}<span class="badge warn" title="The rubric places this project outside the range the comparisons allow. Worth a look: a focus review or a note. Nothing changes automatically.">disagree</span>{% endif %}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  <p class="tiny muted" style="margin-top:8px">Bradley–Terry by Hunter's MM with one virtual win and loss against a dummy (so every project has a finite strength); strength is log-odds against a typical project, ± its standard error. Rubric # is the calibrated order among the same projects. Ties count half a win each way.</p>
+  {% elif t.pairwise %}<p class="small muted" style="margin-top:12px">No comparisons yet. Judges see a “Comparisons” card in their batch once they have reviewed {{ min_pool }} projects in this track.</p>{% endif %}
+</div>
+{% endwith %}{% empty %}<p class="muted">This event has no tracks. Comparative judging is set per track.</p>{% endfor %}
+<p class="small muted" style="margin-top:16px">All comparisons (tie-break and comparative) are in the <a href="/api/v1/events/{{ ev.ref }}/exports/comparisons.csv">comparisons CSV</a> and the event bundle.</p>
+{% endblock %}

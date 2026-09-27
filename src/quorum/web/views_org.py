@@ -20,6 +20,7 @@ from quorum.integrations.models import ImportJob, WebhookEndpoint
 from quorum.judging import feedback as fb
 from quorum.judging import method as methods
 from quorum.judging import ops
+from quorum.judging import pairwise
 from quorum.judging.models import Conflict as JConflict
 from quorum.judging.models import Review
 from quorum.policy.decorators import policy
@@ -342,6 +343,29 @@ def results(request, slug):
         tiebreaks=tiebreaks, focus_plan=focus_plan, pub=pub, pivotal=pivotal, n=len(out.get("entries", [])),
         runs=RankingRun.objects.filter(event=ev).order_by("-created_at")[:8], sens=out.get("sensitivity"),
         method=methods.current(ev)))
+
+
+@policy("authenticated")
+def pairwise_view(request, slug):
+    ev = _org(request, slug)
+    if request.method == "POST":
+        try:
+            t = pairwise.set_mode(ev, request.actor, pairwise.get_track(ev, request.POST.get("track", "")),
+                                  request.POST.get("enabled") == "1")
+            messages.success(request, f"Comparative judging {'switched on' if t.pairwise else 'switched off'} "
+                                      f"for {t.name}.")
+        except PolicyError as e:
+            _err(request, e)
+        return redirect(f"/o/{ev.slug}/results/pairwise")
+    boards = {b["track"]["ref"]: b for b in pairwise.event_board(ev)}
+    tracks = []
+    for t in ev.tracks.all():
+        judges = list(EventRole.objects.filter(event=ev, role="judge", judge_tracks__track=t).select_related("user"))
+        ready = sum(1 for r in judges if len(pairwise.pool(r, t)) >= pairwise.MIN_POOL)
+        tracks.append({"t": t, "board": boards.get(t.ref), "judges": len(judges), "ready": ready})
+    return render(request, "org/pairwise.html", _ctx(ev, "results", tracks=tracks, target=pairwise.TARGET,
+                                                     min_pool=pairwise.MIN_POOL,
+                                                     locked=hasattr(ev, "publication")))
 
 
 @policy("authenticated")

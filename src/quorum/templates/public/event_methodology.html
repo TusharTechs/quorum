@@ -17,6 +17,7 @@
     <dt>Flat-judge rule</dt><dd>weight 0 if every score is identical over ≥ {{ method.spec.flat_rule.min_reviews }} reviews</dd>
     <dt>Focus budget</dt><dd>{{ method.spec.focus.budget_pct }}% of baseline, {{ method.spec.focus.rounds }} rounds</dd>
     <dt>Tie-break</dt><dd>{{ method.spec.tiebreak.trigger }}; {{ method.spec.tiebreak.judges }} judges, ≤ {{ method.spec.tiebreak.max_projects }} projects; resolved at P ≥ {{ method.spec.tiebreak.resolve_threshold }}; otherwise {{ method.spec.tiebreak.fallback }}</dd>
+    <dt>Comparative judging</dt><dd>{% if comparative %}On for {% for t in comparative %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}: judges also choose between pairs of projects they reviewed. These choices are shown to organizers beside the ranking and never change it.{% else %}Not used.{% endif %}</dd>
     <dt>Voting</dt><dd>{{ method.spec.voting.mode }}, {{ method.spec.voting.votes_per_voter }} votes each{% if method.spec.voting.quadratic %}, quadratic{% endif %}; separate from judged prizes</dd>
   </dl></div>
 </div>

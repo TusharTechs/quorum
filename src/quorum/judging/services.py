@@ -121,12 +121,18 @@ def record_comparison(actor, event, role, a_project, b_project, outcome: str, ti
         ids = set(tiebreak.projects.values_list("pk", flat=True))
         if a_project.pk not in ids or b_project.pk not in ids:
             raise Forbidden("Both projects must be part of the tie-break.")
-    else:
+    else:  # comparative judging within a track (judging.pairwise); authorization before state
+        from .pairwise import pool
+
+        if a_project.track_id is None or a_project.track_id != b_project.track_id:
+            raise Forbidden("Comparisons are between two projects of the same track.")
+        track = a_project.track
+        mine = set(pool(role, track))
+        if a_project.ref not in mine or b_project.ref not in mine:
+            raise Forbidden("You can only compare projects you have reviewed.")
+        if not track.pairwise:
+            raise Conflict("Comparative judging is not switched on for this track.", code="pairwise_disabled")
         guard_judging_open(event)
-        mine = set(Assignment.objects.filter(judge_role=role, event=event).exclude(
-            status__in=["reassigned", "recused"]).values_list("project_id", flat=True))
-        if a_project.pk not in mine or b_project.pk not in mine:
-            raise Forbidden("You can only compare projects assigned to you.")
     x, y = sorted([a_project, b_project], key=lambda p: str(p.pk))
     if x.pk != a_project.pk:
         outcome = {"a": "b", "b": "a", "tie": "tie"}[outcome]

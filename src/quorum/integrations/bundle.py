@@ -49,7 +49,8 @@ def export_bundle(ev: Event, pseudonymize: bool = False) -> dict:
         "event": {f: _iso(getattr(ev, f)) for f in EVENT_FIELDS},
         "methods": [{"version": m.version, "spec": m.spec, "spec_hash": m.spec_hash, "locked_at": _iso(m.locked_at),
                      "override_reason": m.override_reason} for m in ev.methods.order_by("version")],
-        "tracks": [{"ref": t.ref, "name": t.name, "description": t.description, "position": t.position} for t in ev.tracks.all()],
+        "tracks": [{"ref": t.ref, "name": t.name, "description": t.description, "position": t.position,
+                    "pairwise": t.pairwise} for t in ev.tracks.all()],
         "criteria": [{"key": c.key, "name": c.name, "description": c.description, "weight_bp": c.weight_bp,
                       "scale_min": c.scale_min, "scale_max": c.scale_max, "anchors": c.anchors, "position": c.position}
                      for c in ev.criteria.all()],
@@ -79,7 +80,7 @@ def export_bundle(ev: Event, pseudonymize: bool = False) -> dict:
                      "submitted_at": _iso(r.submitted_at), "source_scores": r.source_scores}
                     for r in Review.objects.filter(event=ev).select_related("judge_role", "project")],
         "pairwise": [{"judge": c.judge_role.ref, "a": c.project_a.ref, "b": c.project_b.ref, "outcome": c.outcome,
-                      "tiebreak": str(c.tiebreak_id) if c.tiebreak_id else None}
+                      "tiebreak": str(c.tiebreak_id) if c.tiebreak_id else None, "reason": c.reason}
                      for c in PairwiseComparison.objects.filter(event=ev).select_related("judge_role", "project_a", "project_b")],
         "ranking_runs": [{"id": str(r.pk), "kind": r.kind, "created_at": _iso(r.created_at), "engine_version": r.engine_version,
                           "method_hash": r.method_hash, "input_hash": r.input_hash, "output_hash": r.output_hash,
@@ -175,6 +176,12 @@ def import_bundle(actor, data: dict, new_slug: str | None = None) -> tuple[Event
         for k, v in (r.get("scores") or {}).items():
             if k in crits:
                 ReviewScore.objects.create(review=rv, criterion=crits[k], value=v)
+    for c in data.get("pairwise", []):
+        # comparative choices come across; tie-break rounds belong to the source event's panels
+        if c.get("tiebreak") or c["judge"] not in judges or c["a"] not in projects or c["b"] not in projects:
+            continue
+        PairwiseComparison.objects.create(event=ev, judge_role=judges[c["judge"]], project_a=projects[c["a"]],
+                                          project_b=projects[c["b"]], outcome=c["outcome"], reason=c.get("reason", ""))
     audit.record("BUNDLE_IMPORTED", f"Event imported from a {FORMAT} bundle ({len(projects)} projects, "
                                     f"{len(data.get('reviews', []))} reviews)", event=ev, actor=actor,
                  actor_role="organizer", data={"source_head": (data.get("audit") or {}).get("head")})
