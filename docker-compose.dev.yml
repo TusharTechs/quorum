@@ -1,0 +1,15 @@
+# Development only: database + mail for running Django on the host.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: quorum
+      POSTGRES_USER: quorum
+      POSTGRES_PASSWORD: quorum
+    ports: ["5432:5432"]
+    volumes: [devdb:/var/lib/postgresql/data]
+  mail:
+    image: axllent/mailpit:latest
+    ports: ["1025:1025", "8025:8025"]
+volumes:
+  devdb:

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">{% if ev.is_demo %}Demo event · {% endif %}{{ ev.get_phase_display }}</p>
+  <h1>{{ ev.name }}</h1>
+  <p class="lead">{{ ev.tagline }}</p>
+  <ol class="steps" aria-label="Event lifecycle">{% for s in steps %}<li class="{{ s.state }}">{{ s.label }}</li>{% endfor %}</ol>
+</section>
+<div class="split">
+  <div class="stack-lg">
+    <div class="row">
+      <a class="btn primary" href="/e/{{ ev.slug }}/projects">Gallery ({{ n_projects }})</a>
+      {% if ev.published %}<a class="btn" href="/e/{{ ev.slug }}/results">Results</a>{% endif %}
+      {% if ev.voting_mode != "off" %}<a class="btn" href="/e/{{ ev.slug }}/vote">Vote</a>{% endif %}
+      {% if submissions_open %}{% if my_team %}<a class="btn" href="/me/e/{{ ev.slug }}">Your team: {{ my_team.name }}</a>{% else %}<a class="btn" href="/me/e/{{ ev.slug }}">Join or create a team</a>{% endif %}{% endif %}
+      {% if is_judge %}<a class="btn" href="/j/{{ ev.slug }}">Judge inbox</a>{% endif %}
+      {% if is_org %}<a class="btn" href="/o/{{ ev.slug }}">Organizer console</a>{% endif %}
+    </div>
+    {% if ev.description_md %}<div class="card prose">{{ ev.description_md|linebreaks }}</div>{% endif %}
+    <div class="card">
+      <h2>How projects are judged</h2>
+      <p class="small muted">Weights were published before registration opened and cannot change without a visible, audited override.</p>
+      <table><thead><tr><th>Criterion</th><th class="num">Weight</th><th>Scale</th></tr></thead><tbody>
+      {% for c in criteria %}<tr><td><strong>{{ c.name }}</strong><div class="small muted">{{ c.description }}</div></td><td class="num">{{ c.weight_pct|floatformat:0 }}%</td><td class="small">{{ c.scale_min }}–{{ c.scale_max }}</td></tr>{% endfor %}
+      </tbody></table>
+      {% if method %}<p class="small" style="margin-top:12px">Method v{{ method.version }} locked {{ method.locked_at|date:"j M Y" }} · <span class="hash">sha256 {{ method.spec_hash }}</span> · <a href="/e/{{ ev.slug }}/methodology">read the full method</a>{% if method.override_reason %} · <span class="badge bad">overridden after lock</span>{% endif %}</p>{% endif %}
+    </div>
+    {% if tracks %}<div class="card"><h2>Tracks</h2><div class="row">{% for t in tracks %}<a class="chip" href="/e/{{ ev.slug }}/projects?track={{ t.ref }}">{{ t.name }}</a>{% endfor %}</div></div>{% endif %}
+  </div>
+  <aside class="stack">
+    <div class="card">
+      <h3>Key dates <span class="tiny muted">(UTC)</span></h3>
+      <dl class="kv small">
+        <dt>Submissions open</dt><dd>{{ ev.submissions_open_at|date:"j M Y, H:i" }}</dd>
+        <dt>Submissions close</dt><dd><strong>{{ ev.submissions_close_at|date:"j M Y, H:i" }}</strong>{% if submissions_open %}<br><span class="badge accent"><time data-countdown datetime="{{ ev.submissions_close_at|date:'c' }}">…</time> left</span>{% endif %}</dd>
+        <dt>Judging</dt><dd>{{ ev.judging_opens_at|date:"j M" }} – {{ ev.judging_closes_at|date:"j M Y" }}</dd>
+        {% if ev.voting_opens_at %}<dt>Community vote</dt><dd>{{ ev.voting_opens_at|date:"j M" }} – {{ ev.voting_closes_at|date:"j M Y" }}</dd>{% endif %}
+      </dl>
+    </div>
+    {% if prizes %}<div class="card"><h3>Prizes</h3>{% for p in prizes %}<div style="margin-bottom:10px"><strong>{{ p.name }}</strong> {% if p.kind == "community" %}<span class="badge">community</span>{% endif %}<div class="small muted">{{ p.value_text }} {{ p.description }}</div></div>{% endfor %}</div>{% endif %}
+    {% if ev.rules_md %}<div class="card small"><h3>Rules</h3>{{ ev.rules_md|linebreaks }}</div>{% endif %}
+  </aside>
+</div>
+{% endblock %}

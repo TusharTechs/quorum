@@ -1,0 +1,62 @@
+{
+ "S0 no judge effects|tau": [
+  0.0038155399614683383,
+  0.0014985255759949762
+ ],
+ "S0 no judge effects|rank_err_top5": [
+  -0.1992,
+  0.07733217553838115
+ ],
+ "S0 no judge effects|top3_exact": [
+  0.006,
+  0.010368375534404842
+ ],
+ "S0 no judge effects|first": [
+  -0.006,
+  0.021841150989659545
+ ],
+ "S0 no judge effects|health_first": [
+  -0.02,
+  0.02142046667992019
+ ],
+ "S1 leniency sd .4 (ICC~.34)|tau": [
+  0.0016884366159289877,
+  0.0014558100693601885
+ ],
+ "S1 leniency sd .4 (ICC~.34)|rank_err_top5": [
+  -0.14560000000000003,
+  0.06851946759956805
+ ],
+ "S1 leniency sd .4 (ICC~.34)|top3_exact": [
+  0.006,
+  0.011760000000000001
+ ],
+ "S1 leniency sd .4 (ICC~.34)|first": [
+  -0.002,
+  0.021846789962448182
+ ],
+ "S1 leniency sd .4 (ICC~.34)|health_first": [
+  -0.008,
+  0.019995858168325147
+ ],
+ "S4 strong leniency sd .7|tau": [
+  -0.0007594226999798277,
+  0.001500188501336727
+ ],
+ "S4 strong leniency sd .7|rank_err_top5": [
+  -0.07079999999999996,
+  0.0634674458736402
+ ],
+ "S4 strong leniency sd .7|top3_exact": [
+  -0.006,
+  0.013003537548588656
+ ],
+ "S4 strong leniency sd .7|first": [
+  0.0,
+  0.02076346413500819
+ ],
+ "S4 strong leniency sd .7|health_first": [
+  -0.01,
+  0.021112763380360944
+ ]
+}

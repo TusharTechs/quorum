@@ -1,0 +1,134 @@
+{
+ "truth=fixture m=3 random | BT": {
+  "tau_within": 0.3630736688592405,
+  "winner": 0.435625,
+  "comparisons": 90.0,
+  "looks": 128.595
+ },
+ "truth=fixture m=3 random | rubric D* (123 reviews)": {
+  "tau_within": 0.42848438730340865,
+  "winner": 0.49375,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "truth=fixture m=3 random | rubric raw (123 reviews)": {
+  "tau_within": 0.42885600679062336,
+  "winner": 0.4825,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "truth=fixture m=3 adaptive | BT": {
+  "tau_within": 0.37146719444504067,
+  "winner": 0.4775,
+  "comparisons": 90.0,
+  "looks": 114.455
+ },
+ "truth=fixture m=5 random | BT": {
+  "tau_within": 0.42389133419709357,
+  "winner": 0.505,
+  "comparisons": 140.0,
+  "looks": 160.96
+ },
+ "truth=fixture m=5 adaptive | BT": {
+  "tau_within": 0.4516553072217576,
+  "winner": 0.535,
+  "comparisons": 140.0,
+  "looks": 146.495
+ },
+ "truth=fixture m=10 random | BT": {
+  "tau_within": 0.5155262631111033,
+  "winner": 0.575,
+  "comparisons": 265.0,
+  "looks": 186.655
+ },
+ "truth=fixture m=10 adaptive | BT": {
+  "tau_within": 0.5355911844574969,
+  "winner": 0.60375,
+  "comparisons": 265.0,
+  "looks": 170.045
+ },
+ "truth=fixture m=15 random | BT": {
+  "tau_within": 0.5458419487056712,
+  "winner": 0.605625,
+  "comparisons": 346.0,
+  "looks": 192.14
+ },
+ "truth=fixture m=15 adaptive | BT": {
+  "tau_within": 0.5673797907840867,
+  "winner": 0.641875,
+  "comparisons": 346.0,
+  "looks": 187.095
+ },
+ "truth=sd0.48 m=3 random | BT": {
+  "tau_within": 0.43971740435639667,
+  "winner": 0.509375,
+  "comparisons": 90.0,
+  "looks": 128.235
+ },
+ "truth=sd0.48 m=3 random | rubric D* (123 reviews)": {
+  "tau_within": 0.49387492066957944,
+  "winner": 0.55,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "truth=sd0.48 m=3 random | rubric raw (123 reviews)": {
+  "tau_within": 0.4964346031665925,
+  "winner": 0.5475,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "truth=sd0.48 m=3 adaptive | BT": {
+  "tau_within": 0.4521694860020729,
+  "winner": 0.544375,
+  "comparisons": 90.0,
+  "looks": 114.845
+ },
+ "truth=sd0.48 m=5 random | BT": {
+  "tau_within": 0.46696514452112,
+  "winner": 0.528125,
+  "comparisons": 140.0,
+  "looks": 160.88
+ },
+ "truth=sd0.48 m=5 adaptive | BT": {
+  "tau_within": 0.5135225930410805,
+  "winner": 0.596875,
+  "comparisons": 140.0,
+  "looks": 146.45
+ },
+ "truth=sd0.48 m=10 random | BT": {
+  "tau_within": 0.5827504702890248,
+  "winner": 0.630625,
+  "comparisons": 265.0,
+  "looks": 186.66
+ },
+ "truth=sd0.48 m=10 adaptive | BT": {
+  "tau_within": 0.596635040783878,
+  "winner": 0.661875,
+  "comparisons": 265.0,
+  "looks": 171.325
+ },
+ "truth=sd0.48 m=15 random | BT": {
+  "tau_within": 0.617837360425671,
+  "winner": 0.6775,
+  "comparisons": 346.0,
+  "looks": 192.16
+ },
+ "truth=sd0.48 m=15 adaptive | BT": {
+  "tau_within": 0.6160555929129732,
+  "winner": 0.675625,
+  "comparisons": 346.0,
+  "looks": 188.085
+ },
+ "truth=sd0.48 m=10 adaptive, 3 random clickers | BT": {
+  "tau_within": 0.5749277174146392,
+  "winner": 0.641875,
+  "comparisons": 265.0,
+  "looks": 170.65
+ },
+ "truth=sd0.48 m=10 adaptive, 3 random clickers | Crowd-BT": {
+  "tau_within": 0.5742486368697047,
+  "winner": 0.640625,
+  "comparisons": 265.0,
+  "looks": 170.65
+ }
+}

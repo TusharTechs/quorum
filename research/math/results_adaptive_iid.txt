@@ -1,0 +1,51 @@
+
+### Adaptive allocation (fixture tracks, augmented; S1 truth ICC~.34, offsets sd .4, flat jdg_07; n=400)
+| method | top3_exact | first | rank_err_top5 | tau_top10 | track_winner | tau | reviews |
+|---|---|---|---|---|---|---|---|
+| U3 uniform 3 (120) | 0.068 ±0.025 | 0.335 ±0.046 | 4.469 ±0.233 | 0.321 ±0.023 | 0.621 ±0.017 | 0.585 ±0.007 | 120.000 ±0.000 |
+| U3 uniform 3 (120) + tie-break<=4 (fused) | 0.092 ±0.028 | 0.512 ±0.049 | 4.268 ±0.233 | 0.352 ±0.023 | 0.642 ±0.017 | 0.590 ±0.007 | 120.000 ±0.000 |
+| U3 uniform 3 (120) + tie-break<=6 (fused) | 0.165 ±0.036 | 0.575 ±0.049 | 4.006 ±0.235 | 0.385 ±0.023 | 0.658 ±0.016 | 0.596 ±0.007 | 120.000 ±0.000 |
+| U3 uniform 3 (120) + tie-break<=6 (pairwise only) | 0.163 ±0.036 | 0.557 ±0.049 | 4.187 ±0.238 | 0.374 ±0.024 | 0.645 ±0.016 | 0.591 ±0.007 | 120.000 ±0.000 |
+| A2+ 2 then 2x20 targeted (120) | 0.092 ±0.028 | 0.435 ±0.049 | 4.386 ±0.239 | 0.374 ±0.021 | 0.632 ±0.016 | 0.558 ±0.007 | 120.000 ±0.000 |
+| A2+ 2 then 2x20 targeted (120) + tie-break<=4 (fused) | 0.147 ±0.035 | 0.583 ±0.048 | 4.224 ±0.239 | 0.394 ±0.022 | 0.642 ±0.016 | 0.561 ±0.007 | 120.000 ±0.000 |
+| A2+ 2 then 2x20 targeted (120) + tie-break<=6 (fused) | 0.195 ±0.039 | 0.610 ±0.048 | 4.026 ±0.242 | 0.420 ±0.022 | 0.651 ±0.016 | 0.565 ±0.007 | 120.000 ±0.000 |
+| A2+ 2 then 2x20 targeted (120) + tie-break<=6 (pairwise only) | 0.175 ±0.037 | 0.550 ±0.049 | 4.198 ±0.240 | 0.406 ±0.022 | 0.646 ±0.016 | 0.562 ±0.007 | 120.000 ±0.000 |
+| A2+ 2 then 1x40 targeted (120) | 0.085 ±0.027 | 0.355 ±0.047 | 4.271 ±0.226 | 0.355 ±0.022 | 0.636 ±0.016 | 0.574 ±0.007 | 119.965 ±0.040 |
+| A3+ 3 then +20 targeted (140) | 0.113 ±0.031 | 0.407 ±0.048 | 3.845 ±0.212 | 0.383 ±0.022 | 0.648 ±0.016 | 0.601 ±0.006 | 140.000 ±0.000 |
+| A3+ 3 then +20 targeted (140) + tie-break<=4 (fused) | 0.145 ±0.035 | 0.550 ±0.049 | 3.694 ±0.214 | 0.408 ±0.022 | 0.657 ±0.016 | 0.603 ±0.006 | 140.000 ±0.000 |
+| A3+ 3 then +20 targeted (140) + tie-break<=6 (fused) | 0.220 ±0.041 | 0.590 ±0.048 | 3.498 ±0.212 | 0.436 ±0.022 | 0.663 ±0.016 | 0.608 ±0.006 | 140.000 ±0.000 |
+| A3+ 3 then +20 targeted (140) + tie-break<=6 (pairwise only) | 0.180 ±0.038 | 0.565 ±0.049 | 3.619 ±0.211 | 0.424 ±0.022 | 0.662 ±0.016 | 0.605 ±0.006 | 140.000 ±0.000 |
+| A3+ 3 then 2x10 targeted (140) | 0.100 ±0.029 | 0.445 ±0.049 | 3.910 ±0.217 | 0.385 ±0.022 | 0.650 ±0.017 | 0.601 ±0.006 | 140.000 ±0.000 |
+| U4 uniform 4 (160) | 0.062 ±0.024 | 0.383 ±0.048 | 3.732 ±0.191 | 0.374 ±0.022 | 0.665 ±0.017 | 0.637 ±0.006 | 160.000 ±0.000 |
+| U4 uniform 4 (160) + tie-break<=4 (fused) | 0.107 ±0.030 | 0.565 ±0.049 | 3.550 ±0.195 | 0.402 ±0.022 | 0.678 ±0.017 | 0.640 ±0.006 | 160.000 ±0.000 |
+| U4 uniform 4 (160) + tie-break<=6 (fused) | 0.200 ±0.039 | 0.590 ±0.048 | 3.334 ±0.194 | 0.437 ±0.021 | 0.688 ±0.017 | 0.645 ±0.006 | 160.000 ±0.000 |
+| U4 uniform 4 (160) + tie-break<=6 (pairwise only) | 0.180 ±0.038 | 0.560 ±0.049 | 3.451 ±0.194 | 0.426 ±0.021 | 0.680 ±0.017 | 0.643 ±0.006 | 160.000 ±0.000 |
+
+realised ICC(1) under U3: 0.31
+  U3 uniform 3 (120) + tie-break<=4 (fused): mean tie set 4.0 projects, 18.0 comparisons
+  U3 uniform 3 (120) + tie-break<=6 (fused): mean tie set 6.0 projects, 44.9 comparisons
+  A2+ 2 then 2x20 targeted (120) + tie-break<=4 (fused): mean tie set 4.0 projects, 18.0 comparisons
+  A2+ 2 then 2x20 targeted (120) + tie-break<=6 (fused): mean tie set 6.0 projects, 44.7 comparisons
+  A3+ 3 then +20 targeted (140) + tie-break<=4 (fused): mean tie set 4.0 projects, 18.0 comparisons
+  A3+ 3 then +20 targeted (140) + tie-break<=6 (fused): mean tie set 6.0 projects, 44.8 comparisons
+  U4 uniform 4 (160) + tie-break<=4 (fused): mean tie set 4.0 projects, 18.0 comparisons
+  U4 uniform 4 (160) + tie-break<=6 (fused): mean tie set 6.0 projects, 44.9 comparisons
+
+Paired differences vs U3 (mean ±95% CI):
+  U3 uniform 3 (120) + tie-break<=4 (fused)        top3_exact +0.025±0.028  first +0.177±0.047  rank_err_top5 -0.201±0.041  tau_top10 +0.031±0.007
+  U3 uniform 3 (120) + tie-break<=6 (fused)        top3_exact +0.098±0.036  first +0.240±0.053  rank_err_top5 -0.462±0.055  tau_top10 +0.064±0.009
+  U3 uniform 3 (120) + tie-break<=6 (pairwise only) top3_exact +0.095±0.038  first +0.223±0.060  rank_err_top5 -0.281±0.056  tau_top10 +0.053±0.009
+  A2+ 2 then 2x20 targeted (120)                   top3_exact +0.025±0.032  first +0.100±0.053  rank_err_top5 -0.083±0.189  tau_top10 +0.053±0.020
+  A2+ 2 then 2x20 targeted (120) + tie-break<=4 (fused) top3_exact +0.080±0.040  first +0.247±0.055  rank_err_top5 -0.245±0.194  tau_top10 +0.073±0.021
+  A2+ 2 then 2x20 targeted (120) + tie-break<=6 (fused) top3_exact +0.128±0.043  first +0.275±0.054  rank_err_top5 -0.443±0.197  tau_top10 +0.099±0.022
+  A2+ 2 then 2x20 targeted (120) + tie-break<=6 (pairwise only) top3_exact +0.107±0.044  first +0.215±0.060  rank_err_top5 -0.271±0.196  tau_top10 +0.085±0.022
+  A2+ 2 then 1x40 targeted (120)                   top3_exact +0.018±0.034  first +0.020±0.053  rank_err_top5 -0.197±0.182  tau_top10 +0.034±0.020
+  A3+ 3 then +20 targeted (140)                    top3_exact +0.045±0.032  first +0.072±0.048  rank_err_top5 -0.623±0.106  tau_top10 +0.062±0.014
+  A3+ 3 then +20 targeted (140) + tie-break<=4 (fused) top3_exact +0.077±0.041  first +0.215±0.055  rank_err_top5 -0.775±0.111  tau_top10 +0.087±0.014
+  A3+ 3 then +20 targeted (140) + tie-break<=6 (fused) top3_exact +0.152±0.046  first +0.255±0.053  rank_err_top5 -0.971±0.115  tau_top10 +0.115±0.015
+  A3+ 3 then +20 targeted (140) + tie-break<=6 (pairwise only) top3_exact +0.113±0.043  first +0.230±0.059  rank_err_top5 -0.850±0.112  tau_top10 +0.103±0.015
+  A3+ 3 then 2x10 targeted (140)                   top3_exact +0.033±0.033  first +0.110±0.049  rank_err_top5 -0.558±0.106  tau_top10 +0.064±0.014
+  U4 uniform 4 (160)                               top3_exact -0.005±0.028  first +0.048±0.045  rank_err_top5 -0.736±0.138  tau_top10 +0.053±0.015
+  U4 uniform 4 (160) + tie-break<=4 (fused)        top3_exact +0.040±0.035  first +0.230±0.053  rank_err_top5 -0.918±0.143  tau_top10 +0.081±0.016
+  U4 uniform 4 (160) + tie-break<=6 (fused)        top3_exact +0.133±0.042  first +0.255±0.054  rank_err_top5 -1.135±0.149  tau_top10 +0.116±0.017
+  U4 uniform 4 (160) + tie-break<=6 (pairwise only) top3_exact +0.113±0.044  first +0.225±0.060  rank_err_top5 -1.017±0.148  tau_top10 +0.105±0.017

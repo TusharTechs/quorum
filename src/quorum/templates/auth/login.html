@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="grid cols-2" style="max-width:880px;margin:24px auto">
+  <div class="card">
+    <h1>Sign in</h1>
+    {% if error %}<div class="callout bad small">{{ error }}</div>{% endif %}
+    <form method="post" class="stack">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="field"><label for="email">E-mail</label><input id="email" type="email" name="email" value="{{ email }}" required autocomplete="email"></div>
+      <div class="field"><label for="password">Password</label><input id="password" type="password" name="password" autocomplete="current-password"></div>
+      <div class="row"><button class="btn primary" type="submit" name="mode" value="password">Sign in</button>
+        <button class="btn" type="submit" name="mode" value="magic" formnovalidate>E-mail me a link instead</button></div>
+    </form>
+    <p class="small muted" style="margin-top:14px">New here? <a href="/signup?next={{ next|urlencode }}">Create an account</a>.</p>
+  </div>
+  <div class="card">
+    <h2>Demo accounts</h2>
+    {% if QUORUM_DEMO %}
+    <p class="small muted">Password for all: <code>quorum-demo</code></p>
+    <table class="small"><tbody>
+      <tr><td>Organizer</td><td class="mono">organizer@demo.local</td></tr>
+      <tr><td>Judge (jdg_24)</td><td class="mono">diego.herrera@example.org</td></tr>
+      <tr><td>Judge (jdg_26)</td><td class="mono">jonas.vogel@example.org</td></tr>
+      <tr><td>Participant</td><td class="mono">priya1@example.org</td></tr>
+      <tr><td>Admin</td><td class="mono">admin@demo.local</td></tr>
+    </tbody></table>
+    <p class="small muted">Any seeded person (every judge and team member in the fixture) can also sign in by e-mail link; the mail lands in the offline catcher.</p>
+    {% else %}<p class="muted">Ask your organizer for an invitation.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

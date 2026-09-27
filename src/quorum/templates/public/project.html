@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ p.title }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/e/{{ ev.slug }}/projects">← {{ ev.name }} gallery</a></p>
+{% if p.status != "submitted" %}<div class="callout warn small">This submission is a <strong>{{ p.status }}</strong>; only its team and the organizers can see it.</div>{% endif %}
+{% if duplicate_of %}<div class="callout tie small">Marked as a duplicate of <a href="/p/{{ duplicate_of.pk }}">{{ duplicate_of.title }}</a> ({{ duplicate_of.ref }}). Its reviews are pooled under the canonical copy.</div>{% endif %}
+<div class="split">
+  <div class="stack-lg">
+    <div>
+      <h1>{{ p.title }}</h1>
+      <p class="lead" style="font-size:17px;color:var(--ink-2)">{{ p.tagline }}</p>
+      <div class="row small muted">{% if p.track %}<span class="chip">{{ p.track.name }}</span>{% endif %}<span>by <strong>{{ p.team.name }}</strong></span>{% for t in p.tech_tags %}<a class="chip" href="/e/{{ ev.slug }}/projects?tag={{ t }}">#{{ t }}</a>{% endfor %}</div>
+    </div>
+    {% if images %}<div class="grid cols-2">{% for i in images %}<img src="/media/{{ i.path }}" alt="Screenshot {{ forloop.counter }} of {{ p.title }}" style="border-radius:10px;border:1px solid var(--line)">{% endfor %}</div>{% endif %}
+    <div class="card prose">{% if p.description_html %}{{ p.description_html|safe }}{% else %}<p class="muted">No description.</p>{% endif %}</div>
+    {% if answers %}<div class="card"><h2>Answers</h2><dl class="kv">{% for a in answers %}<dt>{{ a.question.label }}</dt><dd>{{ a.value|default:"–" }}</dd>{% endfor %}</dl></div>{% endif %}
+    <div class="card">
+      <h2>Comments</h2>
+      {% for c in comments %}<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div class="small"><strong>{{ c.author.display }}</strong> <span class="muted">{{ c.created_at|timesince }} ago</span>
+        {% if is_org %}<form method="post" action="/comments/{{ c.pk }}/hide" style="display:inline" data-confirm="Hide this comment?">{% csrf_token %}<button class="btn ghost sm">Hide</button></form>{% endif %}</div><div class="prose small">{{ c.body_html|safe }}</div></div>
+      {% empty %}<p class="muted small">No comments yet.</p>{% endfor %}
+      {% if hidden_comments %}<p class="tiny muted">{{ hidden_comments }} comment{{ hidden_comments|pluralize }} hidden by organizers.</p>{% endif %}
+      {% if user.is_authenticated %}
+      <form method="post" action="/p/{{ p.pk }}/comment" style="margin-top:12px">{% csrf_token %}<label for="c">Add a comment</label><textarea id="c" name="body" required maxlength="2000" style="min-height:70px"></textarea><button class="btn" style="margin-top:8px">Post</button></form>
+      {% else %}<p class="small"><a href="/login?next=/p/{{ p.pk }}">Sign in</a> to comment.</p>{% endif %}
+    </div>
+  </div>
+  <aside class="stack">
+    <div class="card stack">
+      {% if p.demo_video_url %}<a class="btn primary" href="{{ p.demo_video_url }}" rel="noopener nofollow" target="_blank">▶ Watch demo</a>{% endif %}
+      {% if p.repo_url %}<a class="btn" href="{{ p.repo_url }}" rel="noopener nofollow" target="_blank">Repository</a>{% endif %}
+      {% if p.live_url %}<a class="btn" href="{{ p.live_url }}" rel="noopener nofollow" target="_blank">Live site</a>{% endif %}
+      {% if p.declared_commit_sha %}<div class="small">Declared commit <span class="hash">{{ p.declared_commit_sha }}</span></div>{% endif %}
+      {% if is_member %}<a class="btn" href="/me/projects/{{ p.pk }}/edit">Edit submission</a>{% endif %}
+    </div>
+    {% if voting %}{% include "partials/vote_box.html" %}{% endif %}
+    <div class="card small">
+      <dl class="kv"><dt>Submitted</dt><dd>{{ p.submitted_at|date:"j M Y, H:i"|default:"–" }} UTC</dd><dt>Version</dt><dd>v{{ p.version }}</dd><dt>Content hash</dt><dd class="hash">{{ p.content_hash|short:16 }}…</dd><dt>Reference</dt><dd class="mono">{{ p.ref }}</dd></dl>
+    </div>
+  </aside>
+</div>
+{% endblock %}

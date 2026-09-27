@@ -1,0 +1,122 @@
+{
+ "persistent truth=fixture m=3 random | BT": {
+  "tau_within": 0.3529506617345394,
+  "winner": 0.451875,
+  "comparisons": 90.0,
+  "looks": 128.725
+ },
+ "persistent truth=fixture m=3 random | rubric D* (123 reviews)": {
+  "tau_within": 0.42848438730340865,
+  "winner": 0.49375,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "persistent truth=fixture m=3 random | rubric raw (123 reviews)": {
+  "tau_within": 0.42885600679062336,
+  "winner": 0.4825,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "persistent truth=fixture m=3 adaptive | BT": {
+  "tau_within": 0.35775739645969784,
+  "winner": 0.489375,
+  "comparisons": 90.0,
+  "looks": 114.245
+ },
+ "persistent truth=fixture m=5 random | BT": {
+  "tau_within": 0.3884331354080151,
+  "winner": 0.47,
+  "comparisons": 140.0,
+  "looks": 160.95
+ },
+ "persistent truth=fixture m=5 adaptive | BT": {
+  "tau_within": 0.4315625107189095,
+  "winner": 0.524375,
+  "comparisons": 140.0,
+  "looks": 145.455
+ },
+ "persistent truth=fixture m=10 random | BT": {
+  "tau_within": 0.4521084260424058,
+  "winner": 0.5275,
+  "comparisons": 265.0,
+  "looks": 186.655
+ },
+ "persistent truth=fixture m=10 adaptive | BT": {
+  "tau_within": 0.4662662876184865,
+  "winner": 0.554375,
+  "comparisons": 265.0,
+  "looks": 170.23
+ },
+ "persistent truth=fixture m=15 random | BT": {
+  "tau_within": 0.47188844793211254,
+  "winner": 0.548125,
+  "comparisons": 346.0,
+  "looks": 192.3
+ },
+ "persistent truth=fixture m=15 adaptive | BT": {
+  "tau_within": 0.48203606103535357,
+  "winner": 0.569375,
+  "comparisons": 346.0,
+  "looks": 187.695
+ },
+ "persistent truth=sd0.48 m=3 random | BT": {
+  "tau_within": 0.3988014833706793,
+  "winner": 0.461875,
+  "comparisons": 90.0,
+  "looks": 128.345
+ },
+ "persistent truth=sd0.48 m=3 random | rubric D* (123 reviews)": {
+  "tau_within": 0.49387492066957944,
+  "winner": 0.55,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "persistent truth=sd0.48 m=3 random | rubric raw (123 reviews)": {
+  "tau_within": 0.4964346031665925,
+  "winner": 0.5475,
+  "comparisons": 0.0,
+  "looks": 123.0
+ },
+ "persistent truth=sd0.48 m=3 adaptive | BT": {
+  "tau_within": 0.4217472658482989,
+  "winner": 0.521875,
+  "comparisons": 90.0,
+  "looks": 114.48
+ },
+ "persistent truth=sd0.48 m=5 random | BT": {
+  "tau_within": 0.45872172891400514,
+  "winner": 0.5225,
+  "comparisons": 140.0,
+  "looks": 161.15
+ },
+ "persistent truth=sd0.48 m=5 adaptive | BT": {
+  "tau_within": 0.4905561447494754,
+  "winner": 0.568125,
+  "comparisons": 140.0,
+  "looks": 145.34
+ },
+ "persistent truth=sd0.48 m=10 random | BT": {
+  "tau_within": 0.5172766792433974,
+  "winner": 0.585625,
+  "comparisons": 265.0,
+  "looks": 186.705
+ },
+ "persistent truth=sd0.48 m=10 adaptive | BT": {
+  "tau_within": 0.5457525159854533,
+  "winner": 0.633125,
+  "comparisons": 265.0,
+  "looks": 171.085
+ },
+ "persistent truth=sd0.48 m=15 random | BT": {
+  "tau_within": 0.5403821687896209,
+  "winner": 0.609375,
+  "comparisons": 346.0,
+  "looks": 192.29
+ },
+ "persistent truth=sd0.48 m=15 adaptive | BT": {
+  "tau_within": 0.5591928061485952,
+  "winner": 0.639375,
+  "comparisons": 346.0,
+  "looks": 188.36
+ }
+}

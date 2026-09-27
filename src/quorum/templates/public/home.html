@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Hackathon judging that finishes the job{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">Self-hosted · offline · open source</p>
+  <h1 style="font-size:40px;max-width:900px">Every project judged. Every tie decided. Every team answered.</h1>
+  <p class="lead">Quorum runs a hackathon from registration to published results. It keeps every project at quorum across an asynchronous judging window. It spends spare judge time only where a prize is still in doubt, and settles statistical ties with a pre-registered pairwise round. Then it sends every team its scorecard, and shows its maths on every result.</p>
+  <div class="row"><a class="btn primary" href="/projects">Browse the gallery</a><a class="btn" href="/e/sample-hack-2026">Open the fixture event</a><a class="btn" href="/methodology">How judging works</a></div>
+</section>
+<div class="grid cols-4" style="margin:26px 0">
+  <div class="card"><h3>Quorum</h3><p class="small muted">Assignment designed so judge harshness is measurable. Reminders, a completion forecast, and one-click reassignment when a batch stalls.</p></div>
+  <div class="card"><h3>Focus</h3><p class="small muted">After the baseline, extra reviews go only to projects whose prize is still uncertain. The same judge hours make better decisions.</p></div>
+  <div class="card"><h3>Verdict</h3><p class="small muted">Calibrated scores with an exact per-judge explanation, uncertainty, and a pre-registered tie-break. The method is hashed before registration opens.</p></div>
+  <div class="card"><h3>Answer</h3><p class="small muted">A feedback guarantee, then a scorecard for every team, placed or not. Judges get signed, numbered evaluation protocols.</p></div>
+</div>
+<h2>Events</h2>
+<div class="gallery">{% for e in events %}{% include "partials/event_card.html" %}{% empty %}<div class="empty">No events yet.</div>{% endfor %}</div>
+{% endblock %}

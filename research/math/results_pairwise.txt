@@ -1,0 +1,26 @@
+fixture D* truth: sd = 0.367; per-look noise sd = 0.546
+
+| config | estimator | within-track tau | track-winner acc | comparisons | judge-project looks |
+|---|---|---|---|---|---|
+| truth=fixture m=3 random | BT | 0.363 ±0.020 | 0.436 | 90 | 129 |
+| truth=fixture m=3 random | rubric D* (123 reviews) | 0.428 ±0.020 | 0.494 | 0 | 123 |
+| truth=fixture m=3 random | rubric raw (123 reviews) | 0.429 ±0.019 | 0.482 | 0 | 123 |
+| truth=fixture m=3 adaptive | BT | 0.371 ±0.020 | 0.477 | 90 | 114 |
+| truth=fixture m=5 random | BT | 0.424 ±0.019 | 0.505 | 140 | 161 |
+| truth=fixture m=5 adaptive | BT | 0.452 ±0.019 | 0.535 | 140 | 146 |
+| truth=fixture m=10 random | BT | 0.516 ±0.019 | 0.575 | 265 | 187 |
+| truth=fixture m=10 adaptive | BT | 0.536 ±0.018 | 0.604 | 265 | 170 |
+| truth=fixture m=15 random | BT | 0.546 ±0.017 | 0.606 | 346 | 192 |
+| truth=fixture m=15 adaptive | BT | 0.567 ±0.017 | 0.642 | 346 | 187 |
+| truth=sd0.48 m=3 random | BT | 0.440 ±0.019 | 0.509 | 90 | 128 |
+| truth=sd0.48 m=3 random | rubric D* (123 reviews) | 0.494 ±0.019 | 0.550 | 0 | 123 |
+| truth=sd0.48 m=3 random | rubric raw (123 reviews) | 0.496 ±0.017 | 0.547 | 0 | 123 |
+| truth=sd0.48 m=3 adaptive | BT | 0.452 ±0.019 | 0.544 | 90 | 115 |
+| truth=sd0.48 m=5 random | BT | 0.467 ±0.018 | 0.528 | 140 | 161 |
+| truth=sd0.48 m=5 adaptive | BT | 0.514 ±0.016 | 0.597 | 140 | 146 |
+| truth=sd0.48 m=10 random | BT | 0.583 ±0.017 | 0.631 | 265 | 187 |
+| truth=sd0.48 m=10 adaptive | BT | 0.597 ±0.017 | 0.662 | 265 | 171 |
+| truth=sd0.48 m=15 random | BT | 0.618 ±0.017 | 0.677 | 346 | 192 |
+| truth=sd0.48 m=15 adaptive | BT | 0.616 ±0.017 | 0.676 | 346 | 188 |
+| truth=sd0.48 m=10 adaptive, 3 random clickers | BT | 0.575 ±0.018 | 0.642 | 265 | 171 |
+| truth=sd0.48 m=10 adaptive, 3 random clickers | Crowd-BT | 0.574 ±0.018 | 0.641 | 265 | 171 |

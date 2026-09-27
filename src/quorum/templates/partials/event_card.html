@@ -1,0 +1,8 @@
+<a class="pcard" href="/e/{{ e.slug }}">
+  <div class="body">
+    <div class="row between"><span class="badge {% if e.is_demo %}warn{% else %}accent{% endif %}">{% if e.is_demo %}demo{% else %}{{ e.get_phase_display }}{% endif %}</span><span class="tiny muted">{{ e.n_projects }} projects</span></div>
+    <h3>{{ e.name }}</h3>
+    <p class="tag">{{ e.tagline }}</p>
+    <div class="meta"><span>Submissions close {{ e.submissions_close_at|date:"j M Y, H:i" }} UTC</span></div>
+  </div>
+</a>

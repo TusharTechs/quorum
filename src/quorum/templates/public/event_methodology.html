@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ ev.name }} · method{% endblock %}
+{% block content %}
+<p class="small"><a href="/e/{{ ev.slug }}">← {{ ev.name }}</a></p>
+<h1>Judging method, as locked</h1>
+{% if method %}
+<div class="callout {% if method.override_reason %}bad{% else %}good{% endif %}">
+  <strong>Version {{ method.version }}</strong>, locked {{ method.locked_at|date:"j M Y, H:i" }} UTC{% if method.locked_by %} by {{ method.locked_by }}{% endif %}.
+  <div class="hash">sha256 {{ method.spec_hash }}</div>
+  {% if method.override_reason %}<p><strong>Changed after locking.</strong> Reason given: “{{ method.override_reason }}”</p>{% endif %}
+</div>
+<div class="grid cols-2" style="margin-top:16px">
+  <div class="card"><h2>Rubric</h2><table><thead><tr><th>Criterion</th><th class="num">Weight</th></tr></thead><tbody>{% for c in method.spec.criteria %}<tr><td>{{ c.name }}</td><td class="num">{% widthratio c.weight_bp 100 1 %}%</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card"><h2>Rules</h2><dl class="kv small">
+    <dt>Calibration</dt><dd class="mono">{{ method.spec.calibration }}</dd>
+    <dt>Reviews per project</dt><dd>{{ method.spec.reviews_per_project }}</dd>
+    <dt>Flat-judge rule</dt><dd>weight 0 if every score is identical over ≥ {{ method.spec.flat_rule.min_reviews }} reviews</dd>
+    <dt>Focus budget</dt><dd>{{ method.spec.focus.budget_pct }}% of baseline, {{ method.spec.focus.rounds }} rounds</dd>
+    <dt>Tie-break</dt><dd>{{ method.spec.tiebreak.trigger }}; {{ method.spec.tiebreak.judges }} judges, ≤ {{ method.spec.tiebreak.max_projects }} projects; resolved at P ≥ {{ method.spec.tiebreak.resolve_threshold }}; otherwise {{ method.spec.tiebreak.fallback }}</dd>
+    <dt>Voting</dt><dd>{{ method.spec.voting.mode }}, {{ method.spec.voting.votes_per_voter }} votes each{% if method.spec.voting.quadratic %}, quadratic{% endif %}; separate from judged prizes</dd>
+  </dl></div>
+</div>
+<details style="margin-top:16px"><summary>Canonical JSON (what was hashed)</summary><pre class="hash" style="white-space:pre-wrap">{{ spec_json }}</pre></details>
+{% if versions|length > 1 %}<h2 style="margin-top:20px">History</h2><ul>{% for v in versions %}<li>v{{ v.version }} · {{ v.locked_at|date:"Y-m-d H:i" }} · <span class="hash">{{ v.spec_hash|short:16 }}</span>{% if v.override_reason %} · override: {{ v.override_reason }}{% endif %}</li>{% endfor %}</ul>{% endif %}
+{% else %}<p class="muted">The method has not been locked yet.</p>{% endif %}
+{% endblock %}

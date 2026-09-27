@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;margin:24px auto">
+  <h1>Create an account</h1>
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <div class="field {% if errors.name %}error{% endif %}"><label for="name">Name</label><input id="name" type="text" name="name" value="{{ name }}" autocomplete="name"></div>
+    <div class="field {% if errors.email %}error{% endif %}"><label for="email">E-mail</label><input id="email" type="email" name="email" value="{{ email }}" required autocomplete="email">{% if errors.email %}<div class="err">{{ errors.email }}</div>{% endif %}</div>
+    <div class="field {% if errors.password %}error{% endif %}"><label for="pw">Password</label><input id="pw" type="password" name="password" required autocomplete="new-password"><div class="help">At least 10 characters.</div>{% if errors.password %}<div class="err">{{ errors.password }}</div>{% endif %}</div>
+    <button class="btn primary" type="submit">Create account</button>
+  </form>
+</div>
+{% endblock %}

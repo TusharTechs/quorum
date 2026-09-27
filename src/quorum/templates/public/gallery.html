@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{% if ev %}{{ ev.name }} gallery{% else %}Project gallery{% endif %}{% endblock %}
+{% block content %}
+<div class="row between" style="margin-bottom:8px">
+  <div><h1>{% if ev %}{{ ev.name }}{% else %}Project gallery{% endif %}</h1>
+  <p class="muted">{{ projects|length }} submitted project{{ projects|length|pluralize }}{% if ev %} · <a href="/e/{{ ev.slug }}">about this event</a>{% endif %}</p></div>
+</div>
+<form class="filters" method="get" data-autosubmit role="search">
+  <label class="sr-only" for="q">Search</label>
+  <input id="q" type="search" name="q" value="{{ q }}" placeholder="Search projects, teams, descriptions">
+  {% if events %}<select name="event" aria-label="Event"><option value="">All events</option>{% for e in events %}<option value="{{ e.slug }}" {% if request.GET.event == e.slug %}selected{% endif %}>{{ e.name }}</option>{% endfor %}</select>{% endif %}
+  <select name="track" aria-label="Track"><option value="">All tracks</option>{% for t in tracks %}<option value="{{ t.ref }}" {% if track == t.ref %}selected{% endif %}>{{ t.name }}{% if not ev %} · {{ t.event.name }}{% endif %}</option>{% endfor %}</select>
+  <select name="sort" aria-label="Sort"><option value="">Submission order</option><option value="title" {% if sort == "title" %}selected{% endif %}>Title</option><option value="newest" {% if sort == "newest" %}selected{% endif %}>Newest</option><option value="track" {% if sort == "track" %}selected{% endif %}>Track</option></select>
+  {% if tag %}<input type="hidden" name="tag" value="{{ tag }}"><a class="chip" href="?">tag: {{ tag }} ×</a>{% endif %}
+  <button class="btn" type="submit">Search</button>
+</form>
+<div class="gallery">
+{% for p in projects %}
+  <a class="pcard" href="/p/{{ p.pk }}">
+    <div class="thumb">{% if p.thumbnail %}<img src="/media/{{ p.thumbnail }}" alt="" loading="lazy">{% else %}<span class="mono-thumb" aria-hidden="true">{{ p.title|slice:":2" }}</span>{% endif %}</div>
+    <div class="body">
+      <h3>{{ p.title }}</h3>
+      <p class="tag">{{ p.tagline }}</p>
+      <div class="meta">{% if p.track %}<span class="chip">{{ p.track.name }}</span>{% endif %}<span>{{ p.team.name }}</span>{% if not ev %}<span>· {{ p.event.name }}</span>{% endif %}</div>
+    </div>
+  </a>
+{% empty %}
+  <div class="empty">No submitted projects match.{% if q %} Try a different search.{% endif %}</div>
+{% endfor %}
+</div>
+{% endblock %}

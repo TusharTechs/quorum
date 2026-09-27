@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Quorum{% endblock %} · Quorum</title>
+  <meta name="description" content="Quorum: a self-hosted hackathon platform. Every project judged. Every tie decided. Every team answered.">
+  <link rel="icon" href="{% static 'img/mark.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/theme.js' %}"></script>
+  <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<a class="skip" href="#main">Skip to content</a>
+{% if QUORUM_DEMO %}<div class="demo-bar">Demo mode · seeded logins use password <code>quorum-demo</code> · mail is caught offline at <a href="http://localhost:8025">localhost:8025</a></div>{% endif %}
+<header class="top">
+  <div class="wrap-wide">
+    <a class="brand" href="/">{% include "partials/mark.svg" %}<span>Quorum</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="/events" {% if nav == "events" %}aria-current="page"{% endif %}>Events</a>
+      <a href="/projects" {% if nav == "gallery" %}aria-current="page"{% endif %}>Gallery</a>
+      {% if user.is_authenticated %}
+        {% if my.organizer %}<a href="/o" {% if nav == "organize" %}aria-current="page"{% endif %}>Organize</a>{% endif %}
+        {% if my.judge %}<a href="/j" {% if nav == "judge" %}aria-current="page"{% endif %}>Judge</a>{% endif %}
+        <a href="/me" {% if nav == "me" %}aria-current="page"{% endif %}>My hackathons</a>
+      {% endif %}
+      <a href="/api/v1/docs" {% if nav == "api" %}aria-current="page"{% endif %}>API</a>
+      <a href="/verify" {% if nav == "verify" %}aria-current="page"{% endif %}>Verify</a>
+    </nav>
+    <div class="who">
+      <button class="btn ghost sm" type="button" data-theme-toggle aria-label="Toggle dark mode">◐</button>
+      {% if user.is_authenticated %}
+        <span class="nowrap">{{ user.display }}{% if user.is_superuser %} <span class="badge">admin</span>{% endif %}</span>
+        <form method="post" action="/logout">{% csrf_token %}<button class="btn sm" type="submit">Sign out</button></form>
+      {% else %}
+        <a class="btn sm primary" href="/login">Sign in</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+<main id="main"><div class="{% block wrapclass %}wrap{% endblock %}">
+{% if messages %}<ul class="messages">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+{% block content %}{% endblock %}
+</div></main>
+<footer class="site"><div class="wrap row between">
+  <span>Quorum · open source (Apache-2.0) · self-hosted · <a href="/methodology">how judging works</a></span>
+  <span class="mono tiny">{{ build_info }}</span>
+</div></footer>
+</body>
+</html>

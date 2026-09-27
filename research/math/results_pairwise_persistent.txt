@@ -1,0 +1,24 @@
+fixture D* truth: sd = 0.367; per-look noise sd = 0.546
+
+| config | estimator | within-track tau | track-winner acc | comparisons | judge-project looks |
+|---|---|---|---|---|---|
+| persistent truth=fixture m=3 random | BT | 0.353 ±0.020 | 0.452 | 90 | 129 |
+| persistent truth=fixture m=3 random | rubric D* (123 reviews) | 0.428 ±0.020 | 0.494 | 0 | 123 |
+| persistent truth=fixture m=3 random | rubric raw (123 reviews) | 0.429 ±0.019 | 0.482 | 0 | 123 |
+| persistent truth=fixture m=3 adaptive | BT | 0.358 ±0.019 | 0.489 | 90 | 114 |
+| persistent truth=fixture m=5 random | BT | 0.388 ±0.017 | 0.470 | 140 | 161 |
+| persistent truth=fixture m=5 adaptive | BT | 0.432 ±0.019 | 0.524 | 140 | 145 |
+| persistent truth=fixture m=10 random | BT | 0.452 ±0.017 | 0.527 | 265 | 187 |
+| persistent truth=fixture m=10 adaptive | BT | 0.466 ±0.018 | 0.554 | 265 | 170 |
+| persistent truth=fixture m=15 random | BT | 0.472 ±0.018 | 0.548 | 346 | 192 |
+| persistent truth=fixture m=15 adaptive | BT | 0.482 ±0.017 | 0.569 | 346 | 188 |
+| persistent truth=sd0.48 m=3 random | BT | 0.399 ±0.020 | 0.462 | 90 | 128 |
+| persistent truth=sd0.48 m=3 random | rubric D* (123 reviews) | 0.494 ±0.019 | 0.550 | 0 | 123 |
+| persistent truth=sd0.48 m=3 random | rubric raw (123 reviews) | 0.496 ±0.017 | 0.547 | 0 | 123 |
+| persistent truth=sd0.48 m=3 adaptive | BT | 0.422 ±0.019 | 0.522 | 90 | 114 |
+| persistent truth=sd0.48 m=5 random | BT | 0.459 ±0.019 | 0.522 | 140 | 161 |
+| persistent truth=sd0.48 m=5 adaptive | BT | 0.491 ±0.018 | 0.568 | 140 | 145 |
+| persistent truth=sd0.48 m=10 random | BT | 0.517 ±0.017 | 0.586 | 265 | 187 |
+| persistent truth=sd0.48 m=10 adaptive | BT | 0.546 ±0.017 | 0.633 | 265 | 171 |
+| persistent truth=sd0.48 m=15 random | BT | 0.540 ±0.015 | 0.609 | 346 | 192 |
+| persistent truth=sd0.48 m=15 adaptive | BT | 0.559 ±0.016 | 0.639 | 346 | 188 |

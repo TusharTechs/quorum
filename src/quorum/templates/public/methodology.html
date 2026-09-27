@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}How judging works{% endblock %}
+{% block content %}
+<div class="prose">
+<p class="eyebrow muted small">Methodology</p>
+<h1>How Quorum turns reviews into a result you can defend</h1>
+<p>Judging is a measurement problem. Quorum does not claim to remove human judgement, or to find some objective truth. It makes the method <strong>explicit, consistent, inspectable and reproducible</strong>, and it tells you how much the result can be trusted.</p>
+<h2>1. The method is fixed before anyone registers</h2>
+<p>Criteria, weights, the calibration model, the tie-break rule and the focus budget are serialised and hashed when an event opens. The hash is on the event page. If the method changes later, it needs an administrator and a written reason, and the results page says so permanently.</p>
+<h2>2. Assignment is part of the measurement</h2>
+<p>A harsh judge and a judge who simply drew weaker projects look identical, unless their batches overlap with other judges'. Quorum assigns batches so that every project reaches its review target, no judge is overloaded, conflicts of interest are respected, and the network of judges stays connected. Only then can leniency be measured at all. In simulation on the DOGFOOD fixture's design, calibration gains six times as much on a connected design as on disjoint panels.</p>
+<h2>3. Calibration compares like with like</h2>
+<p>For each criterion, each judge gets a leniency offset, estimated only from projects they share with other judges. The estimate is shrunk toward zero in proportion to how little evidence supports it (a mixed model; shrinkage strength chosen by REML). Per-judge z-scores are not used: they are undefined for a judge with one review or identical scores, and they punish projects reviewed by a judge who happened to draw a strong batch.</p>
+<p><strong>The judge who gives everything the same score</strong> carries no information about which project is better, so that judge gets zero weight in the ranking. Their review stays in the record and appears as its own line in every affected explanation.</p>
+<h2>4. Every score explains itself</h2>
+<p>A calibrated score is the raw mean plus one correction per judge, and the parts add up exactly. Any organizer, judge or team can read <em>why</em> a project scored what it did.</p>
+<h2>5. Uncertainty is part of the result</h2>
+<p>Each score carries a standard error, and adjacent projects closer than the noise are marked as <em>tied</em>. A <em>signal check</em> asks whether the judges agree at all. If they do not (as in the DOGFOOD fixture, where agreement is indistinguishable from chance), Quorum says so instead of printing a confident podium.</p>
+<h2>6. Spend judge time where it changes the outcome</h2>
+<p>After the baseline reviews, a <em>focus round</em> sends spare judge capacity to the projects whose prize is still uncertain. In simulation, the same number of reviews picked the true winner 43.5% of the time, against 33.5% for spreading them evenly.</p>
+<h2>7. Ties are decided, not guessed</h2>
+<p>When a prize boundary falls inside a statistical tie, three judges compare the tied projects head to head. A Bradley–Terry model combines their choices with the rubric evidence. Pairwise comparison is immune to leniency, which makes it the right tool for exactly this job. The result is published as a tie-break, with its numbers.</p>
+<h2>8. Everything is recorded and recomputable</h2>
+<p>Every action lands in an append-only, hash-chained audit log. Results are frozen to an immutable, content-addressed run. Anyone with the event export can recompute the ranking and check that it matches, byte for byte.</p>
+<p class="small muted">The full mathematics, proofs and known limits are in JUDGING.md in the repository.</p>
+</div>
+{% endblock %}

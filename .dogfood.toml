@@ -1,0 +1,23 @@
+# DOGFOOD 2026 acceptance checker configuration for Quorum.
+# run.py has checks for T1 and T2 only (T3/T4 are judged by hand), so we claim exactly
+# what it can verify. T3/T4 are proven by tools/acceptance_ext.py -> acceptance-report-extended.txt.
+
+[portal]
+base_url = "http://localhost:8080"
+
+[tiers]
+claimed = ["T1", "T2"]
+pitch = "Quorum keeps every project at quorum across an async judging window, spends spare judge time only where a prize is still in doubt, settles statistical ties with a pre-registered pairwise round, and sends every team its scorecard and feedback."
+
+[auth]
+organizer   = "Authorization: Bearer qm_demo_organizer_7f2a91c4e8b3d6a0"
+judge_a     = "Authorization: Bearer qm_demo_judge_a_91bc40d2f7e6a813"
+judge_b     = "Authorization: Bearer qm_demo_judge_b_44de17a9c3b85f20"
+participant = "Authorization: Bearer qm_demo_participant_2e88c3b1a4d97e56"
+
+[routes]
+gallery      = "/projects"
+submit       = "/api/v1/events/evt_01/projects"
+judge_scores = "/api/v1/me/scores"
+peer_scores  = "/api/v1/events/evt_01/judges/jdg_24/scores"
+csv_export   = "/api/v1/events/evt_01/exports/results.csv"

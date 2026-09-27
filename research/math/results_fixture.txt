@@ -1,0 +1,456 @@
+
+====================================================================================================
+1. DATA PREP: duplicates, flat judges, test-retest
+====================================================================================================
+duplicate: {'event': 'duplicate', 'canonical': 'prj_41', 'superseded': ['prj_07'], 'reason': 'same team and same repo/title', 'policy': 'merge'}
+  test-retest jdg_19 on prj_41: 2.33 vs 3.67 (diff +1.33)
+  test-retest jdg_21 on prj_41: 3.67 vs 4.67 (diff +1.00)
+  test-retest jdg_26 on prj_41: 4.67 vs 3.67 (diff -1.00)
+  test-retest sigma estimate (per-review total) = sqrt(mean(d^2)/2) = 0.79  (n=3 pairs)
+after merge: 40 projects, 123 reviews (fixture had 41 / 126)
+keep_latest alternative: 121 reviews
+flat judges: {'jdg_07': {'value': 4.0, 'n_reviews': 3, 'n_values': 9}}
+P(9 identical criterion values | judge draws from the pooled marginal) = 1.6e-05
+
+====================================================================================================
+2. DESIGN: bipartite graph, identifiability, overlap, completion
+====================================================================================================
+connected components (judges, projects): [(30, 40)]
+components per track: {'Developer tools': 1, 'Data and analytics': 1, 'Accessibility': 1, 'Security': 1, 'Climate': 1, 'Health': 1, 'Education': 1, 'Open hardware': 1}
+bridge judges (reviews per track): {'jdg_02': {'trk_02': 4, 'trk_04': 2}, 'jdg_03': {'trk_05': 1, 'trk_04': 1}, 'jdg_11': {'trk_07': 3, 'trk_05': 3}, 'jdg_20': {'trk_08': 5, 'trk_04': 1}, 'jdg_24': {'trk_01': 6, 'trk_07': 5}, 'jdg_26': {'trk_01': 5, 'trk_03': 4}, 'jdg_29': {'trk_08': 6, 'trk_06': 3}}
+judge pairs sharing >=1 project: 66 of 435
+co-judges per judge: {'jdg_01': 5, 'jdg_02': 7, 'jdg_03': 6, 'jdg_04': 4, 'jdg_05': 4, 'jdg_06': 4, 'jdg_07': 2, 'jdg_08': 6, 'jdg_09': 2, 'jdg_10': 4, 'jdg_11': 8, 'jdg_12': 5, 'jdg_13': 6, 'jdg_14': 4, 'jdg_15': 2, 'jdg_16': 3, 'jdg_17': 4, 'jdg_18': 5, 'jdg_19': 5, 'jdg_20': 4, 'jdg_21': 5, 'jdg_22': 4, 'jdg_23': 4, 'jdg_24': 6, 'jdg_25': 3, 'jdg_26': 7, 'jdg_27': 2, 'jdg_28': 4, 'jdg_29': 4, 'jdg_30': 3}
+offset information n_j - sum 1/n_p (effective comparisons behind each judge offset):
+   jdg_23 n= 1 info=0.80
+   jdg_01 n= 1 info=0.83
+   jdg_27 n= 2 info=1.33
+   jdg_28 n= 2 info=1.33
+   jdg_03 n= 2 info=1.47
+   jdg_05 n= 2 info=1.47
+   jdg_17 n= 2 info=1.47
+   jdg_12 n= 2 info=1.50
+   jdg_18 n= 3 info=1.83
+   jdg_07 n= 3 info=1.83
+   jdg_10 n= 3 info=1.97
+   jdg_13 n= 3 info=1.97
+   jdg_19 n= 3 info=2.00
+   jdg_06 n= 3 info=2.13
+   jdg_08 n= 3 info=2.13
+   jdg_14 n= 3 info=2.13
+   jdg_21 n= 3 info=2.17
+   jdg_04 n= 4 info=2.72
+   jdg_30 n= 4 info=2.75
+   jdg_09 n= 5 info=3.17
+   jdg_25 n= 5 info=3.42
+   jdg_22 n= 5 info=3.55
+   jdg_15 n= 6 info=3.83
+   jdg_20 n= 6 info=4.00
+   jdg_16 n= 6 info=4.08
+   jdg_02 n= 6 info=4.22
+   jdg_11 n= 6 info=4.35
+   jdg_29 n= 9 info=5.67
+   jdg_26 n= 9 info=5.83
+   jdg_24 n=11 info=7.05
+reviews per project histogram: {2: 8, 3: 26, 4: 2, 5: 3, 6: 1}
+projects with 2 reviews: ['prj_10', 'prj_15', 'prj_18', 'prj_19', 'prj_24', 'prj_29', 'prj_39', 'prj_40']
+judge x track completion (done/track size), lowest completion first:
+   jdg_23 12%  {'Health': '0/3', 'Security': '1/5'}
+   jdg_12 18%  {'Education': '0/6', 'Accessibility': '2/5'}
+   jdg_01 20%  {'Accessibility': '1/5'}
+   jdg_03 25%  {'Security': '1/5', 'Climate': '1/3'}
+   jdg_28 40%  {'Security': '2/5'}
+   jdg_14 50%  {'Education': '3/6'}
+   jdg_02 55%  {'Data and analytics': '4/6', 'Security': '2/5'}
+   jdg_20 55%  {'Open hardware': '5/6', 'Security': '1/5'}
+   jdg_08 60%  {'Security': '3/5'}
+   jdg_10 60%  {'Security': '3/5'}
+
+====================================================================================================
+3. RELIABILITY: is there any project signal in the fixture?
+====================================================================================================
+equal: ICC(1)=-0.006  F=0.981 on (39, 83)  MSB=0.405 MSW=0.412 n0=3.07  permutation p=0.54
+alt(.5/.25/.25): ICC(1)=-0.000  F=1.000 on (39, 83)  MSB=0.465 MSW=0.465 n0=3.07  permutation p=0.51
+corr(functionality,quality) = 0.15
+corr(functionality,innovation) = -0.05
+corr(quality,innovation) = -0.08
+REML (flat judge excluded): sigma=0.630 tau_judge=0.145 k=18.8 95% k-interval=(3.162277660168379, inf)
+REML (all judges):          sigma=0.620 tau_judge=0.168 k=13.7 95% k-interval=(2.3713737056616555, inf)
+
+====================================================================================================
+4. METHODS ON THE FIXTURE -- weights equal
+====================================================================================================
+k (REML, flat excluded) = 18.78; flat judges: ['jdg_07']
+
+Top-10 overall under D* vs raw:
+| D* rank | project | track | n | raw mean | raw rank | D* score | move |
+|---|---|---|---|---|---|---|---|
+| 1 | prj_34 Iron Switch | Open hardware | 3 | 4.33 | 1 | 4.32 | +0 |
+| 2 | prj_11 Salt Ledger | Data and analytics | 4 | 4.33 | 1 | 4.32 | -1 |
+| 3 | prj_25 Dry Relay | Data and analytics | 3 | 4.11 | 4 | 4.14 | +1 |
+| 4 | prj_10 Still Beacon | Open hardware | 2 | 4.17 | 3 | 4.11 | -1 |
+| 5 | prj_37 Salt Loom | Education | 4 | 4.08 | 5 | 4.08 | +0 |
+| 6 | prj_16 Salt Kiln | Security | 3 | 4.00 | 6 | 4.00 | +0 |
+| 7 | prj_33 Slow Trail | Developer tools | 3 | 4.00 | 6 | 3.99 | -1 |
+| 8 | prj_21 Copper Kiln | Data and analytics | 3 | 3.89 | 8 | 3.88 | +0 |
+| 9 | prj_38 Deep Beacon | Data and analytics | 3 | 3.78 | 10 | 3.80 | +1 |
+| 10 | prj_08 North Drift | Security | 5 | 3.80 | 9 | 3.79 | -1 |
+
+Rank agreement with raw (Kendall tau-b over 40) and movement:
+| method | tau vs raw | mean abs move | max abs move | #1 overall | winners that differ from raw (of 8 tracks) |
+|---|---|---|---|---|---|
+| A raw mean | 1.00 | 0.0 | 0 | prj_11 Salt Ledger | 0 |
+| B z-score | 0.69 | 4.3 | 17 | prj_34 Iron Switch | 2 |
+| C1 robust z | 0.63 | 5.2 | 17 | prj_34 Iron Switch | 2 |
+| C2 percentile | 0.68 | 4.5 | 16 | prj_34 Iron Switch | 2 |
+| D k=3 | 0.88 | 1.9 | 7 | prj_34 Iron Switch | 1 |
+| D k=REML | 0.93 | 1.2 | 6 | prj_34 Iron Switch | 0 |
+| D* REML+flat | 0.83 | 2.2 | 18 | prj_34 Iron Switch | 1 |
+| D2 +scale | 0.92 | 1.3 | 9 | prj_34 Iron Switch | 0 |
+| E1 EB-shrunk | 0.00 | 18.6 | 38 | prj_01 Glass Signal | 8 |
+| E2 induced-BT | 0.63 | 5.3 | 17 | prj_34 Iron Switch | 3 |
+
+Track winners per method (ties shown with /):
+| track | A raw mean | B z-score | C1 robust z | C2 percentile | D k=3 | D k=REML | D* REML+flat | D2 +scale | E1 EB-shrunk | E2 induced-BT |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Developer tools | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_06/prj_29/prj_31/prj_32/prj_33/prj_40 | prj_33 |
+| Data and analytics | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_05/prj_11/prj_21/prj_25/prj_28/prj_38 | prj_11 |
+| Accessibility | prj_02 | prj_39 | prj_39 | prj_41 | prj_24 | prj_02 | prj_02 | prj_02 | prj_02/prj_03/prj_24/prj_39/prj_41 | prj_41 |
+| Security | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_01/prj_08/prj_15/prj_16/prj_22 | prj_16 |
+| Climate | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_13/prj_26/prj_35 | prj_26 |
+| Health | prj_19 | prj_09 | prj_09/prj_17 | prj_17 | prj_19 | prj_19 | prj_09/prj_17 | prj_19 | prj_09/prj_17/prj_19 | prj_17 |
+| Education | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_04/prj_12/prj_14/prj_18/prj_30/prj_37 | prj_37 |
+| Open hardware | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_10/prj_20/prj_23/prj_27/prj_34/prj_36 | prj_34 |
+
+Full ranking table (overall rank) for all 40 projects:
+| project | track | n | raw | A raw mean | B z-score | C1 robust z | C2 percentile | D k=3 | D k=REML | D* REML+flat | D2 +scale | E1 EB-shrunk | E2 induced-BT |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| prj_34 Iron Switch | Open hardw | 3 | 4.33 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| prj_11 Salt Ledger | Data and a | 4 | 4.33 | 1 | 3 | 4 | 4 | 2 | 2 | 2 | 2 | 1 | 4 |
+| prj_25 Dry Relay | Data and a | 3 | 4.11 | 4 | 5 | 7 | 7 | 3 | 3 | 3 | 3 | 1 | 8 |
+| prj_10 Still Beacon | Open hardw | 2 | 4.17 | 3 | 7 | 2 | 6 | 6 | 4 | 4 | 5 | 1 | 9 |
+| prj_37 Salt Loom | Education | 4 | 4.08 | 5 | 4 | 5 | 3 | 4 | 5 | 5 | 4 | 1 | 5 |
+| prj_16 Salt Kiln | Security | 3 | 4.00 | 6 | 6 | 6 | 5 | 5 | 6 | 6 | 6 | 1 | 2 |
+| prj_33 Slow Trail | Developer  | 3 | 4.00 | 6 | 2 | 2 | 2 | 7 | 7 | 7 | 7 | 1 | 3 |
+| prj_21 Copper Kiln | Data and a | 3 | 3.89 | 8 | 8 | 18 | 10 | 8 | 8 | 8 | 8 | 1 | 14 |
+| prj_38 Deep Beacon | Data and a | 3 | 3.78 | 10 | 22 | 27 | 13 | 9 | 9 | 9 | 9 | 1 | 13 |
+| prj_08 North Drift | Security | 5 | 3.80 | 9 | 15 | 20 | 9 | 10 | 10 | 10 | 10 | 1 | 7 |
+| prj_04 Green Switch | Education | 3 | 3.78 | 10 | 12 | 13 | 15 | 11 | 11 | 11 | 11 | 1 | 16 |
+| prj_15 Copper Orbit | Security | 2 | 3.67 | 12 | 17 | 20 | 21 | 12 | 12 | 12 | 12 | 1 | 18 |
+| prj_36 Salt Drift | Open hardw | 3 | 3.67 | 12 | 21 | 17 | 24 | 13 | 13 | 13 | 13 | 1 | 26 |
+| prj_31 Salt Ferry | Developer  | 3 | 3.56 | 15 | 10 | 9 | 19 | 18 | 17 | 14 | 17 | 1 | 19 |
+| prj_02 Small Meadow | Accessibil | 3 | 3.56 | 15 | 16 | 20 | 24 | 21 | 19 | 15 | 18 | 1 | 25 |
+| prj_18 Open Kiln | Education | 2 | 3.50 | 19 | 24 | 14 | 16 | 17 | 18 | 16 | 28 | 1 | 15 |
+| prj_24 Glass Beacon | Accessibil | 2 | 3.50 | 19 | 23 | 20 | 21 | 20 | 20 | 17 | 19 | 1 | 17 |
+| prj_39 Paper Anchor | Accessibil | 2 | 3.50 | 19 | 9 | 8 | 11 | 26 | 22 | 18 | 21 | 1 | 10 |
+| prj_12 Open Beacon | Education | 3 | 3.44 | 23 | 18 | 14 | 20 | 19 | 21 | 19 | 20 | 1 | 24 |
+| prj_01 Glass Signal | Security | 3 | 3.44 | 23 | 13 | 9 | 11 | 22 | 23 | 20 | 23 | 1 | 11 |
+| prj_35 Warm Beacon | Climate | 5 | 3.47 | 22 | 27 | 19 | 27 | 29 | 26 | 21 | 24 | 1 | 32 |
+| prj_41 Dry Harbour | Accessibil | 6 | 3.44 | 23 | 11 | 16 | 8 | 23 | 25 | 22 | 26 | 1 | 6 |
+| prj_27 Flat Thread | Open hardw | 3 | 3.44 | 23 | 20 | 29 | 17 | 25 | 24 | 23 | 25 | 1 | 21 |
+| prj_32 Loud Ledger | Developer  | 3 | 3.44 | 23 | 31 | 30 | 31 | 27 | 27 | 24 | 22 | 1 | 30 |
+| prj_14 Green Lantern | Education | 5 | 3.40 | 29 | 25 | 26 | 26 | 24 | 28 | 25 | 29 | 1 | 23 |
+| prj_28 Flat Meadow | Data and a | 3 | 3.44 | 23 | 37 | 38 | 37 | 30 | 29 | 26 | 27 | 1 | 36 |
+| prj_29 Flat Relay | Developer  | 2 | 3.33 | 30 | 26 | 20 | 23 | 28 | 30 | 27 | 30 | 1 | 20 |
+| prj_09 Hollow Signal | Health | 3 | 3.56 | 15 | 14 | 9 | 17 | 15 | 15 | 28 | 16 | 1 | 22 |
+| prj_17 Small Loom | Health | 3 | 3.56 | 15 | 19 | 9 | 14 | 15 | 15 | 28 | 15 | 1 | 12 |
+| prj_19 Small Relay | Health | 2 | 3.67 | 12 | 29 | 20 | 28 | 14 | 14 | 30 | 14 | 1 | 27 |
+| prj_13 Quiet Anchor | Climate | 3 | 3.33 | 30 | 33 | 33 | 33 | 31 | 31 | 31 | 31 | 1 | 38 |
+| prj_03 Deep Compass | Accessibil | 3 | 3.33 | 30 | 28 | 32 | 28 | 32 | 32 | 32 | 32 | 1 | 28 |
+| prj_20 Paper Thread | Open hardw | 3 | 3.22 | 33 | 35 | 35 | 34 | 33 | 33 | 33 | 33 | 1 | 33 |
+| prj_26 Amber Hours | Climate | 3 | 3.22 | 33 | 30 | 27 | 28 | 35 | 34 | 34 | 34 | 1 | 31 |
+| prj_30 Paper Harbour | Education | 3 | 3.11 | 35 | 32 | 30 | 32 | 34 | 35 | 35 | 36 | 1 | 29 |
+| prj_22 Dry Bridge | Security | 3 | 3.11 | 35 | 34 | 35 | 35 | 36 | 36 | 36 | 35 | 1 | 37 |
+| prj_06 Dry Compass | Developer  | 3 | 3.11 | 35 | 36 | 34 | 36 | 37 | 37 | 37 | 37 | 1 | 35 |
+| prj_40 Slow Loom | Developer  | 2 | 3.00 | 38 | 38 | 37 | 38 | 38 | 38 | 38 | 38 | 1 | 34 |
+| prj_05 North Compass | Data and a | 3 | 2.89 | 39 | 40 | 40 | 40 | 40 | 40 | 39 | 39 | 1 | 39 |
+| prj_23 Slow Quarry | Open hardw | 3 | 2.89 | 39 | 39 | 39 | 39 | 39 | 39 | 40 | 40 | 1 | 40 |
+
+Projects touched by jdg_07 (flat) and jdg_01 (n=1): overall rank [track rank]
+  prj_09 Hollow Signal via jdg_07: A 15[2], B 14[1], C1 9[1], C2 17[2], D 15[2], D 15[2], D* 28[1], D2 16[3], E1 1[1], E2 22[2]
+  prj_17 Small Loom via jdg_07: A 15[2], B 19[2], C1 9[1], C2 14[1], D 15[2], D 15[2], D* 28[1], D2 15[2], E1 1[1], E2 12[1]
+  prj_19 Small Relay via jdg_07: A 12[1], B 29[3], C1 20[3], C2 28[3], D 14[1], D 14[1], D* 30[3], D2 14[1], E1 1[1], E2 27[3]
+  prj_41 Dry Harbour via jdg_01: A 23[4], B 11[2], C1 16[2], C2 8[1], D 23[3], D 25[4], D* 22[4], D2 26[4], E1 1[1], E2 6[1]
+  prj_08 North Drift via jdg_23: A 9[2], B 15[3], C1 20[3], C2 9[2], D 10[2], D 10[2], D* 10[2], D2 10[2], E1 1[1], E2 7[2]
+
+====================================================================================================
+4. METHODS ON THE FIXTURE -- weights alt(.5/.25/.25)
+====================================================================================================
+k (REML, flat excluded) = 14.65; flat judges: ['jdg_07']
+
+Top-10 overall under D* vs raw:
+| D* rank | project | track | n | raw mean | raw rank | D* score | move |
+|---|---|---|---|---|---|---|---|
+| 1 | prj_11 Salt Ledger | Data and analytics | 4 | 4.44 | 1 | 4.42 | +0 |
+| 2 | prj_34 Iron Switch | Open hardware | 3 | 4.42 | 2 | 4.41 | +0 |
+| 3 | prj_10 Still Beacon | Open hardware | 2 | 4.25 | 3 | 4.19 | +0 |
+| 4 | prj_25 Dry Relay | Data and analytics | 3 | 4.08 | 4 | 4.11 | +0 |
+| 5 | prj_37 Salt Loom | Education | 4 | 4.06 | 6 | 4.07 | +1 |
+| 6 | prj_33 Slow Trail | Developer tools | 3 | 4.08 | 4 | 4.07 | -2 |
+| 7 | prj_16 Salt Kiln | Security | 3 | 4.00 | 7 | 4.01 | +0 |
+| 8 | prj_21 Copper Kiln | Data and analytics | 3 | 4.00 | 7 | 3.99 | -1 |
+| 9 | prj_08 North Drift | Security | 5 | 3.80 | 9 | 3.80 | +0 |
+| 10 | prj_38 Deep Beacon | Data and analytics | 3 | 3.75 | 10 | 3.77 | +0 |
+
+Rank agreement with raw (Kendall tau-b over 40) and movement:
+| method | tau vs raw | mean abs move | max abs move | #1 overall | winners that differ from raw (of 8 tracks) |
+|---|---|---|---|---|---|
+| A raw mean | 1.00 | 0.0 | 0 | prj_11 Salt Ledger | 0 |
+| B z-score | 0.70 | 4.5 | 19 | prj_34 Iron Switch | 2 |
+| C1 robust z | 0.62 | 5.8 | 18 | prj_34 Iron Switch | 2 |
+| C2 percentile | 0.69 | 4.5 | 19 | prj_34 Iron Switch | 2 |
+| D k=3 | 0.90 | 1.9 | 7 | prj_34 Iron Switch | 0 |
+| D k=REML | 0.95 | 1.2 | 4 | prj_34 Iron Switch | 0 |
+| D* REML+flat | 0.89 | 1.8 | 18 | prj_11 Salt Ledger | 1 |
+| D2 +scale | 0.94 | 1.3 | 6 | prj_34 Iron Switch | 0 |
+| E1 EB-shrunk | 0.00 | 18.9 | 38 | prj_01 Glass Signal | 8 |
+| E2 induced-BT | 0.66 | 5.1 | 17 | prj_34 Iron Switch | 2 |
+
+Track winners per method (ties shown with /):
+| track | A raw mean | B z-score | C1 robust z | C2 percentile | D k=3 | D k=REML | D* REML+flat | D2 +scale | E1 EB-shrunk | E2 induced-BT |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Developer tools | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_33 | prj_06/prj_29/prj_31/prj_32/prj_33/prj_40 | prj_33 |
+| Data and analytics | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_11 | prj_05/prj_11/prj_21/prj_25/prj_28/prj_38 | prj_11 |
+| Accessibility | prj_02 | prj_24 | prj_24 | prj_24 | prj_02 | prj_02 | prj_02 | prj_02 | prj_02/prj_03/prj_24/prj_39/prj_41 | prj_41 |
+| Security | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_16 | prj_01/prj_08/prj_15/prj_16/prj_22 | prj_16 |
+| Climate | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_35 | prj_13/prj_26/prj_35 | prj_35 |
+| Health | prj_19 | prj_17 | prj_09/prj_17 | prj_17 | prj_19 | prj_19 | prj_17 | prj_19 | prj_09/prj_17/prj_19 | prj_17 |
+| Education | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_37 | prj_04/prj_12/prj_14/prj_18/prj_30/prj_37 | prj_37 |
+| Open hardware | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_34 | prj_10/prj_20/prj_23/prj_27/prj_34/prj_36 | prj_34 |
+
+Full ranking table (overall rank) for all 40 projects:
+| project | track | n | raw | A raw mean | B z-score | C1 robust z | C2 percentile | D k=3 | D k=REML | D* REML+flat | D2 +scale | E1 EB-shrunk | E2 induced-BT |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| prj_11 Salt Ledger | Data and a | 4 | 4.44 | 1 | 3 | 4 | 4 | 2 | 2 | 1 | 2 | 1 | 4 |
+| prj_34 Iron Switch | Open hardw | 3 | 4.42 | 2 | 1 | 1 | 1 | 1 | 1 | 2 | 1 | 1 | 1 |
+| prj_10 Still Beacon | Open hardw | 2 | 4.25 | 3 | 4 | 2 | 3 | 3 | 3 | 3 | 3 | 1 | 5 |
+| prj_25 Dry Relay | Data and a | 3 | 4.08 | 4 | 7 | 6 | 7 | 4 | 4 | 4 | 5 | 1 | 7 |
+| prj_37 Salt Loom | Education | 4 | 4.06 | 6 | 6 | 7 | 5 | 5 | 5 | 5 | 4 | 1 | 6 |
+| prj_33 Slow Trail | Developer  | 3 | 4.08 | 4 | 2 | 3 | 2 | 7 | 6 | 6 | 6 | 1 | 2 |
+| prj_16 Salt Kiln | Security | 3 | 4.00 | 7 | 5 | 5 | 6 | 6 | 7 | 7 | 7 | 1 | 3 |
+| prj_21 Copper Kiln | Data and a | 3 | 4.00 | 7 | 10 | 10 | 8 | 8 | 8 | 8 | 8 | 1 | 10 |
+| prj_08 North Drift | Security | 5 | 3.80 | 9 | 12 | 12 | 11 | 9 | 9 | 9 | 9 | 1 | 8 |
+| prj_38 Deep Beacon | Data and a | 3 | 3.75 | 10 | 21 | 17 | 13 | 10 | 10 | 10 | 10 | 1 | 12 |
+| prj_04 Green Switch | Education | 3 | 3.67 | 11 | 18 | 26 | 17 | 13 | 11 | 11 | 12 | 1 | 18 |
+| prj_15 Copper Orbit | Security | 2 | 3.62 | 13 | 16 | 19 | 19 | 12 | 12 | 12 | 13 | 1 | 13 |
+| prj_02 Small Meadow | Accessibil | 3 | 3.67 | 11 | 17 | 27 | 25 | 15 | 14 | 13 | 14 | 1 | 27 |
+| prj_12 Open Beacon | Education | 3 | 3.58 | 15 | 8 | 8 | 15 | 11 | 13 | 14 | 11 | 1 | 19 |
+| prj_31 Salt Ferry | Developer  | 3 | 3.58 | 15 | 13 | 19 | 14 | 16 | 17 | 15 | 17 | 1 | 16 |
+| prj_32 Loud Ledger | Developer  | 3 | 3.58 | 15 | 22 | 16 | 21 | 16 | 17 | 15 | 15 | 1 | 23 |
+| prj_18 Open Kiln | Education | 2 | 3.50 | 19 | 23 | 12 | 23 | 14 | 16 | 17 | 25 | 1 | 15 |
+| prj_35 Warm Beacon | Climate | 5 | 3.55 | 18 | 19 | 25 | 16 | 24 | 19 | 18 | 20 | 1 | 26 |
+| prj_24 Glass Beacon | Accessibil | 2 | 3.50 | 19 | 9 | 9 | 9 | 22 | 22 | 19 | 21 | 1 | 11 |
+| prj_36 Salt Drift | Open hardw | 3 | 3.50 | 19 | 27 | 28 | 31 | 19 | 20 | 20 | 18 | 1 | 29 |
+| prj_41 Dry Harbour | Accessibil | 6 | 3.48 | 23 | 11 | 14 | 10 | 23 | 24 | 21 | 23 | 1 | 9 |
+| prj_14 Green Lantern | Education | 5 | 3.45 | 24 | 15 | 15 | 20 | 18 | 23 | 22 | 22 | 1 | 21 |
+| prj_27 Flat Thread | Open hardw | 3 | 3.42 | 25 | 14 | 24 | 12 | 25 | 25 | 23 | 26 | 1 | 14 |
+| prj_13 Quiet Anchor | Climate | 3 | 3.42 | 25 | 30 | 33 | 28 | 28 | 28 | 24 | 24 | 1 | 35 |
+| prj_29 Flat Relay | Developer  | 2 | 3.38 | 29 | 26 | 11 | 22 | 27 | 27 | 25 | 28 | 1 | 20 |
+| prj_03 Deep Compass | Accessibil | 3 | 3.42 | 25 | 28 | 29 | 27 | 30 | 29 | 26 | 29 | 1 | 25 |
+| prj_20 Paper Thread | Open hardw | 3 | 3.33 | 30 | 29 | 30 | 28 | 29 | 30 | 27 | 30 | 1 | 28 |
+| prj_28 Flat Meadow | Data and a | 3 | 3.33 | 30 | 38 | 37 | 39 | 33 | 31 | 28 | 31 | 1 | 39 |
+| prj_17 Small Loom | Health | 3 | 3.50 | 19 | 20 | 19 | 18 | 21 | 21 | 29 | 19 | 1 | 17 |
+| prj_01 Glass Signal | Security | 3 | 3.25 | 32 | 24 | 19 | 24 | 31 | 32 | 30 | 32 | 1 | 22 |
+| prj_19 Small Relay | Health | 2 | 3.62 | 13 | 32 | 31 | 32 | 20 | 15 | 31 | 16 | 1 | 30 |
+| prj_39 Paper Anchor | Accessibil | 2 | 3.25 | 32 | 35 | 34 | 34 | 34 | 33 | 32 | 33 | 1 | 32 |
+| prj_09 Hollow Signal | Health | 3 | 3.42 | 25 | 25 | 19 | 25 | 26 | 26 | 33 | 27 | 1 | 31 |
+| prj_30 Paper Harbour | Education | 3 | 3.08 | 35 | 31 | 18 | 30 | 32 | 34 | 34 | 34 | 1 | 24 |
+| prj_40 Slow Loom | Developer  | 2 | 3.12 | 34 | 34 | 31 | 37 | 35 | 35 | 35 | 35 | 1 | 34 |
+| prj_05 North Compass | Data and a | 3 | 3.00 | 36 | 40 | 38 | 40 | 36 | 36 | 36 | 36 | 1 | 40 |
+| prj_06 Dry Compass | Developer  | 3 | 3.00 | 36 | 37 | 39 | 36 | 37 | 37 | 37 | 37 | 1 | 36 |
+| prj_26 Amber Hours | Climate | 3 | 3.00 | 36 | 36 | 36 | 35 | 38 | 38 | 38 | 38 | 1 | 37 |
+| prj_22 Dry Bridge | Security | 3 | 2.92 | 39 | 33 | 35 | 33 | 40 | 40 | 39 | 39 | 1 | 33 |
+| prj_23 Slow Quarry | Open hardw | 3 | 2.92 | 39 | 39 | 40 | 38 | 39 | 39 | 40 | 40 | 1 | 38 |
+
+Projects touched by jdg_07 (flat) and jdg_01 (n=1): overall rank [track rank]
+  prj_09 Hollow Signal via jdg_07: A 25[3], B 25[2], C1 19[1], C2 25[2], D 26[3], D 26[3], D* 33[3], D2 27[3], E1 1[1], E2 31[3]
+  prj_17 Small Loom via jdg_07: A 19[2], B 20[1], C1 19[1], C2 18[1], D 21[2], D 21[2], D* 29[1], D2 19[2], E1 1[1], E2 17[1]
+  prj_19 Small Relay via jdg_07: A 13[1], B 32[3], C1 31[3], C2 32[3], D 20[1], D 15[1], D* 31[2], D2 16[1], E1 1[1], E2 30[2]
+  prj_41 Dry Harbour via jdg_01: A 23[3], B 11[2], C1 14[2], C2 10[2], D 23[3], D 24[3], D* 21[3], D2 23[3], E1 1[1], E2 9[1]
+  prj_08 North Drift via jdg_23: A 9[2], B 12[2], C1 12[2], C2 11[2], D 9[2], D 9[2], D* 9[2], D2 9[2], E1 1[1], E2 8[2]
+
+====================================================================================================
+5. WHERE Z-SCORES BREAK (equal weights)
+====================================================================================================
+  jdg_01 n=1 scores=['2.00'] sd=0.00 -> z=['undef']
+  jdg_03 n=2 scores=['4.33', '3.33'] sd=0.71 -> z=['0.71', '-0.71']
+  jdg_05 n=2 scores=['3.33', '3.67'] sd=0.24 -> z=['-0.71', '0.71']
+  jdg_07 n=3 scores=['4.00', '4.00', '4.00'] sd=0.00 -> z=['undef', 'undef', 'undef']
+  jdg_12 n=2 scores=['3.00', '4.00'] sd=0.71 -> z=['-0.71', '0.71']
+  jdg_17 n=2 scores=['3.67', '3.33'] sd=0.24 -> z=['0.71', '-0.71']
+  jdg_18 n=3 scores=['3.33', '3.67', '3.33'] sd=0.19 -> z=['-0.58', '1.15', '-0.58']
+  jdg_23 n=1 scores=['3.33'] sd=0.00 -> z=['undef']
+  jdg_27 n=2 scores=['2.67', '3.33'] sd=0.47 -> z=['-0.71', '0.71']
+  jdg_28 n=2 scores=['3.33', '3.00'] sd=0.24 -> z=['0.71', '-0.71']
+
+====================================================================================================
+6. 'A JUDGE WHO DREW WEAK PROJECTS LOOKS HARSH': naive vs identified leniency (equal weights)
+====================================================================================================
+| judge | n | judge mean | naive offset (mean - grand) | co-judges' mean on same projects | gap vs co-judges | identified offset (k->0) | shrunk offset (k=13.7, all judges) |
+|---|---|---|---|---|---|---|---|
+| jdg_01 | 1 | 2.00 | -1.56 | 3.73 | -1.73 | -1.75 | -0.10 |
+| jdg_14 | 3 | 3.00 | -0.56 | 3.46 | -0.46 | -0.14 | -0.06 |
+| jdg_27 | 2 | 3.00 | -0.56 | 3.83 | -0.83 | -0.62 | -0.07 |
+| jdg_20 | 6 | 3.11 | -0.45 | 3.61 | -0.50 | -0.30 | -0.10 |
+| jdg_28 | 2 | 3.17 | -0.39 | 3.33 | -0.17 | -0.24 | -0.02 |
+| jdg_10 | 3 | 3.22 | -0.34 | 4.10 | -0.87 | -1.28 | -0.11 |
+| jdg_23 | 1 | 3.33 | -0.23 | 3.92 | -0.58 | -1.13 | -0.03 |
+| jdg_24 | 11 | 3.36 | -0.20 | 3.55 | -0.18 | +0.11 | -0.04 |
+| jdg_08 | 3 | 3.44 | -0.12 | 3.88 | -0.43 | -0.79 | -0.05 |
+| jdg_19 | 3 | 3.44 | -0.12 | 3.42 | +0.03 | -0.11 | +0.01 |
+| jdg_06 | 3 | 3.44 | -0.12 | 3.33 | +0.11 | +1.06 | +0.02 |
+| jdg_18 | 3 | 3.44 | -0.12 | 3.48 | -0.03 | -0.16 | -0.00 |
+| jdg_09 | 5 | 3.47 | -0.09 | 3.52 | -0.05 | +0.15 | -0.00 |
+| jdg_25 | 5 | 3.47 | -0.09 | 4.00 | -0.53 | -0.96 | -0.09 |
+| jdg_05 | 2 | 3.50 | -0.06 | 3.39 | +0.11 | +1.05 | +0.02 |
+| jdg_12 | 2 | 3.50 | -0.06 | 3.48 | +0.02 | -0.13 | +0.00 |
+| jdg_17 | 2 | 3.50 | -0.06 | 3.33 | +0.17 | +1.11 | +0.02 |
+| jdg_21 | 3 | 3.50 | -0.06 | 3.43 | +0.07 | -0.01 | +0.01 |
+| jdg_29 | 9 | 3.52 | -0.04 | 3.62 | -0.11 | -0.01 | -0.03 |
+| jdg_04 | 4 | 3.58 | +0.02 | 3.73 | -0.15 | +0.21 | -0.03 |
+| jdg_11 | 6 | 3.61 | +0.05 | 3.53 | +0.08 | +0.72 | +0.02 |
+| jdg_16 | 6 | 3.61 | +0.05 | 3.85 | -0.24 | -0.72 | -0.04 |
+| jdg_26 | 9 | 3.65 | +0.09 | 3.36 | +0.29 | +0.30 | +0.09 |
+| jdg_22 | 5 | 3.73 | +0.17 | 3.51 | +0.22 | +0.44 | +0.04 |
+| jdg_03 | 2 | 3.83 | +0.27 | 3.33 | +0.50 | +0.82 | +0.05 |
+| jdg_07 | 3 | 4.00 | +0.44 | 3.33 | +0.67 | +0.43 | +0.07 |
+| jdg_13 | 3 | 4.00 | +0.44 | 3.38 | +0.62 | -0.03 | +0.08 |
+| jdg_15 | 6 | 4.06 | +0.49 | 3.33 | +0.72 | +0.54 | +0.14 |
+| jdg_30 | 4 | 4.08 | +0.52 | 3.89 | +0.19 | -0.42 | +0.04 |
+| jdg_02 | 6 | 4.22 | +0.66 | 3.58 | +0.64 | -0.09 | +0.16 |
+
+====================================================================================================
+7. EXPLANATIONS (equal weights, recommended D*)
+====================================================================================================
+  Hollow Signal: raw 3.56, jdg_07 (excluded: flat scorer (gave 4.0 to everything), n=3) -0.22, jdg_27 (near-average judge, n=2) +0.02, jdg_29 (near-average judge, n=9) -0.00, final 3.35 | exact: True
+  Small Loom: raw 3.56, jdg_07 (excluded: flat scorer (gave 4.0 to everything), n=3) -0.22, jdg_27 (near-average judge, n=2) +0.02, jdg_29 (near-average judge, n=9) -0.00, final 3.35 | exact: True
+  Small Relay: raw 3.67, jdg_07 (excluded: flat scorer (gave 4.0 to everything), n=3) -0.33, jdg_29 (near-average judge, n=9) -0.00, final 3.33 | exact: True
+  Dry Harbour: raw 3.44, jdg_26 (generous judge, n=9) -0.01, jdg_01 (harsh judge, n=1) +0.01, jdg_21 (near-average judge, n=3) -0.00, jdg_19 (near-average judge, n=3) -0.00, jdg_18 (near-average judge, n=3) +0.00, jdg_12 (near-average judge, n=2) -0.00, final 3.44 | exact: True
+  Iron Switch: raw 4.33, jdg_15 (generous judge, n=6) -0.04, jdg_20 (harsh judge, n=6) +0.03, jdg_29 (near-average judge, n=9) -0.00, final 4.32 | exact: True
+  Salt Ledger: raw 4.33, jdg_02 (generous judge, n=6) -0.03, jdg_25 (harsh judge, n=5) +0.02, jdg_16 (near-average judge, n=6) +0.01, jdg_30 (near-average judge, n=4) -0.01, final 4.32 | exact: True
+  Dry Relay: raw 4.11, jdg_25 (harsh judge, n=5) +0.02, jdg_16 (near-average judge, n=6) +0.01, jdg_30 (near-average judge, n=4) -0.01, final 4.14 | exact: True
+decomposition exact for all 40: True
+alt weights: True
+
+====================================================================================================
+8. UNCERTAINTY AND TIES (equal weights)
+====================================================================================================
+
+D* (k=18.8): residual sigma=0.630
+  top-10 adjacent pairs statistically tied (|diff| < 1.96 se): 9 of 9
+  all adjacent pairs tied: 39 of 39
+  prj_34 (4.32, se 0.37, eff-n 2.9) vs prj_11 (4.32): diff 0.00 se_diff 0.49 P(higher better)=0.50 tie=True
+  prj_11 (4.32, se 0.32, eff-n 3.8) vs prj_25 (4.14): diff 0.19 se_diff 0.48 P(higher better)=0.65 tie=True
+  prj_25 (4.14, se 0.37, eff-n 2.9) vs prj_10 (4.11): diff 0.02 se_diff 0.59 P(higher better)=0.52 tie=True
+  prj_10 (4.11, se 0.46, eff-n 1.9) vs prj_37 (4.08): diff 0.03 se_diff 0.56 P(higher better)=0.52 tie=True
+  prj_37 (4.08, se 0.32, eff-n 3.8) vs prj_16 (4.00): diff 0.08 se_diff 0.49 P(higher better)=0.57 tie=True
+  #1 vs #2: diff 0.00, z=0.00
+  #1 vs #3: diff 0.19, z=0.36
+  #1 vs #5: diff 0.24, z=0.49
+  #1 vs #10: diff 0.53, z=1.13
+  #1 vs #20: diff 0.87, z=1.66
+  90% rank intervals (model-based) top-10: prj_34 [1-15] P(#1)=0.24; prj_11 [1-12] P(#1)=0.19; prj_25 [1-20] P(#1)=0.11; prj_10 [1-25] P(#1)=0.13; prj_37 [1-19] P(#1)=0.06; prj_16 [1-24] P(#1)=0.06; prj_33 [1-25] P(#1)=0.05; prj_21 [2-28] P(#1)=0.03; prj_38 [2-31] P(#1)=0.02; prj_08 [4-27] P(#1)=0.01
+  within-track top-3 separation (P(#1>#2), P(#2>#3)):
+   Developer tools    prj_33>prj_31 0.81; prj_31>prj_32 0.59
+   Data and analytics prj_11>prj_25 0.65; prj_25>prj_21 0.69
+   Accessibility      prj_02>prj_24 0.52; prj_24>prj_39 0.52
+   Security           prj_16>prj_08 0.67; prj_08>prj_15 0.59
+   Climate            prj_35>prj_13 0.61; prj_13>prj_26 0.59
+   Health             prj_09>prj_17 0.50; prj_17>prj_19 0.51
+   Education          prj_37>prj_04 0.74; prj_04>prj_18 0.66
+   Open hardware      prj_34>prj_10 0.64; prj_10>prj_36 0.78
+
+raw (k=inf): residual sigma=0.642
+  top-10 adjacent pairs statistically tied (|diff| < 1.96 se): 9 of 9
+  all adjacent pairs tied: 39 of 39
+  prj_11 (4.33, se 0.32, eff-n 4.0) vs prj_34 (4.33): diff 0.00 se_diff 0.49 P(higher better)=0.50 tie=True
+  prj_34 (4.33, se 0.37, eff-n 3.0) vs prj_10 (4.17): diff 0.17 se_diff 0.59 P(higher better)=0.61 tie=True
+  prj_10 (4.17, se 0.45, eff-n 2.0) vs prj_25 (4.11): diff 0.06 se_diff 0.59 P(higher better)=0.54 tie=True
+  prj_25 (4.11, se 0.37, eff-n 3.0) vs prj_37 (4.08): diff 0.03 se_diff 0.49 P(higher better)=0.52 tie=True
+  prj_37 (4.08, se 0.32, eff-n 4.0) vs prj_16 (4.00): diff 0.08 se_diff 0.49 P(higher better)=0.57 tie=True
+  #1 vs #2: diff 0.00, z=0.00
+  #1 vs #3: diff 0.17, z=0.30
+  #1 vs #5: diff 0.25, z=0.55
+  #1 vs #10: diff 0.56, z=1.13
+  #1 vs #20: diff 0.83, z=1.50
+  90% rank intervals (model-based) top-10: prj_11 [1-13] P(#1)=0.20; prj_34 [1-14] P(#1)=0.23; prj_10 [1-24] P(#1)=0.17; prj_25 [1-22] P(#1)=0.09; prj_37 [1-20] P(#1)=0.06; prj_16 [1-25] P(#1)=0.05; prj_33 [1-25] P(#1)=0.05; prj_21 [2-28] P(#1)=0.03; prj_08 [4-28] P(#1)=0.00; prj_04 [3-31] P(#1)=0.01
+  within-track top-3 separation (P(#1>#2), P(#2>#3)):
+   Developer tools    prj_33>prj_31 0.80; prj_31>prj_32 0.58
+   Data and analytics prj_11>prj_25 0.67; prj_25>prj_21 0.66
+   Accessibility      prj_02>prj_24 0.54; prj_24>prj_39 0.50
+   Security           prj_16>prj_08 0.67; prj_08>prj_15 0.60
+   Climate            prj_35>prj_13 0.61; prj_13>prj_26 0.58
+   Health             prj_19>prj_09 0.58; prj_09>prj_17 0.50
+   Education          prj_37>prj_04 0.73; prj_04>prj_18 0.68
+   Open hardware      prj_34>prj_10 0.61; prj_10>prj_36 0.80
+
+EB estimate of true between-project variance tau_p^2 = 0.0000 (0 => no detectable project differences)
+
+====================================================================================================
+9. STABILITY: leave-one-judge-out and stratified bootstrap (equal weights)
+====================================================================================================
+| method | LOJO max rank change | mean abs rank change (avg over the 30 refits) | most influential judge | #1 still #1 (of 30 refits) |
+|---|---|---|---|---|
+| A raw mean | 24 | 1.04 | jdg_24 | 26 |
+| B z-score | 27 | 1.05 | jdg_18 | 28 |
+| C1 robust z | 28 | 1.01 | jdg_18 | 29 |
+| C2 percentile | 23 | 1.03 | jdg_18 | 29 |
+| D k=3 | 23 | 1.03 | jdg_04 | 25 |
+| D k=REML | 24 | 1.07 | jdg_24 | 25 |
+| D* REML+flat | 24 | 1.06 | jdg_04 | 23 |
+| D2 +scale | 27 | 1.11 | jdg_24 | 23 |
+| E1 EB-shrunk | 39 | 1.30 | jdg_04 | 28 |
+| E2 induced-BT | 21 | 0.98 | jdg_18 | 26 |
+
+Stratified bootstrap (B=300, reviews resampled within project): 90% rank intervals
+  A raw mean     mean 90% rank-interval width = 20.2 ranks (of 40)
+  B z-score      mean 90% rank-interval width = 22.5 ranks (of 40)
+  C1 robust z    mean 90% rank-interval width = 25.0 ranks (of 40)
+  C2 percentile  mean 90% rank-interval width = 23.0 ranks (of 40)
+  D k=3          mean 90% rank-interval width = 20.4 ranks (of 40)
+  D k=REML       mean 90% rank-interval width = 21.8 ranks (of 40)
+  D* REML+flat   mean 90% rank-interval width = 22.0 ranks (of 40)
+  D2 +scale      mean 90% rank-interval width = 21.7 ranks (of 40)
+  E1 EB-shrunk   mean 90% rank-interval width = 21.9 ranks (of 40)
+  E2 induced-BT  mean 90% rank-interval width = 23.5 ranks (of 40)
+
+  D* top-10 with bootstrap intervals:
+   #1 prj_34 Iron Switch  [1-9]  P(top-3)=0.54
+   #2 prj_11 Salt Ledger  [1-7]  P(top-3)=0.56
+   #3 prj_25 Dry Relay  [1-13]  P(top-3)=0.39
+   #4 prj_10 Still Beacon  [1-17]  P(top-3)=0.17
+   #5 prj_37 Salt Loom  [1-23]  P(top-3)=0.35
+   #6 prj_16 Salt Kiln  [1-19]  P(top-3)=0.24
+   #7 prj_33 Slow Trail  [4-17]  P(top-3)=0.03
+   #8 prj_21 Copper Kiln  [1-27]  P(top-3)=0.16
+   #9 prj_38 Deep Beacon  [2-29]  P(top-3)=0.11
+   #10 prj_08 North Drift  [2-29]  P(top-3)=0.09
+
+====================================================================================================
+10. ADAPTIVE ALLOCATION ON THE REAL FIXTURE: what would plan_next_round ask for next?
+====================================================================================================
+P(top-3 overall), P(#1) for projects with P(top-3) > 0.05:
+   prj_34 Iron Switch     score 4.32 se 0.37 n=3  P(top3)=0.52  P(#1)=0.25
+   prj_11 Salt Ledger     score 4.32 se 0.32 n=4  P(top3)=0.49  P(#1)=0.19
+   prj_10 Still Beacon    score 4.11 se 0.46 n=2  P(top3)=0.32  P(#1)=0.14
+   prj_25 Dry Relay       score 4.14 se 0.37 n=3  P(top3)=0.32  P(#1)=0.10
+   prj_37 Salt Loom       score 4.08 se 0.32 n=4  P(top3)=0.24  P(#1)=0.06
+   prj_16 Salt Kiln       score 4.00 se 0.37 n=3  P(top3)=0.19  P(#1)=0.05
+   prj_33 Slow Trail      score 3.99 se 0.37 n=3  P(top3)=0.19  P(#1)=0.05
+   prj_21 Copper Kiln     score 3.88 se 0.37 n=3  P(top3)=0.12  P(#1)=0.03
+   prj_38 Deep Beacon     score 3.80 se 0.37 n=3  P(top3)=0.08  P(#1)=0.02
+   prj_15 Copper Orbit    score 3.68 se 0.46 n=2  P(top3)=0.08  P(#1)=0.02
+   prj_04 Green Switch    score 3.77 se 0.37 n=3  P(top3)=0.07  P(#1)=0.01
+   prj_19 Small Relay     score 3.33 se 0.64 n=2  P(top3)=0.05  P(#1)=0.02
+next round (budget 10, capacity 8 per judge, fixture track memberships):
+   jdg_20 -> prj_10 Still Beacon (P(top3)=0.32, n=2)
+   jdg_27 -> prj_19 Small Relay (P(top3)=0.05, n=2)
+   jdg_02 -> prj_25 Dry Relay (P(top3)=0.32, n=3)
+   jdg_20 -> prj_16 Salt Kiln (P(top3)=0.19, n=3)
+   jdg_02 -> prj_15 Copper Orbit (P(top3)=0.08, n=2)
+   jdg_30 -> prj_21 Copper Kiln (P(top3)=0.12, n=3)
+   jdg_14 -> prj_37 Salt Loom (P(top3)=0.24, n=4)
+   jdg_23 -> prj_19 Small Relay (P(top3)=0.05, n=2)
+   jdg_13 -> prj_16 Salt Kiln (P(top3)=0.19, n=3)
+   jdg_11 -> prj_18 Open Kiln (P(top3)=0.04, n=2)
+
+wrote results_fixture.json
