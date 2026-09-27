@@ -8,7 +8,7 @@
   <div class="card-head"><h2>Audit trail <span class="muted small">({{ total }} entries, append-only)</span></h2><a class="btn sm" href="/api/v1/events/{{ ev.ref }}/exports/audit.csv">CSV</a></div>
   <form method="get" class="filters card-body" style="margin:0;padding-bottom:0">
     <select name="action" aria-label="Action"><option value="">All actions</option>{% for a in actions %}<option {% if a == action %}selected{% endif %}>{{ a }}</option>{% endfor %}</select>
-    <input type="search" name="actor" value="{{ actor_q }}" placeholder="Actor" style="max-width:160px"><input type="search" name="q" value="{{ q }}" placeholder="Search summaries" style="max-width:220px"><button class="btn sm">Filter</button>
+    <input type="search" name="actor" value="{{ actor_q }}" placeholder="Actor" aria-label="Actor" style="max-width:160px"><input type="search" name="q" value="{{ q }}" placeholder="Search summaries" aria-label="Search summaries" style="max-width:220px"><button class="btn sm">Filter</button>
   </form>
   <ul class="timeline" style="margin-top:12px">
   {% for a in entries %}<li><span class="seq">#{{ a.seq }}</span><span class="when">{{ a.ts|date:"j M H:i:s" }}<br><span class="act">{{ a.action }}</span></span><span><strong>{{ a.actor_label }}</strong>{% if a.actor_role %} <span class="tiny muted">{{ a.actor_role }}</span>{% endif %} · {{ a.summary }}<br><span class="hash" title="hash">{{ a.hash|short:20 }}… ← {{ a.prev_hash|short:10 }}…</span></span></li>
@@ -31,7 +31,7 @@
       <td class="mono small"><a href="/certificates/{{ c.pk }}">{{ c.serial }}</a></td><td class="small">{{ c.get_kind_display }}</td><td class="small">{{ c.user.name|default:c.user.email }}</td>
       <td class="small">{{ c.issued_at|date:"j M Y" }}</td><td class="mono tiny">{{ c.key_id }}{% if c.key_id in retired %} <span class="badge">retired key</span>{% endif %}</td>
       <td>{% if c.revoked_at %}<span class="badge bad">revoked</span> <span class="tiny muted">{{ c.revoked_at|date:"j M" }}: {{ c.revoked_reason }}</span>
-      {% else %}<details><summary class="small">valid · revoke…</summary><form method="post" class="row" style="margin-top:6px" data-confirm="Revoke {{ c.serial }}? This is final and public.">{% csrf_token %}<input type="hidden" name="action" value="revoke"><input type="hidden" name="certificate" value="{{ c.pk }}"><input type="text" name="reason" required minlength="10" maxlength="300" placeholder="Public reason (10+ characters)" style="max-width:320px"><button class="btn sm danger">Revoke</button></form></details>{% endif %}</td>
+      {% else %}<details><summary class="small">valid · revoke…</summary><form method="post" class="row" style="margin-top:6px" data-confirm="Revoke {{ c.serial }}? This is final and public.">{% csrf_token %}<input type="hidden" name="action" value="revoke"><input type="hidden" name="certificate" value="{{ c.pk }}"><input type="text" name="reason" required minlength="10" maxlength="300" placeholder="Public reason (10+ characters)" aria-label="Public reason (10+ characters)" style="max-width:320px"><button class="btn sm danger">Revoke</button></form></details>{% endif %}</td>
     </tr>{% endfor %}</tbody>
   </table></div>{% else %}<p class="card-body small muted">Nothing issued yet. Judges can issue their evaluation protocol when their batch is done; publishing results issues participant and winner certificates.</p>{% endif %}
 </div>

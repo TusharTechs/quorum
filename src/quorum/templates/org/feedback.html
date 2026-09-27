@@ -19,7 +19,7 @@
       <p style="margin:6px 0">{{ r.feedback_for_team|default:r.feedback_to_team }}</p>
       <form method="post" class="row">{% csrf_token %}<input type="hidden" name="review" value="{{ r.pk }}">
         <button class="btn sm" name="action" value="approve">Approve</button>
-        <input type="text" name="text" placeholder="Edited text (optional)" style="max-width:320px"><input type="text" name="note" placeholder="Note to judge" style="max-width:160px"><button class="btn sm" name="action" value="edit">Save edit</button>
+        <input type="text" name="text" placeholder="Edited text (optional)" aria-label="Edited text (optional)" style="max-width:320px"><input type="text" name="note" placeholder="Note to judge" aria-label="Note to judge" style="max-width:160px"><button class="btn sm" name="action" value="edit">Save edit</button>
         <button class="btn sm danger" name="action" value="hide">Hide</button>
         {% if r.quotable != "no" %}<button class="btn sm" name="action" value="feature">Feature quote</button>{% endif %}
       </form>

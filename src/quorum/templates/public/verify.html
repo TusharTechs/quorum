@@ -6,7 +6,7 @@
 <h1>Verify a signed record</h1>
 <p class="muted">Paste a certificate, evaluation protocol or audit checkpoint record. Your browser checks the Ed25519 signature locally against the published key (<a href="/.well-known/quorum-keys.json">/.well-known/quorum-keys.json</a>), then checks the <a href="/.well-known/quorum-revocations.json">signed revocation list</a>, verifying that list's own signature too; nothing is sent anywhere. The server check below confirms it too.</p>
 <form method="post" class="card stack">{% csrf_token %}
-  <textarea name="record" id="record-input" style="min-height:160px" class="mono" placeholder='{"payload": "…", "signature": "…", "key_id": "…"}'>{{ request.POST.record }}</textarea>
+  <textarea name="record" id="record-input" aria-label="Signed record (JSON)" style="min-height:160px" class="mono" placeholder='{"payload": "…", "signature": "…", "key_id": "…"}'>{{ request.POST.record }}</textarea>
   <div class="row"><button class="btn primary" type="button" id="verify-local">Verify in my browser</button><button class="btn" type="submit">Verify on the server</button></div>
   <div id="local-result" class="small" aria-live="polite"></div>
 </form>

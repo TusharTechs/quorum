@@ -12,9 +12,9 @@
 </tbody></table></div></div>
 <aside class="stack">
   <form method="post" class="card">{% csrf_token %}<input type="hidden" name="action" value="invite"><h3>Invite a judge</h3>
-    <div class="field"><label>E-mail</label><input type="email" name="email" required></div><div class="field"><label>Name</label><input type="text" name="name"></div>
+    <div class="field"><label for="f-email">E-mail</label><input type="email" name="email" id="f-email" required></div><div class="field"><label for="f-name">Name</label><input type="text" name="name" id="f-name"></div>
     <div class="field"><label>Tracks</label>{% for t in tracks %}<label class="check"><input type="checkbox" name="tracks" value="{{ t.ref }}"> {{ t.name }}</label>{% endfor %}</div>
-    <div class="field"><label>Capacity (reviews)</label><input type="number" name="capacity" value="{{ ev.batch_size }}"></div>
+    <div class="field"><label for="f-capacity">Capacity (reviews)</label><input type="number" name="capacity" id="f-capacity" value="{{ ev.batch_size }}"></div>
     <button class="btn primary">Send invitation</button><p class="tiny muted">A 7-day sign-in link. Offline, it lands in the mail catcher.</p></form>
   <div class="card"><div class="row between"><h3 style="margin:0">Conflicts of interest</h3><form method="post">{% csrf_token %}<button class="btn sm" name="action" value="suggest_conflicts">Suggest</button></form></div>
   <p class="tiny muted">Judges can declare conflicts; shared e-mail domains are suggested. Confirmed conflicts are excluded from assignment and enforced by the server.</p>

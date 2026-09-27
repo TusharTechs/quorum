@@ -19,7 +19,7 @@ T1  project from fixtures shown ....... PASS        T3: 10/10 pass
 T1  closed event refuses submissions .. PASS        T4:  8/8 pass
 T2  judge sees own scores ............. PASS        total: 21/21 pass
 T2  judge cannot see peer scores ...... PASS
-T2  participant blocked ............... PASS        153 automated tests · 94 API operations × 6 roles
+T2  participant blocked ............... PASS        154 automated tests · 94 API operations × 6 roles
 T2  csv export works .................. PASS        authorization matrix · 336-request live
 claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks
 ```
@@ -156,7 +156,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 docker compose -f docker-compose.dev.yml up -d           # Postgres + mail catcher
 cd src && DJANGO_DEBUG=1 ../.venv/bin/python manage.py migrate && DJANGO_DEBUG=1 ../.venv/bin/python manage.py seed_fixtures
 DJANGO_DEBUG=1 ../.venv/bin/python manage.py runserver 8080
-../.venv/bin/python -m pytest ../tests                   # 153 tests against real Postgres
+../.venv/bin/python -m pytest ../tests                   # 154 tests against real Postgres
 ```
 
 The stack is Python 3.12, Django 5.2, django-ninja, PostgreSQL 16, and htmx with server-rendered templates (no Node toolchain). The judging engine is pure standard-library Python in `src/engine/`.

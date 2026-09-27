@@ -4,7 +4,7 @@
 <h1>API tokens</h1>
 <p class="muted">Use <code>Authorization: Bearer &lt;token&gt;</code> against the <a href="/api/v1/docs">API</a>. Tokens act with your roles, never more. We store only a hash; copy a new token now, it will not be shown again.</p>
 {% if new_secret %}<div class="callout good"><h3>New token</h3><code id="newtok">{{ new_secret }}</code> <button class="btn sm" data-copy-target="#newtok" data-copy="">Copy</button></div>{% endif %}
-<form method="post" class="row" style="margin:16px 0">{% csrf_token %}<input type="text" name="name" placeholder="Token name, e.g. results-bot" style="max-width:320px" required><button class="btn primary">Create token</button></form>
+<form method="post" class="row" style="margin:16px 0">{% csrf_token %}<input type="text" name="name" placeholder="Token name, e.g. results-bot" aria-label="Token name, e.g. results-bot" style="max-width:320px" required><button class="btn primary">Create token</button></form>
 <div class="card flush"><table><thead><tr><th>Name</th><th>Prefix</th><th>Created</th><th>Last used</th><th>Expires</th><th></th></tr></thead><tbody>
 {% for t in tokens %}<tr><td>{{ t.name }}{% if t.is_demo %} <span class="badge warn">demo</span>{% endif %}</td><td class="mono">{{ t.prefix }}…</td><td>{{ t.created_at|date:"Y-m-d" }}</td><td>{{ t.last_used_at|date:"Y-m-d H:i"|default:"never" }}</td><td>{{ t.expires_at|date:"Y-m-d"|default:"never" }}</td>
 <td class="right">{% if t.revoked_at %}<span class="badge">revoked</span>{% else %}<form method="post">{% csrf_token %}<button class="btn sm danger" name="revoke" value="{{ t.pk }}">Revoke</button></form>{% endif %}</td></tr>
