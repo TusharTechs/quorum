@@ -57,10 +57,10 @@ Reading it: when judges differ in leniency, calibration recovers the true order 
 | disjoint panels | +0.000 ± 0.000 |
 | overlap-aware (Quorum) | +0.036 ± 0.008 |
 
-With disjoint panels, a harsh panel and a weak batch of projects are indistinguishable, so calibration has almost nothing to work with. When batches overlap, leniency becomes measurable. That is why Quorum's assignment planner maximises overlap and reports the judge graph's connectivity before committing.
+With disjoint panels the gain is exactly zero, and not by chance: when every project in a panel was reviewed by the same judges, each judge's offset shifts all of that panel's projects equally, so the calibrated score is provably identical to the raw mean. A harsh panel and a weak batch of projects are indistinguishable. When batches overlap, leniency becomes measurable. That is why Quorum's assignment planner maximises overlap and reports the judge graph's connectivity before anything is committed.
 
 ## 4. Focus rounds and tie-breaks
 
 The allocation experiments (400 seeds, ICC ≈ 0.31) are in `research/math/results_adaptive.txt`. With the same 120 reviews, 2 each plus two targeted rounds of 20 picked the true winner 43.5% of the time vs 33.5% for uniform 3 each; adding the pairwise tie-break raised it to 53.5% (persistent-impression noise, the conservative case).
 
-_Generated in 57s._
+_Generated in 56s._

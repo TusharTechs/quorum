@@ -1,0 +1,26 @@
+# Proof that Quorum runs with the network OFF.
+#   docker compose -f docker-compose.yml -f docker-compose.offline.yml up -d --wait
+#   docker compose -f docker-compose.yml -f docker-compose.offline.yml run --rm offline-check
+# The whole stack sits on an `internal` network (no route to the internet). The checks run
+# from a container inside that network, first proving it cannot reach the outside world.
+networks:
+  default:
+    internal: true
+
+services:
+  offline-check:
+    image: quorum:local
+    depends_on:
+      web:
+        condition: service_healthy
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        cd /app
+        python3 -c "import urllib.request; urllib.request.urlopen('https://pypi.org', timeout=5)" 2>/dev/null \
+          && { echo 'FAIL: the network is reachable; this is not an offline test'; exit 1; } \
+          || echo 'confirmed: no route to the internet from inside the stack'
+        sed 's#http://localhost:8080#http://web:8080#' .dogfood.toml > /tmp/offline.toml
+        python3 run.py /tmp/offline.toml --fixtures fixtures.json
+        python3 tools/acceptance_ext.py /tmp/offline.toml | tail -5
+        python3 scripts/isolation_probe.py /tmp/offline.toml
