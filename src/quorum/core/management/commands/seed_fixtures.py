@@ -147,7 +147,7 @@ class Command(BaseCommand):
         Prize.objects.create(event=ev, name="Grand prize", places=3, kind="judged", value_text="Top 3 overall",
                              description="Decided by the calibrated judges' ranking; ties at a boundary go to a "
                                          "pre-registered tie-break round.")
-        Prize.objects.create(event=ev, name="Best in track", places=1, kind="judged", position=1,
+        Prize.objects.create(event=ev, name="Best in track", places=1, kind="judged", position=1, per_track=True,
                              description="The top project in each of the 8 tracks.")
         Prize.objects.create(event=ev, name="People's choice", places=1, kind="community", position=2,
                              description="Community vote. Kept separate from judged prizes.")

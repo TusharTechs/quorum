@@ -36,6 +36,7 @@ outbox · job · rate_bucket · signing_key (public half only) · api_token (sha
 | `events_eventrole` | event, user, role, ref, capacity, available, last_activity_at | UNIQUE(event, user, role); roles are per event |
 | `events_track` | ref, name, position, pairwise | `pairwise` switches on comparative judging for the track (audited; advisory, never changes the ranking) |
 | `events_judgetrack` | event_role, track | track isolation is read from here |
+| `events_prize` | name, places, kind (judged / community), track, per_track | a judged prize with `per_track` (in every track) or a `track` makes focus rounds plan against that track's places too |
 | `events_team` / `events_teammember` | ref, name, invite_code_hash / role | UNIQUE(event, user) on members; **team names are not unique** (the fixture has three pairs of same-named teams) |
 | `events_project` | ref, team, track, content fields, status, duplicate_of, submitted_at, content_hash, version | duplicates are modelled, never deleted |
 | `events_projectrevision` | version, snapshot (JSON), content_hash, author | every save; proves what judges saw |

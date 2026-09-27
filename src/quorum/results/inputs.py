@@ -32,6 +32,14 @@ def build_input(event, method=None, overrides: dict | None = None) -> dict:
     if method:
         method_fields["flat_rule"] = method.spec.get("flat_rule", {}).get("enabled", True)
         method_fields["flat_min_reviews"] = method.spec.get("flat_rule", {}).get("min_reviews", 3)
+    track_places = {}  # judged track prizes: every track (per_track) or one track; key omitted when none
+    for pr in event.prizes.filter(kind="judged").select_related("track"):
+        targets = ([t.ref for t in event.tracks.all()] if pr.per_track
+                   else [pr.track.ref] if pr.track_id else [])
+        for t in targets:
+            track_places[t] = max(track_places.get(t, 0), pr.places)
+    if track_places:
+        method_fields["track_places"] = dict(sorted(track_places.items()))
     method_fields.update(overrides or {})
     return {
         "event": event.ref,

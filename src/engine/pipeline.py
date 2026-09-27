@@ -73,7 +73,7 @@ def compute(inp: dict, *, heavy: bool = True) -> dict:
     # uncertainty is computed for the calibrated fit; for other primaries we re-order
     groups = tie_groups(unc)
     sims = simulate_rankings(fit, unc, top_n=method["prize_n"], draws=method["draws"],
-                             seed=seed, tracks=tracks)
+                             seed=seed, tracks=tracks, track_places=method.get("track_places"))
     sig = signal_check(reviews, weights, permutations=method["permutations"], seed=seed)
 
     ranks = rank_order(primary)
@@ -120,6 +120,8 @@ def compute(inp: dict, *, heavy: bool = True) -> dict:
             "tied_with_next": a["tie"] if a else False,
             "flat_only": p in fit["orphan_projects"],
         })
+        if p in sims["p_track_prize"]:  # only when the method declares track prizes (keeps other hashes stable)
+            entries[-1]["p_track_prize"] = sims["p_track_prize"][p]
     explanations = {p: explain_project(fit, p) for p in fit["score"]}
 
     # judge cards: descriptive statistics and signals, never verdicts

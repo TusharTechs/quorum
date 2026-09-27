@@ -64,6 +64,7 @@ class PrizeIn(Schema):
     kind: str = "judged"
     value_text: str = ""
     description: str = ""
+    per_track: bool = False  # awarded in every track (best in track)
 
 
 class QuestionIn(Schema):
@@ -86,7 +87,8 @@ def event_out(ev: Event) -> dict:
         "voting_mode": ev.voting_mode, "voting_opens_at": ev.voting_opens_at, "voting_closes_at": ev.voting_closes_at,
         "results_published_at": ev.results_published_at,
         "tracks": [{"ref": t.ref, "name": t.name} for t in ev.tracks.all()],
-        "prizes": [{"name": p.name, "places": p.places, "kind": p.kind, "value": p.value_text} for p in ev.prizes.all()],
+        "prizes": [{"name": p.name, "places": p.places, "kind": p.kind, "value": p.value_text, "per_track": p.per_track}
+                   for p in ev.prizes.all()],
         "criteria": [{"key": c.key, "name": c.name, "weight_pct": c.weight_pct, "scale": [c.scale_min, c.scale_max]}
                      for c in ev.criteria.all()],
         "method": {"version": m.version, "spec_hash": m.spec_hash, "locked_at": m.locked_at,
@@ -168,8 +170,8 @@ def add_track(request, e: str, payload: NamedIn):
 @policy("authenticated")
 def add_prize(request, e: str, payload: PrizeIn):
     p = organize.add_prize(request.actor, get_event(e), payload.name, payload.places, payload.kind, payload.value_text,
-                           payload.description)
-    return 201, {"name": p.name, "places": p.places, "kind": p.kind}
+                           payload.description, payload.per_track)
+    return 201, {"name": p.name, "places": p.places, "kind": p.kind, "per_track": p.per_track}
 
 
 @router.post("/events/{e}/questions", response={201: dict}, summary="Add a custom submission question")

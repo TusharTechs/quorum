@@ -168,6 +168,8 @@ class Prize(models.Model):
     name = models.CharField(max_length=120)
     description = models.TextField(blank=True)
     places = models.PositiveSmallIntegerField(default=1)
+    # awarded in every track ("best in track"); a prize with `track` set is for that track only
+    per_track = models.BooleanField(default=False)
     kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.JUDGED)
     value_text = models.CharField(max_length=80, blank=True)
     position = models.PositiveSmallIntegerField(default=0)

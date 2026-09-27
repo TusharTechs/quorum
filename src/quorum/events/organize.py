@@ -112,7 +112,7 @@ def clone_event(actor, source: Event, name: str, shift_days: int) -> Event:
     for p in source.prizes.select_related("track"):
         Prize.objects.create(event=ev, track=tracks.get(p.track.ref) if p.track else None, name=p.name,
                              description=p.description, places=p.places, kind=p.kind, value_text=p.value_text,
-                             position=p.position)
+                             position=p.position, per_track=p.per_track)
     for q in source.questions.all():
         CustomQuestion.objects.create(event=ev, ref=q.ref, label=q.label, help=q.help, kind=q.kind,
                                       required=q.required, options=q.options, position=q.position)
@@ -250,11 +250,11 @@ def add_track(actor, ev, name):
 
 
 @transaction.atomic
-def add_prize(actor, ev, name, places=1, kind="judged", value_text="", description=""):
+def add_prize(actor, ev, name, places=1, kind="judged", value_text="", description="", per_track=False):
     actor.require_organizer(ev)
     p = Prize.objects.create(event=ev, name=clean_line(name, 120), places=max(1, int(places or 1)), kind=kind,
                              value_text=clean_line(value_text, 80), description=description[:500],
-                             position=ev.prizes.count())
+                             position=ev.prizes.count(), per_track=bool(per_track) and kind == "judged")
     audit.record("PRIZE_ADDED", f"Prize {p.name} added", event=ev, actor=actor, actor_role="organizer")
     return p
 

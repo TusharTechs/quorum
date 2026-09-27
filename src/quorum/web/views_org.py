@@ -152,7 +152,8 @@ def setup(request, slug):
                 organize.add_track(request.actor, ev, request.POST.get("track_name", ""))
             elif action == "prize":
                 organize.add_prize(request.actor, ev, request.POST.get("prize_name", ""), request.POST.get("places"),
-                                   request.POST.get("kind", "judged"), request.POST.get("value_text", ""))
+                                   request.POST.get("kind", "judged"), request.POST.get("value_text", ""),
+                                   per_track=request.POST.get("per_track") == "on")
             elif action == "question":
                 organize.add_question(request.actor, ev, request.POST.get("label", ""), request.POST.get("kind", "text"),
                                       request.POST.get("required") == "on", request.POST.get("options", ""))

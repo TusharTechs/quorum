@@ -162,8 +162,11 @@ The parts add up **exactly**; a test enforces this to 1e-9 for every project. Or
 After every project has its baseline reviews, extra reviews on a project that is certainly in, or certainly out of, the prize set change nothing. `engine.allocate.plan_next_round()` sends each extra review where it buys the most prize certainty:
 
 ```
-gain_p = P_p (1 − P_p) · v_p² / (v_p + σ²)      P_p = P(project wins a prize),  v_p = current score variance
+gain_p = U_p · v_p² / (v_p + σ²)                 v_p = current score variance
+U_p    = P_p (1 − P_p) + Q_p (1 − Q_p)           P_p = P(overall prize),  Q_p = P(its track's prize)
 ```
+
+`U_p` adds up the Bernoulli variance of every prize decision the project takes part in. The overall places are always one decision. When the event pays track prizes (a prize marked *in every track*, like the fixture's "Best in track", or a prize tied to one track), the simulation also estimates `Q_p`, the probability of placing within that track's prize places. So a project that is nearly out overall but a coin flip for its track still earns a review. On the fixture, prj_19 has a 6% chance of an overall prize and a 36% chance of best in Developer tools. It gets focus reviews that an overall-only plan would never send. The decisions are listed in the pre-registered method (`focus.decisions`). Events without track prizes get byte-identical engine output.
 
 After each planned review, `v_p ← 1/(1/v_p + 1/σ²)`, which gives diminishing returns. Each slot goes to an eligible, non-flat judge with capacity, preferring the judge whose own offset rests on the most evidence.
 
@@ -259,7 +262,6 @@ On the fixture's exact 123 judge–project pairs, with known truth (full tables 
 - **Standard errors treat `k` as known.**
 - **Consistent collusion is invisible to statistics.** Undisclosed friendships or coordinated judges are not detectable when their pattern is consistent. Leave-one-judge-out shows how much any single judge matters.
 - **The tie-break model assumes comparison noise ≈ rubric noise.**
-- **Focus rounds assume the prize is "top N overall".** Per-track prizes use the per-track P(#1), which is reported but not yet planned against.
 - **Offline means no external checks.** Quorum cannot verify that a repository wasn't changed after the deadline. It stores the team's declared commit SHA for judges to check.
 
 ## 15. References

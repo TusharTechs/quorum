@@ -68,11 +68,12 @@ def tie_groups(unc):
     return groups
 
 
-def simulate_rankings(fit, unc, top_n=3, draws=4000, seed=0, tracks=None):
+def simulate_rankings(fit, unc, top_n=3, draws=4000, seed=0, tracks=None, track_places=None):
     """Model-based ('parametric') bootstrap: draw score vectors ~ N(score, Cov), rank them.
 
     Returns P(top_n overall), P(#1 overall), 90% rank intervals and, when `tracks` is
-    given ({project: track}), P(#1 within track). We sample from the fit's covariance
+    given ({project: track}), P(#1 within track). With `track_places` ({track: k}, the
+    places a track prize pays) it also returns P(in the top k of its track). We sample from the fit's covariance
     rather than resampling reviews because with 2 reviews per project a within-project
     resample has zero spread half of the time."""
     rng = random.Random(seed)
@@ -89,6 +90,8 @@ def simulate_rankings(fit, unc, top_n=3, draws=4000, seed=0, tracks=None):
     first = [0] * P
     ranks = [[] for _ in range(P)]
     track_first = defaultdict(int)
+    track_prize = defaultdict(int)
+    track_places = track_places or {}
     by_track = defaultdict(list)
     if tracks:
         for i, p in enumerate(projects):
@@ -102,9 +105,13 @@ def simulate_rankings(fit, unc, top_n=3, draws=4000, seed=0, tracks=None):
         for i in order[:top_n]:
             top[i] += 1
         first[order[0]] += 1
-        for idxs in by_track.values():
+        for t, idxs in by_track.items():
             best = max(idxs, key=lambda i: x[i])
             track_first[best] += 1
+            k = track_places.get(t)
+            if k:
+                for i in sorted(idxs, key=lambda i: -x[i])[:k]:
+                    track_prize[i] += 1
     out_int = {}
     for i, rs in enumerate(ranks):
         rs.sort()
@@ -114,6 +121,8 @@ def simulate_rankings(fit, unc, top_n=3, draws=4000, seed=0, tracks=None):
         "p_first": {projects[i]: first[i] / draws for i in range(P)},
         "rank_interval": out_int,
         "p_track_first": {projects[i]: track_first[i] / draws for i in range(P)} if tracks else {},
+        "p_track_prize": ({projects[i]: track_prize[i] / draws for i in range(P)
+                           if track_places.get((tracks or {}).get(projects[i]))} if track_places else {}),
         "top_n": top_n,
         "draws": draws,
     }

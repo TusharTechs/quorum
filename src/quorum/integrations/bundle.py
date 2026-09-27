@@ -55,7 +55,8 @@ def export_bundle(ev: Event, pseudonymize: bool = False) -> dict:
                       "scale_min": c.scale_min, "scale_max": c.scale_max, "anchors": c.anchors, "position": c.position}
                      for c in ev.criteria.all()],
         "prizes": [{"name": p.name, "description": p.description, "places": p.places, "kind": p.kind,
-                    "value_text": p.value_text, "track": p.track.ref if p.track else None} for p in ev.prizes.select_related("track")],
+                    "value_text": p.value_text, "track": p.track.ref if p.track else None, "per_track": p.per_track}
+                   for p in ev.prizes.select_related("track")],
         "questions": [{"ref": q.ref, "label": q.label, "help": q.help, "kind": q.kind, "required": q.required,
                        "options": q.options} for q in ev.questions.all()],
         "teams": [{"ref": t.ref, "name": t.name,

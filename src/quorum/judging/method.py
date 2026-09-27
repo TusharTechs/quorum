@@ -9,6 +9,7 @@ leaves a permanent banner on the results page."""
 from __future__ import annotations
 
 from django.db import connection, transaction
+from django.db.models import Q
 
 from engine import ENGINE_VERSION
 from engine.bundle import canonical_json, sha256_hex
@@ -20,6 +21,8 @@ from .models import JudgingMethod
 
 
 def build_spec(event) -> dict:
+    track_prizes = event.prizes.filter(kind="judged").filter(Q(per_track=True) | Q(track__isnull=False)).exists()
+    decisions = ["overall top prize_positions"] + (["each track's prize places"] if track_prizes else [])
     return {
         "schema": "quorum.method/v1",
         "engine": ENGINE_VERSION,
@@ -32,7 +35,8 @@ def build_spec(event) -> dict:
         "reviews_per_project": event.reviews_per_project,
         "batch_size": event.batch_size,
         "prize_positions": event.prize_positions,
-        "focus": {"budget_pct": event.focus_budget_pct, "rounds": 2, "objective": "P(1-P)*v^2/(v+sigma^2)"},
+        "focus": {"budget_pct": event.focus_budget_pct, "rounds": 2,
+                  "objective": "sum over prize decisions of P(1-P) * v^2/(v+sigma^2)", "decisions": decisions},
         "tiebreak": {
             "trigger": "adjacent statistical tie (|diff| < 1.96 SE) touching a prize boundary",
             "max_projects": 6, "judges": 3, "resolve_threshold": 0.80,

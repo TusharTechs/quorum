@@ -181,6 +181,7 @@ def plan_focus(event, budget: int | None = None, seed: int = 0) -> dict:
     baseline = sum(e["n_reviews"] for e in entries)
     budget = budget if budget is not None else max(1, round(baseline * event.focus_budget_pct / 100))
     p_prize = {e["project"]: e.get("p_prize") or 0.0 for e in entries}
+    p_track = {e["project"]: e["p_track_prize"] for e in entries if e.get("p_track_prize") is not None}
     se = {e["project"]: e.get("se") or 0.5 for e in entries}
     roles = ops.judge_roles(event)
     load = defaultdict(int)
@@ -200,9 +201,9 @@ def plan_focus(event, budget: int | None = None, seed: int = 0) -> dict:
     project_track = {e["project"]: e["track"] for e in entries}
     fit_stub = {"flat_judges": {j: {} for j in flat}, "reviews": []}
     plan = plan_next_round(fit_stub, p_prize, se, out["sigma2"], budget, judges, capacity, project_track,
-                           existing=existing, conflicts=ops.conflict_pairs(event), seed=seed)
+                           existing=existing, conflicts=ops.conflict_pairs(event), seed=seed, p_track=p_track)
     return {"run": str(run.pk), "run_hash": run.output_hash, "budget": budget, "baseline_reviews": baseline,
-            "rows": plan, "seed": seed}
+            "rows": plan, "seed": seed, "track_prizes": bool(p_track)}
 
 
 @transaction.atomic

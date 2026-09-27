@@ -18,7 +18,7 @@ from collections import defaultdict
 
 
 def plan_next_round(fit, p_prize, se, sigma2, budget, judges, capacity, project_track=None,
-                    existing=None, conflicts=(), max_per_project=2, seed=0):
+                    existing=None, conflicts=(), max_per_project=2, seed=0, p_track=None):
     """Plan `budget` extra (judge, project) reviews.
 
     fit       : calibrate.fit_judge_effects output (for flat judges + existing reviews)
@@ -30,15 +30,21 @@ def plan_next_round(fit, p_prize, se, sigma2, budget, judges, capacity, project_
     project_track: {project: track}; None = no track constraint
     existing  : set of (judge, project) already reviewed or assigned
     conflicts : set of (judge, project) that are forbidden
+    p_track   : {project: P(project wins its track's prize)}, for events with track prizes
 
     Greedy on the expected value of one more review:
-        gain_p = P_p (1 - P_p) * v_p^2 / (v_p + sigma^2),   v_p = se_p^2
+        gain_p = U_p * v_p^2 / (v_p + sigma^2),   v_p = se_p^2
+        U_p    = P_p (1 - P_p) + Q_p (1 - Q_p)
+    U_p sums the Bernoulli variance of every prize decision the project is part of: the
+    overall prize (P) and, when the event pays one, its track prize (Q). A project that is
+    certainly out overall but a coin flip for "best in track" still earns reviews.
     After planning a review, v_p <- 1 / (1/v_p + 1/sigma^2) (diminishing returns).
     The judge for a slot is eligible (track, no conflict, capacity, not flat, has not seen
     the project), preferring the judge whose own offset rests on the most evidence.
     Returns [{"judge","project","p_prize","se_before","se_after"}].
     """
     rng = random.Random(seed)
+    p_track = p_track or {}
     s2 = max(sigma2, 1e-9)
     v = {p: max(se.get(p, 1.0), 1e-9) ** 2 for p in p_prize}
     existing = set(existing) if existing is not None else {(r["judge"], r["project"]) for r in fit["reviews"]}
@@ -60,7 +66,8 @@ def plan_next_round(fit, p_prize, se, sigma2, budget, judges, capacity, project_
         for p, P in p_prize.items():
             if p in dead or extra[p] >= max_per_project:
                 continue
-            g = P * (1 - P) * v[p] ** 2 / (v[p] + s2)
+            Q = p_track.get(p, 0.0)
+            g = (P * (1 - P) + Q * (1 - Q)) * v[p] ** 2 / (v[p] + s2)
             if g > 0:
                 cands.append((g + 1e-12 * rng.random(), p))
         if not cands:
@@ -81,8 +88,10 @@ def plan_next_round(fit, p_prize, se, sigma2, budget, judges, capacity, project_
             cap[j] -= 1
             extra[p] += 1
             v[p] = 1.0 / (1.0 / v[p] + 1.0 / s2)
-            plan.append({"judge": j, "project": p, "p_prize": p_prize[p],
-                         "se_before": before, "se_after": v[p] ** 0.5})
+            row = {"judge": j, "project": p, "p_prize": p_prize[p], "se_before": before, "se_after": v[p] ** 0.5}
+            if p in p_track:
+                row["p_track_prize"] = p_track[p]
+            plan.append(row)
             placed = True
             break
         if not placed:

@@ -26,6 +26,8 @@ RUN cd src && QUORUM_ENV=build DJANGO_SECRET_KEY=build-only python manage.py col
  && mkdir -p /data && chown -R quorum /data \
  && chmod +x /app/docker/entrypoint.sh
 
+# so that `docker compose exec web python manage.py <command>` works as documented
+WORKDIR /app/src
 USER quorum
 EXPOSE 8080
 ENTRYPOINT ["/app/docker/entrypoint.sh"]

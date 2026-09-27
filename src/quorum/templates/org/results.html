@@ -70,10 +70,10 @@
     {% endfor %}
   </div>
   <div class="card"><h3>Focus round</h3>
-    <p class="small muted">Send spare judge capacity only to projects whose prize is still uncertain. In simulation this picks the true winner 43.5% of the time, against 33.5% for uniform reviews on the same budget.</p>
+    <p class="small muted">Send spare judge capacity only to projects whose prize is still uncertain: overall{% if ev.prizes.all|length %} and, where the event pays one, in their track{% endif %}. In simulation this picks the true winner 43.5% of the time, against 33.5% for uniform reviews on the same budget.</p>
     {% if focus_plan %}
       <p class="small">Budget {{ focus_plan.budget }} review{{ focus_plan.budget|pluralize }} · planned {{ focus_plan.rows|length }}:</p>
-      <table class="small"><thead><tr><th>Project</th><th>Judge</th><th class="num">P(prize)</th><th class="num">SE</th></tr></thead><tbody>{% for r in focus_plan.rows %}<tr><td>{{ titles|get:r.project }}</td><td class="mono tiny">{{ r.judge }}</td><td class="num">{{ r.p_prize|pct }}</td><td class="num">{{ r.se_before|f2 }}→{{ r.se_after|f2 }}</td></tr>{% endfor %}</tbody></table>
+      <table class="small"><thead><tr><th>Project</th><th>Judge</th><th class="num">P(prize)</th>{% if focus_plan.track_prizes %}<th class="num" title="P(wins its track's prize)">P(track)</th>{% endif %}<th class="num">SE</th></tr></thead><tbody>{% for r in focus_plan.rows %}<tr><td>{{ titles|get:r.project }}</td><td class="mono tiny">{{ r.judge }}</td><td class="num">{{ r.p_prize|pct }}</td>{% if focus_plan.track_prizes %}<td class="num">{{ r.p_track_prize|pct }}</td>{% endif %}<td class="num">{{ r.se_before|f2 }}→{{ r.se_after|f2 }}</td></tr>{% endfor %}</tbody></table>
       <form method="post" class="row" style="margin-top:8px">{% csrf_token %}<button class="btn sm primary" name="action" value="commit_focus">Commit focus round</button><button class="btn sm" name="action" value="discard_focus">Discard</button></form>
     {% else %}<form method="post" class="row">{% csrf_token %}<input type="number" name="budget" placeholder="budget ({{ ev.focus_budget_pct }}% default)" style="width:170px"><button class="btn sm" name="action" value="plan_focus">Plan focus round</button></form>{% endif %}
   </div>
