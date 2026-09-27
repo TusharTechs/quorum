@@ -183,8 +183,10 @@ def my_scorecard(request, slug):
     run = pub.run if pub else latest_run(ev)
     sc = scorecard(ev, p, run)
     place = (pub.final_order.index(p.ref) + 1) if pub and p.ref in (pub.final_order or []) else None
+    from quorum.intelligence.themes import themes
+
     return render(request, "me/scorecard.html", {"ev": ev, "team": team, "p": p, "sc": sc, "pub": pub, "place": place,
-                                                 "nav": "me"})
+                                                 "themes": themes(sc["feedback"], sc["criteria"]), "nav": "me"})
 
 
 @policy("authenticated")

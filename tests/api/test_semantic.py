@@ -55,3 +55,24 @@ def test_a_tampered_model_is_refused_and_features_fall_back(monkeypatch):
     monkeypatch.setitem(embed.SHA256, "tokenizer.json", "0" * 64)
     monkeypatch.setattr(embed, "_state", {"loaded": False, "session": None, "tok": None, "error": None})
     assert not embed.available() and "checksum" in embed.status()["error"]
+
+
+def test_feedback_themes_quote_exactly_and_group_by_criterion():
+    from types import SimpleNamespace as C
+
+    from quorum.intelligence.themes import themes
+
+    crit = [C(key="functionality", name="Functionality", description="Does it work? Run it, follow the demo."),
+            C(key="quality", name="Quality", description="Is the code and documentation maintainable?"),
+            C(key="innovation", name="Innovation", description="Is there an idea others have not had?")]
+    fb = [{"judge": "Judge 1", "text": "The demo ran first time and the offline sync worked. The README has no setup steps; consider adding them."},
+          {"judge": "Judge 2", "text": "A genuinely new take on spaced repetition. Tests are missing for the scheduler, which worries me."},
+          {"judge": "Judge 3", "text": "It crashed when I imported a large deck. Try streaming the import instead of loading it all."}]
+    t = themes(fb, crit)
+    groups = {g["name"]: [q["text"] for q in g["quotes"]] for g in t["by_criterion"]}
+    assert "The README has no setup steps; consider adding them." in groups["Quality"]
+    assert "A genuinely new take on spaced repetition." in groups["Innovation"]
+    assert "It crashed when I imported a large deck." in groups["Functionality"]
+    written = " ".join(f["text"] for f in fb)
+    assert all(q["text"] in written for g in t["by_criterion"] for q in g["quotes"])  # extractive only
+    assert all(q["text"] in written for q in t["next_steps"]) and len(t["next_steps"]) >= 2

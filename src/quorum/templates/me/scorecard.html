@@ -22,6 +22,16 @@
 </div>
 {% endif %}
 {% endwith %}
+{% if themes.by_criterion or themes.next_steps %}<div class="grid cols-2" style="margin-top:16px">
+  {% if themes.by_criterion %}<div class="card"><div class="row between"><h2 style="margin:0">What the judges said, by criterion</h2></div>
+    <p class="tiny muted" style="margin:4px 0 10px"><span class="assist">{% icon "sparkles" 11 %} grouped</span> {{ themes.method }}. Every line is quoted exactly.</p>
+    {% for g in themes.by_criterion %}<div style="margin-bottom:12px"><p class="eyebrow" style="margin:0 0 4px">{{ g.name }} · {{ g.count }}</p>
+      {% for q in g.quotes %}<blockquote class="quote">“{{ q.text }}” <span class="tiny muted">· {{ q.judge }}</span></blockquote>{% endfor %}</div>{% endfor %}
+  </div>{% endif %}
+  {% if themes.next_steps %}<div class="card"><h2 style="margin:0 0 4px">Things to try next</h2><p class="tiny muted" style="margin:0 0 10px">Sentences in your feedback that suggest a change, quoted exactly.</p>
+    <ul class="checklist">{% for q in themes.next_steps %}<li><span class="tick">{% icon "arrow-right" 12 %}</span><div><div>{{ q.text }}</div><div class="why">{{ q.judge }}</div></div></li>{% endfor %}</ul>
+  </div>{% endif %}
+</div>{% endif %}
 <div class="card" style="margin-top:16px"><h2>What the judges wrote</h2>
 {% for f in sc.feedback %}<div style="padding:12px 0;border-bottom:1px solid var(--line)"><p class="small muted" style="margin:0 0 4px"><strong>{{ f.judge }}</strong></p><div>{{ f.text|linebreaks }}</div></div>{% empty %}<p class="muted">No written feedback was released for this project.</p>{% endfor %}
 </div>

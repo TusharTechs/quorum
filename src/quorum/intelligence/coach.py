@@ -36,6 +36,23 @@ SYNONYMS = {
 }
 
 
+# short anchor phrases per common criterion: a sentence is compared with each and the best match
+# counts (long label texts blur the meaning; short anchors keep it sharp)
+ANCHORS = {
+    "functionality": ["it works", "the demo runs", "bugs and crashes", "features work as described"],
+    "quality": ["code quality", "tests", "documentation and README", "clean maintainable code"],
+    "innovation": ["a new idea", "original and creative", "novel approach", "nobody has done this"],
+    "impact": ["useful to real people", "solves a real problem", "who benefits"],
+    "design": ["user interface", "easy to use", "accessible design", "visual design"],
+    "presentation": ["the pitch", "demo video", "clearly explained"],
+}
+
+
+def anchors_for(c) -> list[str]:
+    extra = [s.strip() for s in re.split(r"[.?!]", c.description or "") if len(s.strip()) > 3]
+    return [c.name] + ANCHORS.get(c.key, []) + extra[:3]
+
+
 def criteria_coverage(text: str, criteria) -> list[dict]:
     """criteria: iterable of objects with key, name, description."""
     crits = list(criteria)
@@ -44,7 +61,7 @@ def criteria_coverage(text: str, criteria) -> list[dict]:
         from . import embed
 
         if embed.available() and text.strip():
-            sims = embed.coverage(text, [f"{c.name}. {c.description}" for c in crits])
+            sims = embed.coverage(text, [anchors_for(c) for c in crits])
     except Exception:  # the coach must never break the console
         sims = None
     words = _words(text)

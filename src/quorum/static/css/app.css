@@ -542,3 +542,4 @@ details.card > summary::-webkit-details-marker { display: none; }
 .steps.path li span { font-size: 12px; color: var(--muted); font-weight: 400; }
 .pcard.preview { pointer-events: none; box-shadow: none; }
 .pcard.preview .thumb { aspect-ratio: 21 / 9; }
+.quote { margin: 6px 0; padding: 8px 12px; border-left: 3px solid var(--accent-line); background: var(--sunk); border-radius: 0 8px 8px 0; font-size: 14px; }

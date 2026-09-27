@@ -109,14 +109,20 @@ def encode_one(text: str):
     return _cached_one((text or "").strip()[:1000])
 
 
-def coverage(text: str, labels: list[str]) -> list[float]:
-    """Best cosine between any sentence of `text` and each label (for the feedback coach)."""
+def match_groups(texts: list[str], groups: list[list[str]]):
+    """(len(texts) x len(groups)) matrix: for each text, its best cosine with any phrase of each group."""
+    import numpy as np
+
+    S = encode(texts)
+    return np.stack([(S @ encode(g).T).max(axis=1) for g in groups], axis=1)
+
+
+def coverage(text: str, groups: list[list[str]]) -> list[float]:
+    """For each group of anchor phrases, the best match with any sentence of `text` (feedback coach)."""
     import re
 
     sents = [s for s in re.split(r"(?<=[.!?])\s+|\n+", text) if len(s.strip()) > 3] or [text]
-    S = encode(sents)
-    L = encode(labels)
-    return (S @ L.T).max(axis=0).tolist()
+    return match_groups(sents, groups).max(axis=0).tolist()
 
 
 def content_hash(text: str) -> str:
