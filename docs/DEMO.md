@@ -12,11 +12,16 @@ that podium you can trust, and then helps you decide the rest, fairly and on the
 | 1:50 | Judge console: keyboard scoring with anchors, feedback meter, autosave | "Built for 1–2 hours of reviewing, which is what Raptors asks of judges." |
 | 2:10 | Results: the **signal check** banner (ICC −0.006) | "These judges agree no better than chance. Everyone else will print a winner from this. We won't." |
 | 2:30 | Click a project → **Why #N** waterfall: jdg_07 excluded ("gave 4 to everything") | "Every score explains itself exactly. This is what we did about the judge who marks everything the same: weight zero, visible, and replaced." |
-| 3:00 | **Plan focus round** → table of P(prize) and SE before/after → commit | "Spare judge time goes only where a prize is still in doubt: 43.5% vs 33.5% chance of crowning the true winner on the same budget." |
+| 3:00 | **Plan focus round** → table of P(prize), P(track) and SE before/after → commit | "Spare judge time goes only where a prize is still in doubt, overall or best in track: 43.5% vs 33.5% chance of crowning the true winner on the same budget." |
 | 3:20 | **Open tie-break** → judge compares A vs B (keys A/B) → organizer sees P(order) | "Pairwise, where it actually works: separating a handful of tied finalists. Raptors' own Code Olympics podium was 0.071 apart: a tie." |
 | 3:50 | **Lock → Publish** → public results (method hash, run hash, audit head) → team scorecard → judge's signed protocol → `/verify` "valid, verified in your browser" | "Every team gets its scorecard. Every judge gets the signed, numbered protocol Raptors issues by hand today." |
 | 4:30 | Data → bundle → `python3 -m engine recompute evt_01-bundle.json` → MATCH | "Don't trust us: re-run it with nothing but Python." |
 | 4:50 | README acceptance block | "Every project judged. Every tie decided. Every team answered." |
+
+If a take runs short, two 20-second inserts:
+
+- **Comparative judging** (after 3:20). Go to Results → Comparative judging per track → switch on Developer tools. As the judge, press A/B through ten pairs of projects they already reviewed. Back as the organizer, show the Bradley–Terry order beside the rubric order with τ. Say: "A second opinion that cancels leniency, shown next to the ranking and never mixed into it."
+- **Revocation** (after 3:50). Go to Audit → Signed records → revoke a protocol with a reason, then paste it into `/verify`. Say: "Valid signature, but revoked. The browser checks a signed revocation list, offline."
 
 Before recording: `make reset && make up`, sign in as the organizer in one browser profile
 and a judge in another, open http://localhost:8025 in a tab.
