@@ -4,7 +4,7 @@
 {% block content %}
 {% include "org/_tabs.html" %}
 <p class="small"><a href="/o/{{ ev.slug }}/results">← Results</a></p>
-<h2 style="font-size:30px;margin:4px 0 8px">Comparative judging</h2>
+<h2 class="title" style="margin:4px 0 8px">Comparative judging</h2>
 <p class="muted" style="max-width:860px">A second, independent method per track. Judges choose the stronger of two projects <em>they have already reviewed</em>, so each choice is informed and a judge's leniency cancels inside the comparison. Choices are fitted with Bradley–Terry and shown beside the calibrated rubric order. <strong>This is advisory: it never changes the official ranking.</strong> The only place pairwise evidence enters the ranking is a tie-break round, as pre-registered. Each judge is asked for {{ target }} comparisons per track, and a track starts once a judge has reviewed {{ min_pool }} of its projects.</p>
 {% for row in tracks %}{% with t=row.t b=row.board %}
 <div class="card" style="margin-top:16px">
