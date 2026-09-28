@@ -2,6 +2,8 @@
 
 The brief asks the video to walk "one full event lifecycle: create, submit, judge, publish".
 
+**The recorded demo:** [youtu.be/gP3nTjCQrxM](https://youtu.be/gP3nTjCQrxM) (4:48, with English captions).
+
 Judges can also click through it themselves at **[the live demo](https://quorum-production-646e.up.railway.app)**: the same image in
 public demo mode, with one-click roles and a reset every hour.
 

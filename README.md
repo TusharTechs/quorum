@@ -8,6 +8,7 @@
 <p align="center"><strong>Every project judged. Every tie decided. Every team answered.</strong></p>
 
 <p align="center">
+  <a href="https://youtu.be/gP3nTjCQrxM"><b>Demo video</b></a> ·
   <a href="https://quorum-production-646e.up.railway.app"><b>Live demo</b></a> ·
   <a href="#run-it"><b>Run it</b></a> ·
   <a href="#five-minutes-with-the-fixture">Five minute tour</a> ·
@@ -20,8 +21,13 @@
   <a href="docs/DEMO.md">Demo script</a>
 </p>
 
+<p align="center">
+  <a href="https://youtu.be/gP3nTjCQrxM"><img src="https://i.ytimg.com/vi/gP3nTjCQrxM/maxresdefault.jpg" alt="Watch the five minute Quorum demo" width="640"></a>
+</p>
+
 | For judges: you want to… | Go to |
 |---|---|
+| **Watch it in five minutes** | **[Demo video](https://youtu.be/gP3nTjCQrxM)**: one full lifecycle, create, submit, judge and publish, with each scene mapped to a judging criterion |
 | **Try it now, nothing to install** | **[Live demo](https://quorum-production-646e.up.railway.app)**: one click to be the organizer, a judge or a participant. It resets every hour and sends no e-mail |
 | **Run it yourself** | [`docker compose up`](#run-it): seeded with the official fixture, works with the network off |
 | **See every tier working** | [What is built](#what-is-built) · [official checker, 7/7](acceptance-report.txt) · [T3/T4 checker, 21/21](acceptance-report-extended.txt) |
