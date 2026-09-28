@@ -33,6 +33,16 @@ Everything below is implemented in [`src/engine/`](src/engine), a pure-Python pa
  lock (immutable run, signed audit head) ──► publish (results + methodology + scorecards)
 ```
 
+**Where the local AI fits: nowhere in this pipeline.** Quorum Intelligence helps people around the
+judging, and it has no path into the pipeline:
+
+- It helps judges write better feedback (the coach).
+- It helps organizers find things and ask questions (Ask Quorum, search, duplicate suggestions).
+- It helps teams read their feedback (themes, quoted verbatim).
+
+The engine does not import it, and ranking runs are reproducible byte for byte without it. An
+AI-produced number never enters a score, a rank or a prize decision.
+
 ## 2. The method is fixed before registration (pre-registration)
 
 Hackathon Raptors' own rule is that *criteria and weights are published before registration opens and never change*. Quorum makes that rule a mechanism:
@@ -255,6 +265,10 @@ On the fixture's exact 123 judge–project pairs, with known truth (full tables 
 - When they do not, it costs nothing.
 - z-scoring is worse than calibration everywhere.
 - The ceiling on gains is set by the design (§3), which is why assignment and calibration are one system.
+
+On the real fixture, [`docs/proof/`](docs/proof/README.md#judge-spread-raw-and-calibrated) also shows several things:
+- Every project's raw rank and calibrated rank, with the largest moves explained exactly.
+- The **judge spread**, which falls from 0.41 raw to 0.35 calibrated. It could be pushed down to 0.15 by forcing weak shrinkage (k = 1), but on data with ICC ≈ 0 that would mean re-ranking projects on noise. REML picks the shrinkage the evidence supports.
 
 ## 14. Known limits
 

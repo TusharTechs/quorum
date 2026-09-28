@@ -20,15 +20,38 @@
 
 ## Production deployment
 
-Quorum runs anywhere Docker Compose runs (a small VPS is plenty: 2 vCPU, 2 GB RAM).
-Put it behind a TLS-terminating reverse proxy (Caddy, nginx, Traefik).
+Quorum runs anywhere Docker Compose runs. A small VPS is plenty for a typical event: 2 vCPU and
+2 GB RAM, or 4 GB with the local AI in every worker. The production overlay puts Caddy in front for
+automatic HTTPS, compression and load balancing, and you choose the number of web replicas.
 
 ```bash
-cp .env.example .env        # then edit it
-docker compose --env-file .env up -d --build
-docker compose exec web python manage.py rotate_demo_tokens --revoke   # if you ever ran in demo mode
+cp .env.example .env        # then edit it (below)
+QUORUM_DOMAIN=judging.example.org docker compose --env-file .env \
+  -f docker-compose.yml -f docker-compose.proxy.yml up -d --build --scale web=2
 docker compose exec web python manage.py createsuperuser
 ```
+
+**Scaling.**
+- Web replicas are stateless: sessions, rate limits, jobs, the outbox and the audit lock all live in
+  Postgres. Add replicas with `--scale web=N`.
+- They boot one at a time under a Postgres lock (`manage.py boot`), so they never race each other's
+  migrations.
+- Each replica runs `WEB_CONCURRENCY` processes × `WEB_THREADS` threads. The default is one process
+  per core (at most 8) with 4 threads each.
+- Keep replicas × processes × threads below Postgres `max_connections`. The overlay sets it to 250.
+- The load test in [docs/proof/load-test.md](docs/proof/load-test.md) runs 300 voters, 20 judges,
+  readers and organizers on three replicas. Nothing was lost or double-counted.
+
+**Behind another proxy or load balancer.**
+- Set `TRUSTED_PROXY_IPS` to its addresses or CIDR ranges.
+- Quorum reads the client from the right-most untrusted `X-Forwarded-For` hop, so a forged header
+  cannot dodge rate limits.
+- The Caddyfile trusts private ranges only.
+
+**Local AI.** The embedding model ships in the image, so there is nothing to download or configure.
+- Each process loads it lazily on the first search, question or coach request. Budget about 100 MB
+  per process, or set `QUORUM_INTELLIGENCE=0` on very small hosts to use keyword fallbacks everywhere.
+- `warm_intelligence` runs at boot. `/metrics` reports whether the model is available.
 
 `.env` for production (all variables in [`.env.example`](.env.example)):
 
@@ -44,7 +67,10 @@ SMTP_PORT=587
 SMTP_USER=...
 SMTP_PASSWORD=...
 SMTP_TLS=1
-TRUSTED_PROXY_IPS=<your proxy's address>
+TRUSTED_PROXY_IPS=<your proxy's address or CIDR>   # the proxy overlay sets private ranges by default
+WEB_CONCURRENCY=4                                    # processes per replica (default: cores, max 8)
+WEB_THREADS=4
+METRICS_ALLOWED_NETS=10.0.0.0/8,172.16.0.0/12        # who may scrape /metrics (default: private + loopback)
 ```
 
 **Production guards.** With `QUORUM_ENV=production` the web container refuses to start if:
@@ -95,6 +121,13 @@ the webhooks you configure.
 
 ## Monitoring
 
+- `GET /metrics` serves Prometheus text to `METRICS_ALLOWED_NETS` only. It includes:
+  - outbox messages by status and pending jobs;
+  - platform counts and model availability;
+  - per-process request counters and a latency histogram.
+  Alert on `quorum_outbox_messages{status="dead"} > 0` and a growing `quorum_jobs_pending`.
+- Every response carries `X-Request-ID`, and every JSON log line carries the same id. Requests slower
+  than `SLOW_REQUEST_SECONDS` (default 1 s) are logged as warnings.
 - `GET /healthz`: process up (used by the container healthcheck).
 - `GET /readyz`: database reachable.
 - Logs are JSON lines on stdout (`docker compose logs web worker`).

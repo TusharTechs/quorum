@@ -84,6 +84,57 @@ def svg_bars(rows, title, fname):
     (OUT / fname).write_text("\n".join(out))
 
 
+def _lean_sd(inp, res):
+    """Spread (population sd) of each judge's lean: their weighted total minus the mean of the other
+    judges on the same project, averaged over their reviews, after subtracting the judge's estimated
+    offset. Judges with at least 2 co-judged reviews; flat judges excluded (they get weight 0)."""
+    from collections import defaultdict
+
+    w = {c["key"]: c["weight"] for c in inp["criteria"]}
+    J = {j["judge"]: j for j in res["judges"]}
+    flat = set(res.get("flat_judges") or {})
+    byp = defaultdict(list)
+    for r in inp["reviews"]:
+        if r["judge"] in J:
+            y = sum(r["criteria"][k] * w[k] for k in w) / sum(w.values())
+            byp[r["project"]].append((r["judge"], y - J[r["judge"]]["offset"]))
+    d = defaultdict(list)
+    for rows in byp.values():
+        for j, y in rows:
+            others = [v for q, v in rows if q != j]
+            if others:
+                d[j].append(y - st.mean(others))
+    return st.pstdev([st.mean(v) for j, v in d.items() if len(v) >= 2 and j not in flat])
+
+
+def judge_spread(inp, res):
+    """How different the judges look before and after calibration, and why smaller is not the goal."""
+    raw = _lean_sd(inp, {**res, "judges": [{**j, "offset": 0.0} for j in res["judges"]]})
+    rows = [("Raw (no correction)", raw), (f"**Quorum: REML-chosen shrinkage, k = {res['k']:.1f}**", _lean_sd(inp, res))]
+    for k in (5.0, 1.0, 0.01):
+        r = compute({**inp, "method": {**(inp.get("method") or {}), "k": k}}, heavy=False)
+        rows.append((f"forced k = {k:g}" + (" (no shrinkage)" if k < 0.1 else ""), _lean_sd(inp, r)))
+    out = ["", "### Judge spread, raw and calibrated", "",
+           "*Judge spread* is how differently the judges score the same projects. For each judge, take their "
+           "weighted total minus the other judges' mean on the same project, averaged over their reviews. "
+           "The spread is the standard deviation of that lean across the 27 judges with two or more co-judged "
+           "reviews (the flat judge is excluded).", "",
+           "| Correction | Judge spread σ |", "|---|---:|"]
+    out += [f"| {name} | {v:.2f} |" for name, v in rows]
+    out += ["", f"On the fixture, the raw spread by this measure is **{raw:.2f}**. The DOGFOOD homepage quotes an "
+            "uncalibrated spread of σ = 0.42 for the same data; its exact formula is not published. Quorum's "
+            f"calibration brings the spread to {rows[1][1]:.2f}, **on purpose not lower**:", "",
+            "- **Most of this spread is noise.** The judges' agreement is at chance (ICC ≈ 0), and most judges "
+            "reviewed only 1–11 projects. A judge who drew three weak projects looks harsh by accident.",
+            "- **REML estimates how much of the spread is real leniency**, and shrinks each judge's offset by "
+            "how much evidence supports it. Forcing weak shrinkage (k = 1) makes the judges look alike (σ ≈ "
+            f"{rows[3][1]:.2f}), but only by treating noise as leniency and moving projects because of it.",
+            "- **The goal is recovering the true order, not a small σ.** Section 2 runs this exact design with "
+            "known truth. Calibration beats the raw mean when leniency is real, and costs nothing when it is not.",
+            ""]
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sims", type=int, default=300)
@@ -112,6 +163,13 @@ def main():
     for e in res["entries"][:12]:
         md.append(f"| {e['rank']} | {titles[e['project']]} | {e['n_reviews']} | {e['raw']:.2f} | {e['calibrated']:.2f} | "
                   f"{e['se']:.2f} | {e['rank_lo']}–{e['rank_hi']} | {e['p_prize']:.0%} | {e['move_vs_raw']:+d} |")
+    md += ["", "<details><summary>All 40 projects: raw rank → calibrated rank</summary>", "",
+           "| Project | Raw mean | Raw rank | Calibrated | Calibrated rank | Move |", "|---|---:|---:|---:|---:|---:|"]
+    for e in sorted(res["entries"], key=lambda e: e["raw_rank"]):
+        md.append(f"| {titles[e['project']]} | {e['raw']:.3f} | {e['raw_rank']} | {e['calibrated']:.3f} | {e['rank']} | "
+                  f"{e['move_vs_raw']:+d} |")
+    md += ["", "</details>"]
+    md += judge_spread(INP, res)
     moved = sorted(res["entries"], key=lambda e: -abs(e["move_vs_raw"]))[:5]
     md += ["", "Largest moves, explained exactly (raw mean + one line per judge = calibrated score):", ""]
     for e in moved:

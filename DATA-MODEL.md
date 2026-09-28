@@ -54,6 +54,7 @@ outbox · job · rate_bucket · signing_key (public half only) · api_token (sha
 | `audit_auditevent` | seq, ts, actor, action, target, summary, data, prev_hash, hash | append-only (trigger); SHA-256 chain per event |
 | `audit_certificate` | kind, serial, payload (exact signed bytes), signature, key_id, revoked_at, revoked_reason | UNIQUE(event, kind, serial); never contains scores; signed fields frozen and revocation final (trigger) |
 | `core_signingkey` | key_id, public half, retired_at | the private half lives in `/data/keys` (0600), never in the database; retired keys stay published so old records verify |
+| `intelligence_embedding` | kind, object_id, content_hash (model + text), vector (384 × float32) | UNIQUE(kind, object_id); a cache: safe to truncate, rebuilt on demand; never an input to judging |
 
 ## Invariants enforced by Postgres triggers
 
@@ -91,3 +92,6 @@ addresses (votes keep keyed HMACs of the /24 network and user agent, rotated per
 voters' e-mails (an HMAC), API secrets, invite codes or magic-link tokens (SHA-256 only).
 The audit log stores identifiers and summaries, not e-mail addresses. Erasure of a person
 is deleting the user row; their audit entries keep an opaque identifier.
+
+The local AI stores vectors of public project text only. Feedback and questions are embedded in
+memory to answer a request and are never stored as vectors. Nothing leaves the server.

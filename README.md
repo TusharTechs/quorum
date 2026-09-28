@@ -1,6 +1,11 @@
-# Quorum
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/quorum-lockup-dark.svg">
+    <img src="docs/brand/quorum-lockup.svg" alt="Quorum" width="340">
+  </picture>
+</p>
 
-**Every project judged. Every tie decided. Every team answered.**
+<p align="center"><strong>Every project judged. Every tie decided. Every team answered.</strong></p>
 
 Quorum is a self-hosted hackathon platform. It covers registration, teams, submissions, judging, community voting, results, certificates and the archive. What makes it different is that it runs the judging *operation*, not just the maths:
 
@@ -9,8 +14,16 @@ Quorum is a self-hosted hackathon platform. It covers registration, teams, submi
 - It settles statistical ties with a pre-registered pairwise round.
 - It sends every team its scorecard and written feedback.
 - It shows its working on every number.
+- **It ships a local AI assistant that cannot make things up.** Ask it "who hasn't started?" or "is there a tie for first?" and it answers from your event's data, says how it knows, and never scores anything.
 
 It was built for DOGFOOD 2026, around the way Hackathon Raptors actually judges: batches of 10–12, a ten-day async window, weights fixed before registration, feedback to every team, and signed evaluation protocols for judges.
+
+| | |
+|---|---|
+| ![Organizer overview: the decisions that need a human, a guided checklist, glossary on every number](docs/img/organizer-overview.png) | ![Ask Quorum: a plain-language question answered from the event's data, with how it knows](docs/img/ask-quorum.png) |
+| **Organizer overview.** Decisions that need a human, a "run this event" checklist, and a plain-language explanation behind every "?" | **Ask Quorum (⌘K).** Answers come from named, inspectable queries over your data, never from a text generator |
+| ![Judge console with a live feedback coach](docs/img/judge-console.png) | ![How certain is the podium: plausible places, prize line and tie bands](docs/img/results-certainty.png) |
+| **Judge console.** Keyboard-first scoring with anchors, autosave, and a feedback coach that runs on the server | **Results.** Every project's plausible places, the prize line and the tie bands; this fixture has no confident podium, and Quorum says so |
 
 ```text
 DOGFOOD 2026 acceptance report                     Quorum extended report (T3/T4)
@@ -19,9 +32,9 @@ T1  project from fixtures shown ....... PASS        T3: 10/10 pass
 T1  closed event refuses submissions .. PASS        T4:  8/8 pass
 T2  judge sees own scores ............. PASS        total: 21/21 pass
 T2  judge cannot see peer scores ...... PASS
-T2  participant blocked ............... PASS        154 automated tests · 94 API operations × 6 roles
-T2  csv export works .................. PASS        authorization matrix · 336-request live
-claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks
+T2  participant blocked ............... PASS        179 automated tests · 96 API operations × 6 roles
+T2  csv export works .................. PASS        authorization matrix · 344-request live
+claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks · load test: 0 lost records
 ```
 
 [`acceptance-report.txt`](acceptance-report.txt) is the official `run.py` output. Its checker only covers T1/T2, so we claim exactly those tiers there. T3 and T4 are built. They are verified by [`tools/acceptance_ext.py`](tools/acceptance_ext.py), a standard-library checker in the same style, and its output is committed as [`acceptance-report-extended.txt`](acceptance-report-extended.txt).
@@ -46,12 +59,12 @@ Check it yourself:
 ```bash
 python3 run.py .dogfood.toml                    # official DOGFOOD checker: 7/7
 python3 tools/acceptance_ext.py .dogfood.toml   # T3/T4 behaviour: 21/21
-python3 scripts/isolation_probe.py .dogfood.toml # 336 cross-role requests, 0 leaks
+python3 scripts/isolation_probe.py .dogfood.toml # 344 cross-role requests, 0 leaks
 ```
 
 ### Seeded accounts (demo mode only)
 
-All passwords are `quorum-demo`. The API tokens are in [`.dogfood.toml`](.dogfood.toml).
+The home page has **Try it as… Organizer / Judge / Participant** buttons that sign you in with one click. By hand, every password is `quorum-demo`. The API tokens are in [`.dogfood.toml`](.dogfood.toml).
 
 | Role | Login | What to look at |
 |---|---|---|
@@ -67,7 +80,7 @@ Every judge and team member in the fixture can also sign in by e-mail link. Demo
 
 ## Five minutes with the fixture
 
-1. **Organizer overview.** Open `/o/sample-hack-2026` as the organizer. Instead of a dashboard of numbers, you get *the decisions that need a human*:
+1. **Organizer overview.** Click **Continue as organizer** on the home page. Instead of a dashboard of numbers, you get *the decisions that need a human*:
    - 8 projects are below 3 reviews, and two batches were never finished;
    - the judges' scores show no detectable agreement;
    - prize position 1 sits inside a statistical tie;
@@ -84,6 +97,7 @@ Every judge and team member in the fixture can also sign in by e-mail link. Demo
 5. **Lock and publish.** This freezes an immutable run and signs the audit head. It releases scorecards to every team and issues **signed, numbered judge evaluation protocols**, verifiable offline at `/verify`.
 6. **Audit.** On `/o/sample-hack-2026/audit`, every action is in an append-only, hash-chained log. **Verify chain** recomputes it.
 7. **Export and recompute.** `/o/sample-hack-2026/data` → download the bundle, then run `cd src && python3 -m engine recompute ~/Downloads/evt_01-bundle.json` to get `MATCH`.
+8. **Ask.** Press <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>K</kbd> anywhere and type a question: "who hasn't started?", "why is Small Meadow ranked 15th?", "which teams get no feedback?". Sign in as the judge and ask "who is winning?": you get no answer, because judges may not know that.
 
 The judge's side (`/j/sample-hack-2026`) and the participant's side (`/me`, `/e/quorum-live-demo`, an event that is *open* for submissions) are worth a minute each too.
 
@@ -119,13 +133,33 @@ The judge's side (`/j/sample-hack-2026`) and the participant's side (`/me`, `/e/
 - Comments with moderation. An audit trail that organizers can read, filter and verify in the UI.
 
 ### T4: stretch
-- A REST API covering every UI action: **94 operations** with an OpenAPI 3 document at `/api/v1/docs` (served offline).
+- A REST API covering every UI action: **96 operations** with an OpenAPI 3 document at `/api/v1/docs` (served offline).
 - HMAC-signed webhooks with retries and an SSRF guard.
 - **Signed, publicly verifiable judge evaluation protocols**, plus participant and winner certificates (Ed25519), verified in the browser offline.
   - **Revocation.** Organizers can revoke a record with a public reason. Revocation is final, which a database trigger enforces. The browser verifier checks a **signed revocation list** at `/.well-known/quorum-revocations.json`, and verifies the list's own signature first.
   - **Key rotation.** `manage.py rotate_signing_key` retires the key. Everything signed before still verifies; nothing can be signed with the old key again.
 - An embeddable gallery.
 - A bulk import wizard (Devpost/Unstop/any CSV with automatic column mapping, or a Quorum bundle), always dry-run first. A full event bundle that recomputes to `MATCH`.
+
+### Quorum Intelligence: local, assistive, auditable
+A 23 MB sentence-embedding model (all-MiniLM-L6-v2, Apache-2.0) runs on the CPU inside the stack, with no network and no API key. Its files are checksum-verified at load, and every feature falls back to keywords without it. **It never scores, ranks or decides.**
+
+- **Ask Quorum** (⌘K, `GET /api/v1/ask`). A question is matched by meaning to one of 15 named skills. The skill runs the same permission-checked code as the pages, and the answer says which skill ran and what it read. Judges and participants only get answers they are allowed to know, and off-topic questions get none.
+- **Smart search.** The gallery finds projects by meaning, with an exact-words mode. Project pages show similar projects.
+- **Possible duplicates.** Suggested with evidence, ignoring template text that many submissions share. On the fixture it flags exactly the real duplicate and nothing else.
+- **Feedback coach.** As a judge writes, the coach checks length, a concrete next step, specifics, tone, and which rubric criteria the feedback covers. It gives advice only.
+- **Scorecard themes.** Judges' sentences are grouped by criterion, and suggestions are listed as next steps, all quoted exactly.
+
+### Scale and production
+- **Load-tested with invariants.** 300 voters, 20 judges, readers and organizers at once: every accepted vote is counted exactly once, every duplicate is refused, every review is recorded, the audit chain holds, and nothing returns a 5xx. This holds on one instance and behind Caddy with TLS and three web replicas ([docs/proof/load-test.md](docs/proof/load-test.md)).
+- **Production topology.** `docker-compose.proxy.yml` adds automatic HTTPS, compression and least-connections load balancing. Replicas boot safely under a Postgres lock, and all shared state lives in Postgres.
+- **Observability.** Request ids on every log line, slow-request warnings, and internal-only Prometheus `/metrics`. Static assets are content-hashed and cached as immutable.
+- **Security behind proxies.** Clients are identified by the right-most untrusted `X-Forwarded-For` hop, so a forged header cannot dodge rate limits.
+
+### Design and accessibility
+- One design system: vendored Inter, Fraunces and JetBrains Mono, 91 Lucide icons, light and dark themes, and view transitions that respect reduced motion.
+- Every page works without JavaScript. htmx and a few small scripts add autosave, the palette, live previews and popovers.
+- **Tested:** 34 pages across all four roles have labelled controls, alt text, accessible names, unique ids and one h1. The palette meets WCAG AA contrast in both themes, with 3:1 for form borders.
 
 ## What it does not do yet
 
@@ -147,7 +181,8 @@ Better you read it here than find it:
 | [THREAT-MODEL.md](THREAT-MODEL.md) | Who attacks a hackathon; what is stopped, what is detected, what is not |
 | [OPERATIONS.md](OPERATIONS.md) | Running a Raptors event day by day; production deployment, backup, restore, upgrades |
 | [VERIFICATION.md](VERIFICATION.md) | Every check, test and probe, with its numbers and how to rerun it |
-| [docs/proof/](docs/proof/README.md) | The normalization proof, generated by `tools/generate_proof.py` |
+| [docs/proof/](docs/proof/README.md) | The normalization proof on the fixture (raw vs calibrated, rank changes, simulation with known truth), generated by `tools/generate_proof.py` |
+| [docs/proof/load-test.md](docs/proof/load-test.md) | The load test and its invariants, on one instance and on the production topology |
 
 ## Develop
 
@@ -156,10 +191,10 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 docker compose -f docker-compose.dev.yml up -d           # Postgres + mail catcher
 cd src && DJANGO_DEBUG=1 ../.venv/bin/python manage.py migrate && DJANGO_DEBUG=1 ../.venv/bin/python manage.py seed_fixtures
 DJANGO_DEBUG=1 ../.venv/bin/python manage.py runserver 8080
-../.venv/bin/python -m pytest ../tests                   # 154 tests against real Postgres
+../.venv/bin/python -m pytest ../tests                   # 179 tests against real Postgres
 ```
 
-The stack is Python 3.12, Django 5.2, django-ninja, PostgreSQL 16, and htmx with server-rendered templates (no Node toolchain). The judging engine is pure standard-library Python in `src/engine/`.
+The stack is Python 3.12, Django 5.2, django-ninja, PostgreSQL 16, and htmx with server-rendered templates (no Node toolchain). The judging engine is pure standard-library Python in `src/engine/`. Local AI lives in `src/quorum/intelligence/` (onnxruntime + tokenizers). Third-party assets and their licences are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## License
 
