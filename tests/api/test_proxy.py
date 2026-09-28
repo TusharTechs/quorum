@@ -28,3 +28,18 @@ def test_rightmost_untrusted_hop_is_the_client(settings):
 
 def test_invalid_trusted_entries_are_skipped(settings):
     assert _net(settings, "172.18.0.5", xff="198.51.100.7", trusted=["not-an-ip", "172.16.0.0/12"]) == "198.51.100.0/24"
+
+
+def test_platform_client_ip_header_is_believed_only_from_a_trusted_peer(settings):
+    from quorum.core import ratelimit
+
+    settings.CLIENT_IP_HEADER = "X-Real-IP"
+    settings.TRUSTED_PROXIES = ["100.64.0.0/10"]
+    edge = RequestFactory().get("/", REMOTE_ADDR="100.64.3.2", HTTP_X_REAL_IP="198.51.100.7",
+                                HTTP_X_FORWARDED_FOR="1.2.3.4")
+    assert ratelimit.client_ip(edge) == "198.51.100.7"
+    direct = RequestFactory().get("/", REMOTE_ADDR="203.0.113.9", HTTP_X_REAL_IP="1.2.3.4")
+    assert ratelimit.client_ip(direct) == "203.0.113.9"
+    junk = RequestFactory().get("/", REMOTE_ADDR="100.64.3.2", HTTP_X_REAL_IP="not-an-ip",
+                                HTTP_X_FORWARDED_FOR="198.51.100.8")
+    assert ratelimit.client_ip(junk) == "198.51.100.8"

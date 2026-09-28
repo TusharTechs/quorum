@@ -34,7 +34,7 @@
 </section>
 
 {% if QUORUM_DEMO %}
-<section class="card demo-roles" aria-labelledby="try-h">
+<section class="card demo-roles" id="try" aria-labelledby="try-h">
   <div class="row between"><div><h2 id="try-h" style="margin:0">Try it as…</h2><p class="small muted" style="margin:2px 0 0">Demo mode: one click signs you in as a seeded account. Production mode refuses to start while these exist.</p></div></div>
   <div class="grid cols-3" style="margin-top:14px">
     {% for r in demo_roles %}

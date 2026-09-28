@@ -11,6 +11,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import logging
+import os
 import threading
 from functools import lru_cache
 from pathlib import Path
@@ -51,6 +52,7 @@ def _load():
             for name, want in SHA256.items():
                 if hashlib.sha256(blobs[name]).hexdigest() != want:
                     raise RuntimeError(f"{name}: checksum mismatch")
+            os.environ.setdefault("ORT_DISABLE_TELEMETRY", "1")  # offline product: no telemetry, not even local
             import onnxruntime as ort
             from tokenizers import Tokenizer
 

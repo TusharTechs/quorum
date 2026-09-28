@@ -37,7 +37,8 @@ docker compose exec web python manage.py createsuperuser
 - They boot one at a time under a Postgres lock (`manage.py boot`), so they never race each other's
   migrations.
 - Each replica runs `WEB_CONCURRENCY` processes × `WEB_THREADS` threads. The default is one process
-  per core (at most 8) with 4 threads each.
+  per CPU the container may use (at most 8), capped by the container's memory limit at about 250 MB
+  per process, with 4 threads each. Container limits count, not the host's core count.
 - Keep replicas × processes × threads below Postgres `max_connections`. The overlay sets it to 250.
 - The load test in [docs/proof/load-test.md](docs/proof/load-test.md) runs 300 voters, 20 judges,
   readers and organizers on three replicas. Nothing was lost or double-counted.
@@ -46,6 +47,8 @@ docker compose exec web python manage.py createsuperuser
 - Set `TRUSTED_PROXY_IPS` to its addresses or CIDR ranges.
 - Quorum reads the client from the right-most untrusted `X-Forwarded-For` hop, so a forged header
   cannot dodge rate limits.
+- If the platform's edge names the client in a header of its own (Railway's `X-Real-IP`), set
+  `TRUSTED_CLIENT_IP_HEADER` to it. It is read only when the direct peer is a trusted proxy.
 - The Caddyfile trusts private ranges only.
 
 **Local AI.** The embedding model ships in the image, so there is nothing to download or configure.
@@ -84,6 +87,42 @@ The checks are in `manage.py production_guards`. In production, remove the `mail
 
 **Secure cookies.** HTTPS origins turn on Secure cookies and HSTS automatically.
 
+## Hosted public demo
+
+A "click and play" instance on the public internet, where anyone can try any role. Set
+`QUORUM_PUBLIC_DEMO=1` (it needs demo mode, so never with `QUORUM_ENV=production`) and Quorum:
+
+- restores the seed at boot and again every `QUORUM_DEMO_RESET_MINUTES` (default 60) with
+  `manage.py demo_reset`: every table is emptied and reseeded in one transaction, so visitors mid-request wait
+  a few seconds instead of seeing half a reset; uploaded files are removed; the command refuses to run
+  outside demo mode;
+- queues e-mail and webhooks but never delivers them, so visitors cannot use it to mail or call
+  anyone;
+- shows a banner on every page with the minutes until the next reset;
+- generates a fresh `DJANGO_SECRET_KEY` per container if none is set, so the public demo key is never used.
+
+Measured with one process on one CPU and a 1 GB limit: healthy 9 seconds after start on an empty
+database, pages in under 0.1 s, about 150 MB of memory. Browsing continuously through a reset returned
+no errors, and the slowest request waited 3.3 s.
+
+**On Railway.** [`railway.json`](railway.json) builds the Dockerfile and waits for `/healthz`.
+
+1. On railway.com, create a project with **Deploy from GitHub repo** and pick this repository.
+2. Add **Database → PostgreSQL** to the project.
+3. On the web service, open **Variables → Raw Editor** and paste:
+   ```
+   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   QUORUM_PUBLIC_DEMO=1
+   WEB_CONCURRENCY=1
+   TRUSTED_PROXY_IPS=10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16,fc00::/7
+   TRUSTED_CLIENT_IP_HEADER=X-Real-IP
+   ```
+4. **Settings → Networking → Generate Domain.** Quorum reads `RAILWAY_PUBLIC_DOMAIN` for its origin,
+   secure cookies and CSRF, so nothing else needs the address. It also reads `PORT` and `DATABASE_URL`.
+
+**Anywhere else.** Any host that runs one container next to Postgres works:
+`docker run -e QUORUM_PUBLIC_DEMO=1 -e DATABASE_URL=postgres://… -e QUORUM_PUBLIC_ORIGIN=https://demo.example.org -p 8080:8080 quorum:local web`.
+
 ## Backup and restore
 
 ```bash
@@ -121,7 +160,9 @@ the webhooks you configure.
 
 ## Monitoring
 
-- `GET /metrics` serves Prometheus text to `METRICS_ALLOWED_NETS` only. It includes:
+- `GET /metrics` serves Prometheus text to `METRICS_ALLOWED_NETS` only, and never to a request that
+  came through a reverse proxy (any forwarding header): behind a proxy every peer looks private,
+  so scrapers must talk to the web container directly. Caddy also answers `/metrics` with a 404. It includes:
   - outbox messages by status and pending jobs;
   - platform counts and model availability;
   - per-process request counters and a latency histogram.

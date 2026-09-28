@@ -6,7 +6,9 @@ otherwise one is generated; it is returned in the response and attached to every
 emitted while the request runs.
 
 /metrics serves Prometheus text to internal networks only (METRICS_ALLOWED_NETS, private
-ranges and loopback by default); anyone else gets a 404. Gauges that matter across replicas
+ranges and loopback by default); anyone else gets a 404. Behind a reverse proxy every request
+arrives from a private address, so a request that carries a forwarding header came through the
+proxy from outside and is refused too: scrapers talk to the web container directly. Gauges that matter across replicas
 (queue depths, counts) are read from Postgres, so every replica reports the same truth;
 request counters are per process and labelled with the pid.
 """
@@ -81,9 +83,13 @@ def _allowed(ip: str) -> bool:
     return any(a in ipaddress.ip_network(n, strict=False) for n in nets)
 
 
+_PROXIED = ("HTTP_X_FORWARDED_FOR", "HTTP_FORWARDED", "HTTP_X_REAL_IP", "HTTP_X_FORWARDED_PROTO",
+            "HTTP_X_FORWARDED_HOST")
+
+
 def metrics(request):
-    """Prometheus text format. Internal networks only (the direct peer, never X-Forwarded-For)."""
-    if not _allowed(request.META.get("REMOTE_ADDR", "")):
+    """Prometheus text format. Internal networks only: the direct peer, and never via a proxy."""
+    if not _allowed(request.META.get("REMOTE_ADDR", "")) or any(h in request.META for h in _PROXIED):
         return HttpResponseNotFound()
     from quorum.core.models import Job, Outbox
     from quorum.events.models import Event, Project

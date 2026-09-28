@@ -10,6 +10,7 @@ from quorum.accounts.models import ApiToken
 from quorum.audit import service as audit
 from quorum.core import ratelimit
 from quorum.core.clock import now
+from quorum.core.mail import demo_mail_hint
 from quorum.policy.decorators import policy
 from quorum.policy.errors import RateLimited
 
@@ -31,8 +32,7 @@ def login_view(request):
         if request.POST.get("mode") == "magic":
             if email:
                 accounts.issue_magic_link(email, "login", next_url=ctx["next"])
-            messages.success(request, "If that address can sign in, a link is on its way. "
-                                      "(Offline demo: open the mail catcher at localhost:8025.)")
+            messages.success(request, "If that address can sign in, a link is on its way." + demo_mail_hint())
             return redirect("/login")
         user = authenticate(request, username=email, password=request.POST.get("password", ""))
         if user is None:

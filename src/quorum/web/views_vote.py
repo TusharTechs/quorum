@@ -12,6 +12,7 @@ from quorum.api.common import get_event
 from quorum.audit import certificates
 from quorum.audit.models import AuditCheckpoint, Certificate
 from quorum.core.clock import now
+from quorum.core.mail import demo_mail_hint
 from quorum.events.models import Project
 from quorum.policy.decorators import policy
 from quorum.policy.errors import Forbidden, NotFound, PolicyError
@@ -31,8 +32,7 @@ def ballot(request, slug):
         try:
             if action == "email":
                 voting.start_email_verification(request, ev, request.POST.get("email", ""))
-                messages.success(request, "Check your inbox for a link to confirm your vote. "
-                                          "(Offline demo: the mail catcher at localhost:8025.)")
+                messages.success(request, "Check your inbox for a link to confirm your vote." + demo_mail_hint())
                 return redirect(f"/e/{ev.slug}/vote")
             if action == "code":
                 v = voting.redeem_code(request, ev, request.POST.get("code", ""))

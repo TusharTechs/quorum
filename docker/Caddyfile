@@ -11,6 +11,8 @@
 
 {$QUORUM_DOMAIN:localhost} {
 	encode zstd gzip
+	# metrics are for scrapers inside the network, never the internet (the app refuses them too)
+	respond /metrics 404
 	reverse_proxy web:8080 {
 		lb_policy least_conn
 		health_uri /healthz

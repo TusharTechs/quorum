@@ -84,6 +84,8 @@ def deliver_webhook(row: Outbox):
 
 
 def process_outbox() -> int:
+    if settings.QUORUM_PUBLIC_DEMO:  # never mail or call addresses that anonymous visitors typed in
+        return 0
     n = 0
     for row in _claim():
         try:

@@ -15,3 +15,9 @@ organizer console and participant flow; Quorum Intelligence, local and assistive
 smart search, duplicate suggestions, feedback coach, scorecard themes); a load test with
 invariants on one instance and on the production topology (Caddy, TLS, replicas);
 observability (request ids, internal metrics); immutable, content-hashed static assets.
+
+A hosted public demo mode (`QUORUM_PUBLIC_DEMO`): hourly reset to the seed in one transaction,
+no outbound mail or webhooks, a banner with the reset countdown, and a Railway configuration.
+Quorum now reads `DATABASE_URL`, `PORT` and the platform's public domain, sizes its web
+processes to the container's CPU and memory limits, and refuses `/metrics` to any request that
+came through a reverse proxy. The local model runs with ONNX Runtime telemetry switched off.

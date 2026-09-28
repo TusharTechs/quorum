@@ -19,14 +19,39 @@ def env_bool(name: str, default: bool = False) -> bool:
     return default if v is None else v.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def platform_origin() -> str:
+    """The public https origin a hosting platform assigns the service (Railway, Render), if any."""
+    if env("RAILWAY_PUBLIC_DOMAIN"):
+        return "https://" + env("RAILWAY_PUBLIC_DOMAIN")
+    return env("RENDER_EXTERNAL_URL", "") or ""
+
+
+def database_from_url(url: str) -> dict:
+    """postgres://user:password@host:port/name?sslmode=require, as hosted databases provide it."""
+    from urllib.parse import parse_qsl, unquote, urlsplit
+
+    u = urlsplit(url)
+    db = {"NAME": unquote(u.path.lstrip("/")), "USER": unquote(u.username or ""),
+          "PASSWORD": unquote(u.password or ""), "HOST": u.hostname or "", "PORT": str(u.port or 5432)}
+    if u.query:
+        db["OPTIONS"] = dict(parse_qsl(u.query))
+    return db
+
+
 QUORUM_ENV = env("QUORUM_ENV", "demo")  # demo | production | test
 QUORUM_DEMO = env_bool("QUORUM_DEMO", QUORUM_ENV != "production")
 DEBUG = env_bool("DJANGO_DEBUG", False)
 SECRET_KEY = env("DJANGO_SECRET_KEY", "quorum-demo-secret-key-change-me-in-production-0000000000")
 DEFAULT_SECRET = SECRET_KEY.startswith("quorum-demo-secret-key")
-PUBLIC_ORIGIN = env("QUORUM_PUBLIC_ORIGIN", "http://localhost:8080").rstrip("/")
+PUBLIC_ORIGIN = (env("QUORUM_PUBLIC_ORIGIN") or platform_origin() or "http://localhost:8080").rstrip("/")
+# A demo on the public internet (the hosted "click and play" instance): demo mode plus a banner, a
+# scheduled reset back to the seed, and no outbound e-mail or webhooks. See OPERATIONS.md.
+QUORUM_PUBLIC_DEMO = QUORUM_DEMO and env_bool("QUORUM_PUBLIC_DEMO", False)
+DEMO_RESET_MINUTES = int(env("QUORUM_DEMO_RESET_MINUTES", "60"))
+QUORUM_SOURCE_URL = env("QUORUM_SOURCE_URL", "https://github.com/TusharTechs/quorum")
 ALLOWED_HOSTS = [h.strip() for h in env("DJANGO_ALLOWED_HOSTS", "*").split(",") if h.strip()]
 TRUSTED_PROXIES = [ip.strip() for ip in env("TRUSTED_PROXY_IPS", "").split(",") if ip.strip()]
+CLIENT_IP_HEADER = env("TRUSTED_CLIENT_IP_HEADER", "")  # e.g. X-Real-IP, set by the platform's edge
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in env("DJANGO_CSRF_TRUSTED_ORIGINS", PUBLIC_ORIGIN).split(",") if o.strip()]
 
 INSTALLED_APPS = [
@@ -97,6 +122,8 @@ DATABASES = {
         "CONN_HEALTH_CHECKS": True,
     }
 }
+if env("DATABASE_URL"):
+    DATABASES["default"].update(database_from_url(env("DATABASE_URL")))
 
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "/login"

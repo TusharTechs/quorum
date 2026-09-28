@@ -22,7 +22,7 @@
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' data-event="{{ ev.slug|default:'' }}" data-sprite="{% static 'icons/sprite.svg' %}">
 <a class="skip" href="#main">Skip to content</a>
-{% if QUORUM_DEMO %}<div class="demo-bar">Demo mode · seeded logins use password <code>quorum-demo</code> · mail is caught offline at <a href="http://localhost:8025">localhost:8025</a></div>{% endif %}
+{% if PUBLIC_DEMO %}<div class="demo-bar"><strong>Public demo.</strong> Try any role from the home page · everything resets {% if demo_reset_in %}in {{ demo_reset_in }} min{% else %}every hour{% endif %} · no e-mail is sent · <a href="{{ SOURCE_URL }}">run your own in one command</a></div>{% elif QUORUM_DEMO %}<div class="demo-bar">Demo mode · seeded logins use password <code>quorum-demo</code> · mail is caught offline at <a href="http://localhost:8025">localhost:8025</a></div>{% endif %}
 <header class="top">
   <div class="wrap-wide">
     <a class="brand" href="/" aria-label="Quorum home">{% include "partials/mark.svg" %}<span>Quorum</span></a>

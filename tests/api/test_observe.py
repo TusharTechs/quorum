@@ -18,3 +18,13 @@ def test_metrics_are_internal_only_and_ignore_forwarded_headers(client):
     assert ok.status_code == 200 and "quorum_outbox_messages" in body and "quorum_http_requests_total" in body
     assert client.get("/metrics", REMOTE_ADDR="203.0.113.5").status_code == 404
     assert client.get("/metrics", REMOTE_ADDR="203.0.113.5", HTTP_X_FORWARDED_FOR="10.0.0.1").status_code == 404
+
+
+@pytest.mark.django_db
+def test_metrics_are_not_served_through_a_reverse_proxy(client):
+    """Behind Caddy or a platform's edge the peer is a private address; the forwarding header
+    shows the request came from outside, so it is refused."""
+    for header in ("HTTP_X_FORWARDED_FOR", "HTTP_FORWARDED", "HTTP_X_REAL_IP", "HTTP_X_FORWARDED_PROTO"):
+        r = client.get("/metrics", REMOTE_ADDR="10.0.0.7", **{header: "203.0.113.5"})
+        assert r.status_code == 404, header
+    assert client.get("/metrics", REMOTE_ADDR="10.0.0.7").status_code == 200

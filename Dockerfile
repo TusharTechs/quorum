@@ -19,7 +19,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src \
     QUORUM_STATIC_ROOT=/app/staticfiles \
-    QUORUM_DATA_DIR=/data
+    QUORUM_DATA_DIR=/data \
+    ORT_DISABLE_TELEMETRY=1
 COPY --from=deps /install /usr/local
 
 WORKDIR /app
