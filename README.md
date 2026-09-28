@@ -7,6 +7,30 @@
 
 <p align="center"><strong>Every project judged. Every tie decided. Every team answered.</strong></p>
 
+<p align="center">
+  <a href="#run-it"><b>Run it</b></a> ·
+  <a href="#five-minutes-with-the-fixture">Five minute tour</a> ·
+  <a href="ARCHITECTURE.md">Architecture</a> ·
+  <a href="JUDGING.md">Judging method</a> ·
+  <a href="docs/proof/README.md">Normalization proof</a> ·
+  <a href="THREAT-MODEL.md">Threat model</a> ·
+  <a href="VERIFICATION.md">Verification</a> ·
+  <a href="OPERATIONS.md">Operations</a> ·
+  <a href="docs/DEMO.md">Demo script</a>
+</p>
+
+| For judges: you want to… | Go to |
+|---|---|
+| **Run it yourself** | [`docker compose up`](#run-it): seeded with the official fixture, works with the network off |
+| **See every tier working** | [What is built](#what-is-built) · [official checker, 7/7](acceptance-report.txt) · [T3/T4 checker, 21/21](acceptance-report-extended.txt) |
+| **Check the judging maths** | [JUDGING.md](JUDGING.md) · [normalization proof](docs/proof/README.md): raw vs normalized scores, rank changes, the method defended |
+| **Check security and isolation** | [THREAT-MODEL.md](THREAT-MODEL.md) · [where each rule is enforced](ARCHITECTURE.md#where-each-rule-is-enforced) · [isolation probe](scripts/isolation_probe.py): 344 requests, 0 leaks |
+| **Read the architecture and code** | [ARCHITECTURE.md](ARCHITECTURE.md) · [DATA-MODEL.md](DATA-MODEL.md) · [the judging engine](src/engine) (standard library only) |
+| **Judge adoptability** | [OPERATIONS.md](OPERATIONS.md): deploy, back up, upgrade, run air-gapped · [load test](docs/proof/load-test.md): 0 lost votes on 3 replicas · [hosted demo setup](OPERATIONS.md#hosted-public-demo) |
+| **See the local AI** | [Quorum Intelligence](#quorum-intelligence-local-assistive-auditable) · [how it is built and what it may not do](ARCHITECTURE.md#quorum-intelligence-how-the-ai-is-built-and-what-it-is-not-allowed-to-do) |
+| **Use the API** | [96 operations](#t4-stretch), with an OpenAPI document at `/api/v1/docs` |
+| **Know the limits** | [What it does not do yet](#what-it-does-not-do-yet) |
+
 Quorum is a self-hosted hackathon platform. It covers registration, teams, submissions, judging, community voting, results, certificates and the archive. What makes it different is that it runs the judging *operation*, not just the maths:
 
 - It keeps every project at its review target across an asynchronous judging window.
@@ -32,7 +56,7 @@ T1  project from fixtures shown ....... PASS        T3: 10/10 pass
 T1  closed event refuses submissions .. PASS        T4:  8/8 pass
 T2  judge sees own scores ............. PASS        total: 21/21 pass
 T2  judge cannot see peer scores ...... PASS
-T2  participant blocked ............... PASS        179 automated tests · 96 API operations × 6 roles
+T2  participant blocked ............... PASS        186 automated tests · 96 API operations × 6 roles
 T2  csv export works .................. PASS        authorization matrix · 344-request live
 claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks · load test: 0 lost records
 ```
@@ -46,7 +70,7 @@ claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks · 
 You need Docker with the Compose plugin. Nothing else.
 
 ```bash
-git clone <this repository> quorum && cd quorum
+git clone https://github.com/TusharTechs/quorum.git && cd quorum
 docker compose up
 ```
 
@@ -191,7 +215,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 docker compose -f docker-compose.dev.yml up -d           # Postgres + mail catcher
 cd src && DJANGO_DEBUG=1 ../.venv/bin/python manage.py migrate && DJANGO_DEBUG=1 ../.venv/bin/python manage.py seed_fixtures
 DJANGO_DEBUG=1 ../.venv/bin/python manage.py runserver 8080
-../.venv/bin/python -m pytest ../tests                   # 179 tests against real Postgres
+../.venv/bin/python -m pytest ../tests                   # 186 tests against real Postgres
 ```
 
 The stack is Python 3.12, Django 5.2, django-ninja, PostgreSQL 16, and htmx with server-rendered templates (no Node toolchain). The judging engine is pure standard-library Python in `src/engine/`. Local AI lives in `src/quorum/intelligence/` (onnxruntime + tokenizers). Third-party assets and their licences are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
