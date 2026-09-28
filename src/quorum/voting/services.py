@@ -432,3 +432,8 @@ def hide_comment(actor, comment: Comment, reason: str = ""):
     comment.save(update_fields=["hidden_at", "hidden_by", "hidden_reason"])
     audit.record("COMMENT_HIDDEN", f"Comment on “{comment.project.title}” hidden", event=comment.project.event,
                  actor=actor, actor_role="organizer", target=comment.project, data={"reason": reason[:200]})
+
+
+def vote_count() -> int:
+    """Platform-wide count for operational metrics (no per-project detail, so no tally leaks)."""
+    return Vote.objects.count()

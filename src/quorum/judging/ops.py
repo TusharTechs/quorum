@@ -457,3 +457,8 @@ def suggest_conflicts(event: Event) -> int:
                 "event": event, "source": "same_domain", "status": "suggested", "note": f"shared domain @{d}"})
             n += created
     return n
+
+
+def submitted_review_count() -> int:
+    """Platform-wide count for operational metrics (no per-event or per-judge detail)."""
+    return Review.objects.filter(status="submitted").count()

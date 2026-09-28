@@ -11,8 +11,8 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             "msg": record.getMessage(),
         }
-        for k in ("event", "actor", "path", "status"):
-            if hasattr(record, k):
+        for k in ("request_id", "event", "actor", "path", "status", "ms"):
+            if getattr(record, k, ""):
                 out[k] = getattr(record, k)
         if record.exc_info:
             out["exc"] = self.formatException(record.exc_info)

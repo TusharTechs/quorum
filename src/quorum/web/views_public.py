@@ -227,6 +227,14 @@ def favicon(request):
 
 
 @policy("public")
+def metrics(request):
+    """Prometheus metrics, internal networks only (see quorum.core.observe)."""
+    from quorum.core.observe import metrics as render
+
+    return render(request)
+
+
+@policy("public")
 def healthz(request):
     return HttpResponse("ok", content_type="text/plain")
 

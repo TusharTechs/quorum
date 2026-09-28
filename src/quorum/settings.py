@@ -51,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "quorum.core.observe.RequestContextMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "quorum.core.middleware.SecurityHeadersMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -135,13 +136,19 @@ STATIC_ROOT = Path(env("QUORUM_STATIC_ROOT", str(REPO_DIR / "var" / "static")))
 # image does this at build time); plain storage in development and tests.
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # the image build (QUORUM_ENV=build) writes the manifest; runtime then serves content-hashed
+    # names with far-future, immutable caching, so an upgrade can never leave stale CSS or JS
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
-                    if (STATIC_ROOT / "staticfiles.json").exists() and QUORUM_ENV != "test" else
-                    "django.contrib.staticfiles.storage.StaticFilesStorage"},
+                    if QUORUM_ENV == "build" or ((STATIC_ROOT / "staticfiles.json").exists() and QUORUM_ENV != "test")
+                    else "django.contrib.staticfiles.storage.StaticFilesStorage"},
 }
 DATA_DIR = Path(env("QUORUM_DATA_DIR", str(REPO_DIR / "var")))
 # Quorum Intelligence: local embeddings (no network). Off switch for very small hosts.
 QUORUM_INTELLIGENCE = env_bool("QUORUM_INTELLIGENCE", True)
+# Observability: /metrics is served only to these networks (the direct peer address); slow-request log threshold
+METRICS_ALLOWED_NETS = [n.strip() for n in env("METRICS_ALLOWED_NETS", "127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,"
+                                                  "192.168.0.0/16").split(",") if n.strip()]
+SLOW_REQUEST_SECONDS = float(env("SLOW_REQUEST_SECONDS", "1.0"))
 QUORUM_MODEL_DIR = env("QUORUM_MODEL_DIR", "")
 MEDIA_ROOT = DATA_DIR / "media"
 MEDIA_URL = "/media/"
@@ -166,7 +173,8 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"json": {"()": "quorum.core.logging.JsonFormatter"}},
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "filters": {"request_id": {"()": "quorum.core.observe.RequestIdFilter"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json", "filters": ["request_id"]}},
     "root": {"handlers": ["console"], "level": env("LOG_LEVEL", "INFO")},
     "loggers": {"django.db.backends": {"level": "WARNING"}},
 }

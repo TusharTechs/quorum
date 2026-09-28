@@ -29,6 +29,7 @@ urlpatterns = [
     path(".well-known/quorum-revocations.json", pub.revocations),
     path("favicon.ico", pub.favicon),
     path("healthz", pub.healthz),
+    path("metrics", pub.metrics),
     path("readyz", pub.readyz),
     # auth
     path("login", auth.login_view),
