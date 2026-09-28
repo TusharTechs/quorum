@@ -15,7 +15,7 @@ T2+  rankings are hidden from judges, participants and visitors before publicati
 T2+  a judge cannot open another judge's review ..................................... PASS
 T2+  comparative (pairwise) judging: board organizer-only, only judges compare ...... PASS
 T4   REST API: OpenAPI document published ........................................... PASS
-       94 documented operations
+       96 documented operations
 T4   REST API: UI actions are API actions (create team) ............................. PASS
 T4   webhooks: organizer can register signed endpoints .............................. PASS
 T4   signed, publicly verifiable records (Ed25519; tampering detected) .............. PASS
