@@ -105,20 +105,24 @@ Measured with one process on one CPU and a 1 GB limit: healthy 9 seconds after s
 database, pages in under 0.1 s, about 150 MB of memory. Browsing continuously through a reset returned
 no errors, and the slowest request waited 3.3 s.
 
-**On Railway.** [`railway.json`](railway.json) builds the Dockerfile and waits for `/healthz`.
+**On Railway.** [`railway.json`](railway.json) builds the Dockerfile and waits for `/healthz`. This
+repository's own demo runs this way at [quorum-production-646e.up.railway.app](https://quorum-production-646e.up.railway.app).
 
 1. On railway.com, create a project with **Deploy from GitHub repo** and pick this repository.
 2. Add **Database → PostgreSQL** to the project.
 3. On the web service, open **Variables → Raw Editor** and paste:
    ```
+   PORT=8080
    DATABASE_URL=${{Postgres.DATABASE_URL}}
    QUORUM_PUBLIC_DEMO=1
    WEB_CONCURRENCY=1
    TRUSTED_PROXY_IPS=10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16,fc00::/7
    TRUSTED_CLIENT_IP_HEADER=X-Real-IP
    ```
-4. **Settings → Networking → Generate Domain.** Quorum reads `RAILWAY_PUBLIC_DOMAIN` for its origin,
-   secure cookies and CSRF, so nothing else needs the address. It also reads `PORT` and `DATABASE_URL`.
+4. **Settings → Networking → Generate Domain** (port 8080), then add the address as one more variable,
+   `QUORUM_PUBLIC_ORIGIN=https://<your domain>`, and deploy. Quorum uses it for secure cookies, HSTS and
+   the links it prints. Without it Quorum falls back to `RAILWAY_PUBLIC_DOMAIN` when the platform provides
+   it. `PORT` and `DATABASE_URL` are read automatically.
 
 **Anywhere else.** Any host that runs one container next to Postgres works:
 `docker run -e QUORUM_PUBLIC_DEMO=1 -e DATABASE_URL=postgres://… -e QUORUM_PUBLIC_ORIGIN=https://demo.example.org -p 8080:8080 quorum:local web`.

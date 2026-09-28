@@ -8,6 +8,7 @@
 <p align="center"><strong>Every project judged. Every tie decided. Every team answered.</strong></p>
 
 <p align="center">
+  <a href="https://quorum-production-646e.up.railway.app"><b>Live demo</b></a> ·
   <a href="#run-it"><b>Run it</b></a> ·
   <a href="#five-minutes-with-the-fixture">Five minute tour</a> ·
   <a href="ARCHITECTURE.md">Architecture</a> ·
@@ -21,6 +22,7 @@
 
 | For judges: you want to… | Go to |
 |---|---|
+| **Try it now, nothing to install** | **[Live demo](https://quorum-production-646e.up.railway.app)**: one click to be the organizer, a judge or a participant. It resets every hour and sends no e-mail |
 | **Run it yourself** | [`docker compose up`](#run-it): seeded with the official fixture, works with the network off |
 | **See every tier working** | [What is built](#what-is-built) · [official checker, 7/7](acceptance-report.txt) · [T3/T4 checker, 21/21](acceptance-report-extended.txt) |
 | **Check the judging maths** | [JUDGING.md](JUDGING.md) · [normalization proof](docs/proof/README.md): raw vs normalized scores, rank changes, the method defended |
@@ -67,7 +69,7 @@ claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks · 
 
 ## Run it
 
-You need Docker with the Compose plugin. Nothing else.
+You need Docker with the Compose plugin. Nothing else. (Or skip installing: the [live demo](https://quorum-production-646e.up.railway.app) runs this same image in [public demo mode](OPERATIONS.md#hosted-public-demo).)
 
 ```bash
 git clone https://github.com/TusharTechs/quorum.git && cd quorum

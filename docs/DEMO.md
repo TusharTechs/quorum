@@ -2,6 +2,9 @@
 
 The brief asks the video to walk "one full event lifecycle: create, submit, judge, publish".
 
+Judges can also click through it themselves at **[the live demo](https://quorum-production-646e.up.railway.app)**: the same image in
+public demo mode, with one-click roles and a reset every hour.
+
 **Spine:** *every portal can print a podium from the fixture. Quorum tells you which parts of
 that podium you can trust, helps you decide the rest fairly and on the record, and answers
 every team.*
