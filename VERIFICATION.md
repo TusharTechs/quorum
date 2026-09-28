@@ -11,7 +11,7 @@ committed run; rerun them yourself.
 | **Fresh clone** | `git clone` of the committed repository into an empty directory, built as its own Compose project: run.py 7/7, extended 21/21, probe 336/0; its exported bundle recomputes to `MATCH` with the operating system's stock Python 3.9 and no packages | `git clone … && docker compose up`, then the three checkers; `cd src && python3 -m engine recompute bundle.json` |
 | **Live public demo** | [quorum-production-646e.up.railway.app](https://quorum-production-646e.up.railway.app) on Railway (one container, 2 vCPU / 1 GB limit, managed Postgres): every page 200, each role signs in with one click, Ask Quorum answers in ≈0.6 s, `/metrics` is 404 from the internet. Locally, the same mode under a 1 CPU / 1 GB limit browsed continuously through a reset with no errors (slowest request 3.3 s) | open it; `OPERATIONS.md#hosted-public-demo` to run your own |
 | Live isolation probe | **344** cross-role GET requests against the running stack, **0** unexpected successes | `python3 scripts/isolation_probe.py .dogfood.toml` |
-| Automated tests (real Postgres, triggers included) | **186 passed** | `make test` |
+| Automated tests (real Postgres, triggers included) | **188 passed** | `make test` |
 | ↳ Authorization matrix | every one of the **96** API operations × 6 roles (anonymous, participant, judge A, judge B, organizer, admin) = 576 requests; the test fails if an operation is not classified | `tests/api/test_matrix.py` |
 | ↳ Canary leak crawl | private draft title, judge's private note, unreleased feedback and a hidden comment never appear in any API, HTML, CSV, bundle or embed response for anonymous, participant or another judge | `tests/api/test_isolation.py` |
 | ↳ Deadline | refused *because of the deadline* (`deadline_passed`), not CSRF or validation; a direct database UPDATE after close is refused by the trigger; grace window honoured; server-set fields ignored | `tests/api/test_deadline.py` |
@@ -31,7 +31,7 @@ committed run; rerun them yourself.
 | Normalization proof | on the fixture's exact design with known truth: calibration beats the raw mean when judges differ (+0.018 τ at leniency sd 0.4, +0.070 at 0.8), costs nothing when they do not (+0.003), beats per-judge z-scores everywhere; disjoint panels give exactly 0 gain vs +0.036 with overlap | `python3 tools/generate_proof.py` → [docs/proof/](docs/proof/README.md) |
 | Result reproducibility | every ranking in an exported bundle recomputes byte-for-byte: `MATCH` | `cd src && python3 -m engine recompute <bundle.json>` or `POST /api/v1/bundles/verify` |
 | Deny-by-default | the app refuses to boot if any route lacks a `@policy` (system check `quorum.E001/E002`, run by the entrypoint) | `cd src && python manage.py check` |
-| Offline assets | no external URL in any template, stylesheet or script (CI guard) | see `.github/workflows/ci.yml` |
+| Offline assets | no template, stylesheet or script points a browser at another host (comments and input placeholders excepted); the guard is itself tested against real external loads | `tests/test_offline_assets.py` (also a named CI step) |
 | Lint | ruff clean | `ruff check src tests tools scripts` |
 
 ## What the fixture shows (and what that means)
