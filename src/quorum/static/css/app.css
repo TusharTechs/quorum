@@ -543,3 +543,9 @@ details.card > summary::-webkit-details-marker { display: none; }
 .pcard.preview { pointer-events: none; box-shadow: none; }
 .pcard.preview .thumb { aspect-ratio: 21 / 9; }
 .quote { margin: 6px 0; padding: 8px 12px; border-left: 3px solid var(--accent-line); background: var(--sunk); border-radius: 0 8px 8px 0; font-size: 14px; }
+@media (max-width: 720px) {
+  .top .wrap-wide { flex-wrap: wrap; height: auto; padding-top: 8px; padding-bottom: 6px; row-gap: 6px; }
+  .top .nav { order: 3; flex-basis: 100%; }
+  .top .kbar { margin-left: auto; }
+  .nav a .t { display: inline; }
+}
