@@ -86,8 +86,10 @@ def test_judge_b_sees_own_private_note_only_in_own_scores(planted, client_as):
 
 def test_same_track_peer_is_refused_and_uniform_for_unknown_judges(client_as):
     c = client_as("judge_b")
-    assert c.get("/api/v1/events/evt_01/judges/jdg_24/scores").status_code == 403
-    assert c.get("/api/v1/events/evt_01/judges/jdg_99/scores").status_code == 403  # no existence oracle
+    peer = c.get("/api/v1/events/evt_01/judges/jdg_24/scores")
+    unknown = c.get("/api/v1/events/evt_01/judges/jdg_99/scores")
+    # no existence oracle: a real peer and a judge who does not exist get the identical refusal
+    assert peer.status_code == unknown.status_code == 403 and peer.content == unknown.content
     assert c.get("/api/v1/events/evt_01/judges/jdg_26/scores").status_code == 200
 
 

@@ -97,7 +97,7 @@ def reviews_of_judge(actor: Actor, event: Event, judge_role: EventRole) -> Query
     own = actor.judge_role(event)
     if own is not None and own.pk == judge_role.pk:
         return Review.objects.filter(event=event, judge_role=judge_role).select_related("project", "event", "judge_role")
-    raise Forbidden("A judge may only read their own scores.")
+    raise Forbidden("You may not read these scores.")  # word for word the unknown-judge refusal
 
 
 def judge_assignment(actor: Actor, assignment_id) -> Assignment:
