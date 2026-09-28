@@ -12,7 +12,7 @@
   <a href="https://quorum-production-646e.up.railway.app"><b>Live demo</b></a> ·
   <a href="#run-it"><b>Run it</b></a> ·
   <a href="#five-minutes-with-the-fixture">Five minute tour</a> ·
-  <a href="ARCHITECTURE.md">Architecture</a> ·
+  <a href="#architecture">Architecture</a> ·
   <a href="JUDGING.md">Judging method</a> ·
   <a href="docs/proof/README.md">Normalization proof</a> ·
   <a href="THREAT-MODEL.md">Threat model</a> ·
@@ -33,7 +33,7 @@
 | **See every tier working** | [What is built](#what-is-built) · [official checker, 7/7](acceptance-report.txt) · [T3/T4 checker, 21/21](acceptance-report-extended.txt) |
 | **Check the judging maths** | [JUDGING.md](JUDGING.md) · [normalization proof](docs/proof/README.md): raw vs normalized scores, rank changes, the method defended |
 | **Check security and isolation** | [THREAT-MODEL.md](THREAT-MODEL.md) · [where each rule is enforced](ARCHITECTURE.md#where-each-rule-is-enforced) · [isolation probe](scripts/isolation_probe.py): 344 requests, 0 leaks |
-| **Read the architecture and code** | [ARCHITECTURE.md](ARCHITECTURE.md) · [DATA-MODEL.md](DATA-MODEL.md) · [the judging engine](src/engine) (standard library only) |
+| **Read the architecture and code** | [Architecture diagrams](#architecture) · [ARCHITECTURE.md](ARCHITECTURE.md) · [DATA-MODEL.md](DATA-MODEL.md) · [the judging engine](src/engine) (standard library only) |
 | **Judge adoptability** | [OPERATIONS.md](OPERATIONS.md): deploy, back up, upgrade, run air-gapped · [load test](docs/proof/load-test.md): 0 lost votes on 3 replicas · [hosted demo setup](OPERATIONS.md#hosted-public-demo) |
 | **See the local AI** | [Quorum Intelligence](#quorum-intelligence-local-assistive-auditable) · [how it is built and what it may not do](ARCHITECTURE.md#quorum-intelligence-how-the-ai-is-built-and-what-it-is-not-allowed-to-do) |
 | **Use the API** | [96 operations](#t4-stretch), with an OpenAPI document at `/api/v1/docs` |
@@ -70,6 +70,91 @@ claimed T1 T2, verified T1 T2                       isolation probe: 0 leaks · 
 ```
 
 [`acceptance-report.txt`](acceptance-report.txt) is the official `run.py` output. Its checker only covers T1/T2, so we claim exactly those tiers there. T3 and T4 are built. They are verified by [`tools/acceptance_ext.py`](tools/acceptance_ext.py), a standard-library checker in the same style, and its output is committed as [`acceptance-report-extended.txt`](acceptance-report-extended.txt).
+
+## Architecture
+
+One Django application, one PostgreSQL database, one background worker, and a pure Python judging engine that everything else calls. Rules are enforced in the application, and anything that must hold for everyone is enforced again by the database. [ARCHITECTURE.md](ARCHITECTURE.md) follows a request end to end, maps where each rule is enforced, and lists the trade offs we accepted.
+
+```mermaid
+flowchart TB
+  users["Organizers · judges · participants · public visitors<br/>browsers, and scripts with Bearer tokens"]
+  caddy["Caddy · optional production overlay<br/>HTTPS · compression · least connections"]
+
+  subgraph web["Web replicas · gunicorn threads · Django 5.2"]
+    direction TB
+    mw["Middleware<br/>request ids · CSP · sessions · CSRF · bearer tokens"]
+    views["HTML pages<br/>server rendered · htmx"]
+    rest["REST API /api/v1<br/>96 operations · OpenAPI"]
+    policy["Policy layer<br/>deny by default @policy · per event roles"]
+    services["Domain services<br/>events · judging · results · voting · audit · integrations"]
+    repos["Scoped repositories<br/>the only way to read scores"]
+    engine["Judging engine<br/>pure Python · REML · Bradley Terry"]
+    ai["Local AI<br/>MiniLM on the CPU · never scores"]
+  end
+
+  subgraph pg["PostgreSQL 16"]
+    direction LR
+    tables[("Tables and constraints<br/>invariant triggers")]
+    queue[("Outbox · jobs · rate limits<br/>sessions · embeddings")]
+  end
+
+  vol[("Data volume<br/>uploads · Ed25519 keys")]
+  worker["Worker<br/>outbox · reminders · deadline sealing"]
+  out["Email over SMTP · HMAC signed webhooks<br/>Mailpit catches mail offline"]
+  verify["Anyone, offline<br/>checks signatures in the browser<br/>recomputes with plain Python"]
+
+  users --> caddy --> mw
+  mw --> views & rest
+  views & rest --> policy
+  policy --> services
+  services --> repos & engine & ai
+  repos --> tables
+  services --> queue
+  services --> vol
+  queue --> worker
+  worker --> out
+  services -. signed records · event bundle .-> verify
+
+  classDef edge fill:#eef0ff,stroke:#3a3fd9,color:#111
+  classDef app fill:#f6f5f2,stroke:#8a857b,color:#111
+  classDef data fill:#fff4e5,stroke:#b7791f,color:#111
+  classDef ext fill:#ffeef2,stroke:#e5486e,color:#111
+  class users,caddy,mw edge
+  class views,rest,policy,services,repos,engine,ai,worker app
+  class tables,queue,vol data
+  class out,verify ext
+```
+
+**How a ranking is decided.** The method is locked before anyone registers. Reviews are calibrated for each judge's leniency, the uncertainty is measured, and spare judge time goes only where a prize is still in doubt. A tie at a prize line goes to a head to head round. The locked result is signed and published, and anyone can recompute it from the exported bundle.
+
+```mermaid
+flowchart LR
+  method["Method locked<br/>weights · rules · tie break<br/>SHA256 made public"]
+  assign["Assignment<br/>batches of 10 to 12<br/>conflict free · connected overlap"]
+  reviews["Reviews<br/>1 to 5 per criterion<br/>written feedback"]
+  flat["Flat judge rule<br/>identical scores get weight 0"]
+  calib["Calibration<br/>offset shrinkage · k chosen by REML"]
+  unc["Uncertainty<br/>standard error · plausible rank<br/>P(prize) · tie bands · ICC signal check"]
+  focus["Focus round<br/>extra reviews only where<br/>a prize is still in doubt"]
+  tie["Tie break<br/>conflict free panel · head to head<br/>Bradley Terry"]
+  lock["Lock<br/>immutable run · signed audit head"]
+  publish["Publish<br/>results · scorecards · signed judge protocols · certificates"]
+  bundle["Event bundle<br/>anyone recomputes it: MATCH"]
+
+  method --> assign --> reviews --> flat --> calib --> unc
+  unc -- "prize in doubt" --> focus
+  focus -- "new reviews" --> reviews
+  unc -- "tie at a prize line" --> tie
+  unc -- "decided" --> lock
+  tie --> lock --> publish --> bundle
+
+  classDef step fill:#f6f5f2,stroke:#8a857b,color:#111
+  classDef key fill:#eef0ff,stroke:#3a3fd9,color:#111
+  classDef out fill:#ffeef2,stroke:#e5486e,color:#111
+  class assign,reviews,flat step
+  class method,calib,unc,focus,tie key
+  class lock,publish,bundle out
+```
 
 ---
 
